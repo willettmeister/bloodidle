@@ -65,21 +65,28 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var waveTextGO = CreateLabel(canvasGO, "WaveText", "Wave 1", 52,
             new Color(0.90f, 0.72f, 0.08f),
-            Top, new Vector2(0f, -68f), new Vector2(600f, 56f));
+            Top, new Vector2(0f, -65f), new Vector2(600f, 56f));
 
-        var enemyNameGO = CreateLabel(canvasGO, "EnemyNameText", "Goblin", 76,
+        // Enemy sprite image (hidden until GenerateAssets has run)
+        var enemyImgGO = canvasGO.CreateChild("EnemyImage");
+        var enemyImg   = enemyImgGO.AddComponent<Image>();
+        enemyImg.color          = Color.clear;
+        enemyImg.preserveAspect = true;
+        enemyImgGO.SetRT(Top, Top, new Vector2(0f, -138f), new Vector2(96f, 96f));
+
+        var enemyNameGO = CreateLabel(canvasGO, "EnemyNameText", "Goblin", 72,
             Color.white,
-            Top, new Vector2(0f, -152f), new Vector2(740f, 84f));
+            Top, new Vector2(0f, -205f), new Vector2(740f, 76f));
 
         var (_, enemyHPFill) = CreateHPBar(canvasGO, "EnemyHPBar",
             EnemyBarBg, EnemyBarFill,
-            Top, new Vector2(0f, -232f), new Vector2(820f, 38f));
+            Top, new Vector2(0f, -262f), new Vector2(820f, 38f));
 
         var enemyHPTextGO = CreateLabel(canvasGO, "EnemyHPText", "100 / 100", 36,
             new Color(0.92f, 0.58f, 0.58f),
-            Top, new Vector2(0f, -278f), new Vector2(600f, 40f));
+            Top, new Vector2(0f, -308f), new Vector2(600f, 40f));
 
-        Divider(canvasGO, Top, new Vector2(0f, -308f));
+        Divider(canvasGO, Top, new Vector2(0f, -338f));
 
         // ════════════════════════════════════════════════════════════════════
         // CENTER — Farm Blood + Blood + Wood
@@ -173,6 +180,8 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         // Wire UIManager references
         // ════════════════════════════════════════════════════════════════════
+        uim.enemyImage              = enemyImg;
+        uim.enemySprites            = LoadEnemySprites();
         uim.bloodText               = bloodTextGO.GetComponent<Text>();
         uim.woodText                = woodTextGO.GetComponent<Text>();
         uim.waveText                = waveTextGO.GetComponent<Text>();
@@ -261,6 +270,19 @@ public static class SceneBuilder
         fillImg.fillAmount = 1f;
         fillGO.Stretch();
         return (bg, fillImg);
+    }
+
+    static Sprite[] LoadEnemySprites()
+    {
+        string[] files = { "goblin", "orc_warrior", "cave_troll", "stone_ogre",
+                           "demon_knight", "vampire_lord", "ancient_dragon" };
+        var list = new System.Collections.Generic.List<Sprite>();
+        foreach (var f in files)
+        {
+            var s = AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Resources/Sprites/{f}.png");
+            list.Add(s); // null when GenerateAssets hasn't run yet — UIManager handles gracefully
+        }
+        return list.ToArray();
     }
 
     static void Divider(GameObject parent, Vector2 anchor, Vector2 pos)

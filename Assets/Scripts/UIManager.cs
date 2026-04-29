@@ -26,6 +26,10 @@ public class UIManager : MonoBehaviour
     public Text workerInfoText;
     public Button buyWorkerButton;
 
+    [Header("Sprites")]
+    public Image enemyImage;
+    public Sprite[] enemySprites;
+
     [Header("Barracks")]
     public Text barracksInfoText;
     public Button upgradeBarracksButton;
@@ -52,6 +56,15 @@ public class UIManager : MonoBehaviour
         woodText.text  = gm.WoodPerSecond > 0
             ? $"Wood: {GameManager.FormatNumber(gm.Wood)}  (+{gm.WoodPerSecond:F1}/s)"
             : $"Wood: {GameManager.FormatNumber(gm.Wood)}";
+
+        // Enemy sprite
+        if (enemyImage != null && enemySprites != null && enemySprites.Length > 0)
+        {
+            int idx = Mathf.Min(gm.Wave - 1, enemySprites.Length - 1);
+            var spr = idx >= 0 ? enemySprites[idx] : null;
+            enemyImage.sprite  = spr;
+            enemyImage.color   = spr != null ? Color.white : Color.clear;
+        }
 
         // Enemy
         waveText.text       = $"Wave {gm.Wave}";
