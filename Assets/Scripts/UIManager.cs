@@ -117,7 +117,7 @@ public class UIManager : MonoBehaviour
 
     // Create a Fine-grained PAT at github.com/settings/tokens with
     // "Issues: Write" permission scoped to the bloodidle repo, then paste it here.
-    const string k_GhToken = "REPLACE_WITH_YOUR_GITHUB_PAT";
+    const string k_GhToken = "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";
     const string k_GhApi   = "https://api.github.com/repos/willettmeister/bloodidle/issues";
 
     public void ShowFeaturePanel()
