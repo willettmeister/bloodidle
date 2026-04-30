@@ -53,9 +53,9 @@ public static class SceneBuilder
         // Camera
         var camGO = new GameObject("Main Camera");
         var cam   = camGO.AddComponent<Camera>();
-        cam.clearFlags    = CameraClearFlags.SolidColor;
+        cam.clearFlags      = CameraClearFlags.SolidColor;
         cam.backgroundColor = BgBase;
-        cam.orthographic  = true;
+        cam.orthographic    = true;
         camGO.AddComponent<AudioListener>();
 
         // EventSystem
@@ -67,12 +67,12 @@ public static class SceneBuilder
         var cv = new GameObject("Canvas");
         cv.AddComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
         var scaler = cv.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode        = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1080, 1920);
         scaler.matchWidthOrHeight  = 0f;
         cv.AddComponent<GraphicRaycaster>();
 
-        // Background fill
+        // Background fill — full-screen, outside scroll
         var bgGO = cv.CreateChild("Background");
         bgGO.AddImage(BgBase); bgGO.Stretch();
 
@@ -82,51 +82,80 @@ public static class SceneBuilder
         var uim = gmGO.AddComponent<UIManager>();
         var clk = gmGO.AddComponent<ClickManager>();
 
+        // ── Scrollable content wrapper ───────────────────────────────────────
+        var scrollGO = cv.CreateChild("ScrollView");
+        scrollGO.AddComponent<Image>().color = Color.clear;
+        scrollGO.Stretch();
+
+        var viewportGO = scrollGO.CreateChild("Viewport");
+        viewportGO.AddComponent<Image>().color = Color.clear;
+        viewportGO.AddComponent<Mask>().showMaskGraphic = false;
+        viewportGO.Stretch();
+
+        var content   = viewportGO.CreateChild("Content");
+        content.AddComponent<Image>().color = Color.clear;
+        var contentRT = content.GetComponent<RectTransform>();
+        contentRT.anchorMin        = new Vector2(0f, 1f);
+        contentRT.anchorMax        = new Vector2(1f, 1f);
+        contentRT.pivot            = new Vector2(0.5f, 1f);
+        contentRT.anchoredPosition = Vector2.zero;
+        contentRT.sizeDelta        = new Vector2(0, 1600);
+
+        var scroll = scrollGO.AddComponent<ScrollRect>();
+        scroll.viewport          = viewportGO.GetComponent<RectTransform>();
+        scroll.content           = contentRT;
+        scroll.horizontal        = false;
+        scroll.vertical          = true;
+        scroll.scrollSensitivity = 10f;
+        scroll.movementType      = ScrollRect.MovementType.Clamped;
+        scroll.inertia           = true;
+        scroll.decelerationRate  = 0.135f;
+
         // ════════════════════════════════════════════════════════════════════
         // HEADER  (y 0–110)
         // ════════════════════════════════════════════════════════════════════
-        var headerBg = cv.CreateChild("HeaderBg");
+        var headerBg = content.CreateChild("HeaderBg");
         headerBg.AddImage(HC("0F0E1E")); PF(headerBg, 0, 110);
 
-        var bloodTextGO = Label(cv, "BloodText",  "Blood: 0", 42, Crimson, TextAnchor.MiddleLeft);
-        var waveTextGO  = Label(cv, "WaveText",   "Wave 1",   56, Gold,    TextAnchor.MiddleCenter);
-        var woodTextGO  = Label(cv, "WoodText",   "Wood: 0",  38, HC("B8963E"), TextAnchor.MiddleRight);
+        var bloodTextGO = Label(content, "BloodText",  "Blood: 0", 42, Crimson, TextAnchor.MiddleLeft);
+        var waveTextGO  = Label(content, "WaveText",   "Wave 1",   56, Gold,    TextAnchor.MiddleCenter);
+        var woodTextGO  = Label(content, "WoodText",   "Wood: 0",  38, HC("B8963E"), TextAnchor.MiddleRight);
         PT(bloodTextGO, 8, 94, -295, 370);
         PT(waveTextGO,  8, 94,    0, 300);
         PT(woodTextGO,  8, 94, +310, 370);
 
-        var hDivGO = cv.CreateChild("HeaderDiv");
+        var hDivGO = content.CreateChild("HeaderDiv");
         hDivGO.AddImage(HC("2D2D4A")); PF(hDivGO, 110, 2);
 
         // ════════════════════════════════════════════════════════════════════
         // ENEMY CARD  (y 120–455)
         // ════════════════════════════════════════════════════════════════════
-        Panel(cv, "EnemyCardBg", 120, 335, Surface1, 24);
+        Panel(content, "EnemyCardBg", 120, 335, Surface1, 24);
 
-        var enemyImgGO = cv.CreateChild("EnemyImage");
+        var enemyImgGO = content.CreateChild("EnemyImage");
         var enemyImg   = enemyImgGO.AddComponent<Image>();
         enemyImg.color = Color.clear; enemyImg.preserveAspect = true;
         PT(enemyImgGO, 138, 148, -390, 162);
 
-        var enemyNameGO = Label(cv, "EnemyNameText", "Goblin", 58, Color.white, TextAnchor.MiddleLeft);
-        var waveSubGO   = Label(cv, "WaveSubText",   "Wave 1", 32, TextSec,     TextAnchor.MiddleLeft);
+        var enemyNameGO = Label(content, "EnemyNameText", "Goblin", 58, Color.white, TextAnchor.MiddleLeft);
+        var waveSubGO   = Label(content, "WaveSubText",   "Wave 1", 32, TextSec,     TextAnchor.MiddleLeft);
         PT(enemyNameGO, 138, 68, +72, 680);
         PT(waveSubGO,   210, 38, +72, 680);
 
-        var (_, enemyHPFill) = HPBar(cv, "EnemyHP", 274, 30, EHPBg, EHPFill);
-        var enemyHPTextGO    = Label(cv, "EnemyHPText", "100 / 100", 28, TextSec);
+        var (_, enemyHPFill) = HPBar(content, "EnemyHP", 274, 30, EHPBg, EHPFill);
+        var enemyHPTextGO    = Label(content, "EnemyHPText", "100 / 100", 28, TextSec);
         PT(enemyHPTextGO, 310, 34, 0, 660);
 
         // ════════════════════════════════════════════════════════════════════
         // ARMY CARD  (y 465–670)
         // ════════════════════════════════════════════════════════════════════
-        Panel(cv, "ArmyCardBg", 465, 205, Surface1, 24);
+        Panel(content, "ArmyCardBg", 465, 205, Surface1, 24);
 
-        var soldierCountGO = Label(cv, "SoldierCountText",
+        var soldierCountGO = Label(content, "SoldierCountText",
             "No soldiers — buy one!  (max 10)", 34, TextSec);
         PF(soldierCountGO, 475, 48, 50);
 
-        var soldierHPRowGO = cv.CreateChild("SoldierHPRow");
+        var soldierHPRowGO = content.CreateChild("SoldierHPRow");
         soldierHPRowGO.AddImage(Color.clear); PF(soldierHPRowGO, 527, 80, 40);
 
         var (_, soldierHPFill) = HPBar(soldierHPRowGO, "SoldierHPBar", 0, 28, SHPBg, SHPFill, stretch: true);
@@ -141,54 +170,60 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         // FARM BLOOD  (y 690–900)
         // ════════════════════════════════════════════════════════════════════
-        var farmBtnGO = Btn(cv, "FarmBloodButton", "FARM BLOOD", 90, Crimson);
+        var farmBtnGO = Btn(content, "FarmBloodButton", "FARM BLOOD", 90, Crimson);
         PT(farmBtnGO, 690, 210, 0, 680);
 
         // ════════════════════════════════════════════════════════════════════
         // ACTION ROW  (y 910–1045)
         // ════════════════════════════════════════════════════════════════════
-        var buySoldierGO = Btn(cv, "BuySoldierButton", "Buy Soldier\n10 blood", 40, Blue);
+        var buySoldierGO = Btn(content, "BuySoldierButton", "Buy Soldier\n10 blood", 40, Blue);
         PT(buySoldierGO, 910, 130, -267, 506);
 
-        var healPanelGO = cv.CreateChild("HealSelfPanel");
+        var healPanelGO = content.CreateChild("HealSelfPanel");
         healPanelGO.AddImage(Color.clear); PT(healPanelGO, 910, 130, +267, 506);
 
         var healBtnGO = Btn(healPanelGO, "HealSelfButton", "Heal Self  +20 HP\n25 blood", 40, Purple);
         healBtnGO.Stretch(); healPanelGO.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
-        // WORKERS CARD  (y 1060–1225)
+        // WORKERS CARD  (y 1060–1225) — hidden until 200 blood earned
         // ════════════════════════════════════════════════════════════════════
-        Panel(cv, "WorkersCardBg", 1060, 165, Surface1, 24);
+        var workersPanel = content.CreateChild("WorkersPanel");
+        workersPanel.AddImage(Color.clear);
+        PF(workersPanel, 1060, 165);
 
-        var workerInfoGO = Label(cv, "WorkerInfoText", "Workers: 0",
+        Panel(workersPanel, "WorkersCardBg", 0, 165, Surface1, 24);
+
+        var workerInfoGO = Label(workersPanel, "WorkerInfoText", "Workers: 0",
             38, Color.white, TextAnchor.MiddleLeft);
-        PT(workerInfoGO, 1083, 52, -175, 500);
+        PT(workerInfoGO, 23, 52, -175, 500);
 
-        var buyWorkerGO = Btn(cv, "BuyWorkerButton", "Buy Worker\n50 blood", 34, Green);
-        PT(buyWorkerGO, 1073, 110, +232, 370);
+        var buyWorkerGO = Btn(workersPanel, "BuyWorkerButton", "Buy Worker\n50 blood", 34, Green);
+        PT(buyWorkerGO, 13, 110, +232, 370);
+
+        workersPanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
         // BARRACKS CARD  (y 1240–1405)
         // ════════════════════════════════════════════════════════════════════
-        Panel(cv, "BarracksCardBg", 1240, 165, Surface1, 24);
+        Panel(content, "BarracksCardBg", 1240, 165, Surface1, 24);
 
-        var barracksInfoGO = Label(cv, "BarracksInfoText",
+        var barracksInfoGO = Label(content, "BarracksInfoText",
             "Barracks  Lv.1  —  Max 10 soldiers",
             34, Color.white, TextAnchor.MiddleLeft);
         PT(barracksInfoGO, 1263, 52, -175, 540);
 
-        var upgradeBarracksGO = Btn(cv, "UpgradeBarracksButton", "Upgrade\n(20 wood)", 34, Brown);
+        var upgradeBarracksGO = Btn(content, "UpgradeBarracksButton", "Upgrade\n(20 wood)", 34, Brown);
         PT(upgradeBarracksGO, 1253, 110, +232, 370);
 
         // ════════════════════════════════════════════════════════════════════
         // SUGGEST BUTTON  (y 1425–1525)
         // ════════════════════════════════════════════════════════════════════
-        var suggestBtnGO = Btn(cv, "SuggestButton", "Suggest a Feature", 42, HC("1565C0"));
+        var suggestBtnGO = Btn(content, "SuggestButton", "Suggest a Feature", 42, HC("1565C0"));
         PT(suggestBtnGO, 1425, 100, 0, 680);
 
         // ════════════════════════════════════════════════════════════════════
-        // FEATURE REQUEST OVERLAY  (full-screen modal, hidden by default)
+        // FEATURE REQUEST OVERLAY  (full-screen modal on canvas, not in scroll)
         // ════════════════════════════════════════════════════════════════════
         var overlay = cv.CreateChild("FeatureRequestOverlay");
         overlay.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.86f);
@@ -202,14 +237,12 @@ public static class SceneBuilder
         cardRT.anchoredPosition = Vector2.zero;
         cardRT.sizeDelta        = new Vector2(960, 820);
 
-        // Card header
         var cardTitleGO = Label(card, "CardTitle", "Suggest a Feature", 52, Crimson);
         PT(cardTitleGO, 22, 62, 0, 900);
 
         var cardDivGO = card.CreateChild("CardDiv");
         cardDivGO.AddImage(HC("2D2D4A")); PT(cardDivGO, 88, 2, 0, 880);
 
-        // Title field
         var ftLabelGO = Label(card, "FTLabel", "Feature title  *", 28,
             TextSec, TextAnchor.MiddleLeft);
         PT(ftLabelGO, 100, 38, 4, 880);
@@ -217,7 +250,6 @@ public static class SceneBuilder
         var titleField = InputWidget(card, "FeatureTitleInput", 142, 80,
             "e.g. More enemy types…");
 
-        // Description field
         var fdLabelGO = Label(card, "FDLabel", "Description  (optional)", 28,
             TextSec, TextAnchor.MiddleLeft);
         PT(fdLabelGO, 234, 38, 4, 880);
@@ -225,15 +257,12 @@ public static class SceneBuilder
         var descField = InputWidget(card, "FeatureDescInput", 278, 230,
             "Any extra details…", multiline: true);
 
-        // Submit button
         var featureSubmitGO = Btn(card, "FeatureSubmitButton", "Submit", 46, Crimson);
         PT(featureSubmitGO, 522, 110, 0, 880);
 
-        // Status text (loading / success / error)
         var statusTextGO = Label(card, "FeatureStatusText", "", 30, HC("81C784"));
         PT(statusTextGO, 640, 44, 0, 880);
 
-        // Cancel button
         var featureCancelGO = Btn(card, "FeatureCancelButton", "Cancel", 36, HC("252440"));
         PT(featureCancelGO, 692, 86, 0, 880);
 
@@ -258,6 +287,7 @@ public static class SceneBuilder
         uim.buySoldierButton        = buySoldierGO.GetComponent<Button>();
         uim.healSelfPanel           = healPanelGO;
         uim.healSelfButton          = healBtnGO.GetComponent<Button>();
+        uim.workersPanel            = workersPanel;
         uim.workerInfoText          = workerInfoGO.GetComponent<Text>();
         uim.buyWorkerButton         = buyWorkerGO.GetComponent<Button>();
         uim.barracksInfoText        = barracksInfoGO.GetComponent<Text>();
@@ -271,14 +301,14 @@ public static class SceneBuilder
         clk.uiManager               = uim;
 
         // Wire buttons (persistent so listeners survive scene serialization)
-        UnityEventTools.AddPersistentListener(farmBtnGO.GetComponent<Button>().onClick,        clk.OnFarmBlood);
-        UnityEventTools.AddPersistentListener(buySoldierGO.GetComponent<Button>().onClick,     clk.OnBuySoldier);
-        UnityEventTools.AddPersistentListener(healBtnGO.GetComponent<Button>().onClick,        clk.OnHealSelf);
-        UnityEventTools.AddPersistentListener(buyWorkerGO.GetComponent<Button>().onClick,      clk.OnBuyWorker);
+        UnityEventTools.AddPersistentListener(farmBtnGO.GetComponent<Button>().onClick,         clk.OnFarmBlood);
+        UnityEventTools.AddPersistentListener(buySoldierGO.GetComponent<Button>().onClick,      clk.OnBuySoldier);
+        UnityEventTools.AddPersistentListener(healBtnGO.GetComponent<Button>().onClick,         clk.OnHealSelf);
+        UnityEventTools.AddPersistentListener(buyWorkerGO.GetComponent<Button>().onClick,       clk.OnBuyWorker);
         UnityEventTools.AddPersistentListener(upgradeBarracksGO.GetComponent<Button>().onClick, clk.OnUpgradeBarracks);
-        UnityEventTools.AddPersistentListener(suggestBtnGO.GetComponent<Button>().onClick,     clk.OnOpenSuggest);
-        UnityEventTools.AddPersistentListener(featureSubmitGO.GetComponent<Button>().onClick,  uim.SubmitFeature);
-        UnityEventTools.AddPersistentListener(featureCancelGO.GetComponent<Button>().onClick,  uim.HideFeaturePanel);
+        UnityEventTools.AddPersistentListener(suggestBtnGO.GetComponent<Button>().onClick,      clk.OnOpenSuggest);
+        UnityEventTools.AddPersistentListener(featureSubmitGO.GetComponent<Button>().onClick,   uim.SubmitFeature);
+        UnityEventTools.AddPersistentListener(featureCancelGO.GetComponent<Button>().onClick,   uim.HideFeaturePanel);
 
         const string scenePath = "Assets/Scenes/MainScene.unity";
         EditorSceneManager.SaveScene(scene, scenePath);

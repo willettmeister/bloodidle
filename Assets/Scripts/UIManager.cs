@@ -28,6 +28,7 @@ public class UIManager : MonoBehaviour
     public Button healSelfButton;
 
     [Header("Workers")]
+    public GameObject workersPanel;
     public Text workerInfoText;
     public Button buyWorkerButton;
 
@@ -115,6 +116,7 @@ public class UIManager : MonoBehaviour
                 && hasSoldiers
                 && gm.SoldierHP < GameManager.SoldierMaxHP;
 
+        if (workersPanel != null) workersPanel.SetActive(gm.WorkersUnlocked);
         workerInfoText.text          = $"Workers: {gm.WorkerCount}";
         buyWorkerButton.interactable = gm.Blood >= GameManager.WorkerCost;
 

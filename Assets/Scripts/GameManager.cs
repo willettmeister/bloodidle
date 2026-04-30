@@ -40,9 +40,13 @@ public class GameManager : MonoBehaviour
     public float EnemyAttack { get; private set; }  // total damage/sec to frontline
     public int EnemySpriteIndex { get; private set; }
 
+    // --- Workers unlock ---
+    public bool WorkersUnlocked { get; private set; }
+    public const double WorkersUnlockThreshold = 200.0;
+
     // --- Heal Self ---
     public bool HealSelfUnlocked { get; private set; }
-    public const double HealSelfUnlockThreshold = 50.0;
+    public const double HealSelfUnlockThreshold = 250.0;
     public const double HealSelfCost = 25.0;
     public const float HealSelfAmount = 20f;
 
@@ -149,8 +153,8 @@ public class GameManager : MonoBehaviour
     {
         Blood += amount;
         TotalBloodEarned += amount;
-        if (!HealSelfUnlocked && TotalBloodEarned >= HealSelfUnlockThreshold)
-            HealSelfUnlocked = true;
+        if (!WorkersUnlocked  && TotalBloodEarned >= WorkersUnlockThreshold)  WorkersUnlocked  = true;
+        if (!HealSelfUnlocked && TotalBloodEarned >= HealSelfUnlockThreshold) HealSelfUnlocked = true;
     }
 
     public bool BuySoldier()
@@ -209,6 +213,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("MaxSoldiers",         MaxSoldiers);
         PlayerPrefs.SetString("BarracksUpgradeCost", BarracksUpgradeCost.ToString("R", ic));
         PlayerPrefs.SetString("TotalBloodEarned",    TotalBloodEarned.ToString("R", ic));
+        PlayerPrefs.SetInt   ("WorkersUnlocked",     WorkersUnlocked  ? 1 : 0);
         PlayerPrefs.SetInt   ("HealSelfUnlocked",    HealSelfUnlocked ? 1 : 0);
         PlayerPrefs.SetFloat ("EnemyHP",             EnemyHP);
         PlayerPrefs.SetFloat ("EnemyMaxHP",          EnemyMaxHP);
@@ -232,6 +237,7 @@ public class GameManager : MonoBehaviour
         MaxSoldiers         = PlayerPrefs.GetInt   ("MaxSoldiers",         10);
         BarracksUpgradeCost = double.Parse(PlayerPrefs.GetString("BarracksUpgradeCost", "20"), ic);
         TotalBloodEarned    = double.Parse(PlayerPrefs.GetString("TotalBloodEarned",    "0"),  ic);
+        WorkersUnlocked     = PlayerPrefs.GetInt   ("WorkersUnlocked",     0) == 1;
         HealSelfUnlocked    = PlayerPrefs.GetInt   ("HealSelfUnlocked",    0) == 1;
         EnemyHP             = PlayerPrefs.GetFloat ("EnemyHP",             100f);
         EnemyMaxHP          = PlayerPrefs.GetFloat ("EnemyMaxHP",          100f);
