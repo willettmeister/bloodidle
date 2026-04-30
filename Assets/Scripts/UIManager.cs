@@ -9,6 +9,7 @@ public class UIManager : MonoBehaviour
 
     [Header("Enemy")]
     public Text waveText;
+    public Text waveSubText;
     public Text enemyNameText;
     public Image enemyHPFill;
     public Text enemyHPText;
@@ -68,6 +69,7 @@ public class UIManager : MonoBehaviour
 
         // Enemy
         waveText.text       = $"Wave {gm.Wave}";
+        if (waveSubText != null) waveSubText.text = $"Wave {gm.Wave}";
         enemyNameText.text  = gm.EnemyName;
         enemyHPFill.fillAmount = gm.EnemyMaxHP > 0 ? gm.EnemyHP / gm.EnemyMaxHP : 0f;
         enemyHPText.text    = $"{GameManager.FormatHP(gm.EnemyHP)} / {GameManager.FormatHP(gm.EnemyMaxHP)}";

@@ -6,185 +6,202 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.IO;
 
+// All layout coordinates: y=0 at TOP of canvas, increasing downward.
+// Canvas reference: 1080 × 1920 portrait.
+//
+// Section map (y in px from top):
+//   0–105   Header bar  — Wave | Blood | Wood
+// 115–440   Enemy card  — sprite + name + HP bar
+// 450–660   Army panel  — soldier count + HP bar
+// 675–895   Farm Blood  — main tap button
+// 910–1050  Action row  — Buy Soldier | Heal Self (side-by-side)
+// 1065–1230 Workers row — info left, Buy Worker right
+// 1245–1410 Barracks row— info left, Upgrade right
 public static class SceneBuilder
 {
-    static readonly Color BgDark       = new Color(0.06f, 0.03f, 0.08f);
-    static readonly Color Crimson      = new Color(0.72f, 0.05f, 0.05f);
-    static readonly Color EnemyBarBg   = new Color(0.28f, 0.05f, 0.05f);
-    static readonly Color EnemyBarFill = new Color(0.85f, 0.10f, 0.10f);
-    static readonly Color SoldierBg    = new Color(0.05f, 0.22f, 0.05f);
-    static readonly Color SoldierFill  = new Color(0.10f, 0.78f, 0.10f);
-    static readonly Color BlueBtn      = new Color(0.15f, 0.28f, 0.62f);
-    static readonly Color PurpleBtn    = new Color(0.48f, 0.15f, 0.65f);
-    static readonly Color GreenBtn     = new Color(0.15f, 0.45f, 0.15f);
-    static readonly Color BrownBtn     = new Color(0.45f, 0.28f, 0.10f);
-    static readonly Color DividerCol   = new Color(0.45f, 0.05f, 0.05f, 0.55f);
+    // ── Palette ──────────────────────────────────────────────────────────────
+    static readonly Color BgBase      = HC("0F0816");
+    static readonly Color PanelEnemy  = HC("1A0508");
+    static readonly Color PanelArmy   = HC("051408");
+    static readonly Color PanelUpg    = HC("0A0812");
+    static readonly Color HeaderBg    = HC("140A1E");
+    static readonly Color Crimson     = HC("B80C0C");
+    static readonly Color BlueBtn     = HC("1A3FA0");
+    static readonly Color PurpleBtn   = HC("6E1FA0");
+    static readonly Color GreenBtn    = HC("1A6B28");
+    static readonly Color BrownBtn    = HC("6B4018");
+    static readonly Color EnemyFgFill = HC("D81818");
+    static readonly Color EnemyFgBg   = HC("481010");
+    static readonly Color SoldFgFill  = HC("18C818");
+    static readonly Color SoldFgBg    = HC("104810");
 
+    // ── Build ────────────────────────────────────────────────────────────────
     [MenuItem("IdleClicker/Setup Scene", priority = 1)]
     public static void BuildScene()
     {
         Directory.CreateDirectory("Assets/Scenes");
-
         var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
-        // ── Camera ──────────────────────────────────────────────────────────
+        // Camera
         var camGO = new GameObject("Main Camera");
-        var cam = camGO.AddComponent<Camera>();
-        cam.clearFlags = CameraClearFlags.SolidColor;
-        cam.backgroundColor = BgDark;
-        cam.orthographic = true;
+        var cam   = camGO.AddComponent<Camera>();
+        cam.clearFlags    = CameraClearFlags.SolidColor;
+        cam.backgroundColor = BgBase;
+        cam.orthographic  = true;
         camGO.AddComponent<AudioListener>();
 
-        // ── EventSystem ─────────────────────────────────────────────────────
+        // EventSystem
         var esGO = new GameObject("EventSystem");
         esGO.AddComponent<EventSystem>();
         esGO.AddComponent<StandaloneInputModule>();
 
-        // ── Canvas ──────────────────────────────────────────────────────────
-        var canvasGO = new GameObject("Canvas");
-        var canvas = canvasGO.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        var scaler = canvasGO.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        // Canvas
+        var cv = new GameObject("Canvas");
+        cv.AddComponent<Canvas>().renderMode = RenderMode.ScreenSpaceOverlay;
+        var scaler = cv.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode       = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1080, 1920);
-        scaler.matchWidthOrHeight = 0.5f;
-        canvasGO.AddComponent<GraphicRaycaster>();
+        scaler.matchWidthOrHeight  = 0.5f;
+        cv.AddComponent<GraphicRaycaster>();
 
-        var bgGO = canvasGO.CreateChild("Background");
-        bgGO.AddImage(BgDark);
-        bgGO.Stretch();
+        // Full-screen background
+        var bg = cv.CreateChild("Background");
+        bg.AddImage(BgBase); bg.Stretch();
 
-        // ── GameManager object ───────────────────────────────────────────────
+        // GameManager
         var gmGO = new GameObject("GameManager");
         gmGO.AddComponent<GameManager>();
         var uim = gmGO.AddComponent<UIManager>();
         var clk = gmGO.AddComponent<ClickManager>();
 
         // ════════════════════════════════════════════════════════════════════
-        // TOP — Enemy info (anchored to top)
+        // HEADER BAR  (y 0–105)
         // ════════════════════════════════════════════════════════════════════
-        var waveTextGO = CreateLabel(canvasGO, "WaveText", "Wave 1", 52,
-            new Color(0.90f, 0.72f, 0.08f),
-            Top, new Vector2(0f, -65f), new Vector2(600f, 56f));
+        Panel(cv, "HeaderBg", 0, 105, HeaderBg);
 
-        // Enemy sprite image (hidden until GenerateAssets has run)
-        var enemyImgGO = canvasGO.CreateChild("EnemyImage");
+        var waveTextGO  = Label(cv, "WaveText",  "Wave 1", 44, Tone(0.88f, 0.70f, 0.10f));
+        var bloodTextGO = Label(cv, "BloodText", "Blood: 0", 46, Tone(0.95f, 0.22f, 0.22f));
+        var woodTextGO  = Label(cv, "WoodText",  "Wood: 0",  42, Tone(0.72f, 0.54f, 0.18f));
+        PT(waveTextGO,  14, 78, -335, 310); // left third
+        PT(bloodTextGO, 14, 78,    0, 360); // center
+        PT(woodTextGO,  14, 78, +335, 310); // right third
+
+        // ════════════════════════════════════════════════════════════════════
+        // ENEMY CARD  (y 115–440)
+        // ════════════════════════════════════════════════════════════════════
+        Panel(cv, "EnemyPanelBg", 115, 325, PanelEnemy);
+
+        // Enemy sprite — left side of card
+        var enemyImgGO = cv.CreateChild("EnemyImage");
         var enemyImg   = enemyImgGO.AddComponent<Image>();
-        enemyImg.color          = Color.clear;
-        enemyImg.preserveAspect = true;
-        enemyImgGO.SetRT(Top, Top, new Vector2(0f, -138f), new Vector2(96f, 96f));
+        enemyImg.color = Color.clear; enemyImg.preserveAspect = true;
+        PT(enemyImgGO, 128, 108, -415, 108);
 
-        var enemyNameGO = CreateLabel(canvasGO, "EnemyNameText", "Goblin", 72,
-            Color.white,
-            Top, new Vector2(0f, -205f), new Vector2(740f, 76f));
+        // Name + wave sub-label — right of sprite
+        var enemyNameGO = Label(cv, "EnemyNameText", "Goblin", 62, Color.white, TextAnchor.MiddleLeft);
+        PT(enemyNameGO, 130, 62, +75, 720);
 
-        var (_, enemyHPFill) = CreateHPBar(canvasGO, "EnemyHPBar",
-            EnemyBarBg, EnemyBarFill,
-            Top, new Vector2(0f, -262f), new Vector2(820f, 38f));
+        var waveSubGO = Label(cv, "WaveSubText", "Wave 1", 36,
+            Tone(0.88f, 0.70f, 0.10f), TextAnchor.MiddleLeft);
+        PT(waveSubGO, 198, 42, +75, 720);
 
-        var enemyHPTextGO = CreateLabel(canvasGO, "EnemyHPText", "100 / 100", 36,
-            new Color(0.92f, 0.58f, 0.58f),
-            Top, new Vector2(0f, -308f), new Vector2(600f, 40f));
+        // HP bar (full width with padding)
+        var (_, enemyHPFill) = HPBar(cv, "EnemyHP", 260, 34, EnemyFgBg, EnemyFgFill);
 
-        Divider(canvasGO, Top, new Vector2(0f, -338f));
+        var enemyHPTextGO = Label(cv, "EnemyHPText", "100 / 100", 34, Tone(0.90f, 0.58f, 0.58f));
+        PT(enemyHPTextGO, 300, 38, 0, 660);
 
-        // ════════════════════════════════════════════════════════════════════
-        // CENTER — Farm Blood + Blood + Wood
-        // ════════════════════════════════════════════════════════════════════
-        var farmBtnGO = CreateButton(canvasGO, "FarmBloodButton", "FARM BLOOD", 80,
-            Crimson, Mid, new Vector2(0f, 160f), new Vector2(580f, 200f));
-
-        var bloodTextGO = CreateLabel(canvasGO, "BloodText", "Blood: 0", 60,
-            new Color(0.96f, 0.22f, 0.22f),
-            Mid, new Vector2(0f, 30f), new Vector2(700f, 68f));
-
-        var woodTextGO = CreateLabel(canvasGO, "WoodText", "Wood: 0", 50,
-            new Color(0.72f, 0.52f, 0.18f),
-            Mid, new Vector2(0f, -45f), new Vector2(700f, 58f));
+        // Thin accent line at bottom of card
+        var accentGO = cv.CreateChild("EnemyAccent");
+        accentGO.AddImage(Tone(0.55f, 0.08f, 0.08f));
+        PF(accentGO, 430, 3, 40);
 
         // ════════════════════════════════════════════════════════════════════
-        // BOTTOM — Army / Workers / Barracks (all anchored to bottom)
-        //
-        // Layout from bottom up (y = distance from bottom edge):
-        //   y= 60  Upgrade Barracks button      h=90
-        //   y=165  Barracks info text            h=50
-        //   y=205  ── divider ──
-        //   y=290  Buy Worker button             h=90
-        //   y=380  Worker info text              h=50
-        //   y=420  ── divider ──
-        //   y=495  Heal Self panel               h=90
-        //   y=600  Buy Soldier button            h=100
-        //   y=705  Soldier HP row                h=82
-        //   y=795  Soldier count text            h=50
-        //   y=840  ── divider ──
+        // ARMY PANEL  (y 450–660)
         // ════════════════════════════════════════════════════════════════════
-        Divider(canvasGO, Bot, new Vector2(0f, 840f));
+        Panel(cv, "ArmyPanelBg", 450, 210, PanelArmy);
 
-        var soldierCountGO = CreateLabel(canvasGO, "SoldierCountText",
-            "No soldiers — buy one to fight!  (max 10)", 38, Color.white,
-            Bot, new Vector2(0f, 795f), new Vector2(940f, 50f));
+        var soldierCountGO = Label(cv, "SoldierCountText",
+            "No soldiers — buy one to fight!  (max 10)", 38, Color.white);
+        PF(soldierCountGO, 460, 48, 50);
 
-        // Soldier HP row — hidden when no soldiers present
-        var soldierHPRowGO = canvasGO.CreateChild("SoldierHPRow");
+        // Soldier HP row — hidden when no soldiers
+        var soldierHPRowGO = cv.CreateChild("SoldierHPRow");
         soldierHPRowGO.AddImage(Color.clear);
-        soldierHPRowGO.SetRT(Bot, Bot, new Vector2(0f, 705f), new Vector2(940f, 82f));
+        PF(soldierHPRowGO, 515, 82, 40);
 
-        var (_, soldierHPFill) = CreateHPBar(soldierHPRowGO, "SoldierHPBar",
-            SoldierBg, SoldierFill,
-            Mid, new Vector2(0f, 20f), new Vector2(820f, 36f));
+        var (_, soldierHPFill) = HPBar(soldierHPRowGO, "SoldierHPBar", 0, 36,
+            SoldFgBg, SoldFgFill, stretch: true);
 
-        var soldierHPTextGO = CreateLabel(soldierHPRowGO, "SoldierHPText",
-            "Frontline: 50 / 50 HP", 36, new Color(0.55f, 0.92f, 0.55f),
-            Mid, new Vector2(0f, -22f), new Vector2(720f, 38f));
+        var soldierHPTextGO = Label(soldierHPRowGO, "SoldierHPText",
+            "Frontline: 50 / 50 HP", 34, Tone(0.55f, 0.92f, 0.55f));
+        // Positioned within container (centre-anchored)
+        soldierHPTextGO.SetRT(new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
+            new Vector2(0, 24), new Vector2(700, 38));
 
         soldierHPRowGO.SetActive(false);
 
-        var buySoldierGO = CreateButton(canvasGO, "BuySoldierButton",
-            "Buy Soldier\n(10 blood)", 48,
-            BlueBtn, Bot, new Vector2(0f, 600f), new Vector2(560f, 100f));
+        // Thin accent line at bottom of panel
+        var accentGO2 = cv.CreateChild("ArmyAccent");
+        accentGO2.AddImage(Tone(0.10f, 0.42f, 0.10f));
+        PF(accentGO2, 650, 3, 40);
 
-        // Heal Self — hidden until 50 total blood earned
-        var healPanelGO = canvasGO.CreateChild("HealSelfPanel");
+        // ════════════════════════════════════════════════════════════════════
+        // FARM BLOOD  (y 675–895)
+        // ════════════════════════════════════════════════════════════════════
+        var farmBtnGO = Btn(cv, "FarmBloodButton", "FARM BLOOD", 82, Crimson);
+        PT(farmBtnGO, 675, 220, 0, 640);
+
+        // ════════════════════════════════════════════════════════════════════
+        // ACTION ROW  (y 910–1045)  — Buy Soldier | Heal Self side-by-side
+        // ════════════════════════════════════════════════════════════════════
+        var buySoldierGO = Btn(cv, "BuySoldierButton", "Buy Soldier\n(10 blood)", 42, BlueBtn);
+        PT(buySoldierGO, 910, 135, -267, 506);
+
+        var healPanelGO = cv.CreateChild("HealSelfPanel");
         healPanelGO.AddImage(Color.clear);
-        healPanelGO.SetRT(Bot, Bot, new Vector2(0f, 495f), new Vector2(560f, 90f));
+        PT(healPanelGO, 910, 135, +267, 506);
 
-        var healBtnGO = CreateButton(healPanelGO, "HealSelfButton",
-            "Heal Self (+20 HP)\n(25 blood)", 42,
-            PurpleBtn, Mid, Vector2.zero, new Vector2(560f, 90f));
-
+        var healBtnGO = Btn(healPanelGO, "HealSelfButton",
+            "Heal Self (+20 HP)\n(25 blood)", 42, PurpleBtn);
+        healBtnGO.Stretch();
         healPanelGO.SetActive(false);
 
-        // ── Worker section ───────────────────────────────────────────────────
-        Divider(canvasGO, Bot, new Vector2(0f, 420f));
+        // ════════════════════════════════════════════════════════════════════
+        // WORKERS ROW  (y 1065–1230)
+        // ════════════════════════════════════════════════════════════════════
+        Panel(cv, "WorkersBg", 1065, 165, PanelUpg);
 
-        var workerInfoGO = CreateLabel(canvasGO, "WorkerInfoText", "Workers: 0", 42,
-            new Color(0.75f, 0.85f, 0.60f),
-            Bot, new Vector2(0f, 380f), new Vector2(700f, 50f));
+        var workerInfoGO = Label(cv, "WorkerInfoText", "Workers: 0",
+            40, Tone(0.74f, 0.86f, 0.58f), TextAnchor.MiddleLeft);
+        PT(workerInfoGO, 1090, 50, -175, 520);
 
-        var buyWorkerGO = CreateButton(canvasGO, "BuyWorkerButton",
-            "Buy Worker — Farm Forest\n(50 blood)", 42,
-            GreenBtn, Bot, new Vector2(0f, 290f), new Vector2(620f, 90f));
-
-        // ── Barracks section ─────────────────────────────────────────────────
-        Divider(canvasGO, Bot, new Vector2(0f, 205f));
-
-        var barracksInfoGO = CreateLabel(canvasGO, "BarracksInfoText",
-            "Barracks  Lv.1  —  Max 10 soldiers", 38,
-            new Color(0.80f, 0.65f, 0.35f),
-            Bot, new Vector2(0f, 165f), new Vector2(820f, 50f));
-
-        var upgradeBarracksGO = CreateButton(canvasGO, "UpgradeBarracksButton",
-            "Upgrade Barracks\n(20 wood)", 44,
-            BrownBtn, Bot, new Vector2(0f, 60f), new Vector2(600f, 90f));
+        var buyWorkerGO = Btn(cv, "BuyWorkerButton",
+            "Buy Worker\n(50 blood)", 38, GreenBtn);
+        PT(buyWorkerGO, 1075, 115, +225, 380);
 
         // ════════════════════════════════════════════════════════════════════
-        // Wire UIManager references
+        // BARRACKS ROW  (y 1245–1410)
         // ════════════════════════════════════════════════════════════════════
-        uim.enemyImage              = enemyImg;
-        uim.enemySprites            = LoadEnemySprites();
+        Panel(cv, "BarracksBg", 1245, 165, PanelUpg);
+
+        var barracksInfoGO = Label(cv, "BarracksInfoText",
+            "Barracks  Lv.1  —  Max 10 soldiers",
+            36, Tone(0.80f, 0.66f, 0.34f), TextAnchor.MiddleLeft);
+        PT(barracksInfoGO, 1268, 50, -175, 560);
+
+        var upgradeBarracksGO = Btn(cv, "UpgradeBarracksButton",
+            "Upgrade Barracks\n(20 wood)", 38, BrownBtn);
+        PT(upgradeBarracksGO, 1255, 115, +225, 380);
+
+        // ════════════════════════════════════════════════════════════════════
+        // Wire UIManager
+        // ════════════════════════════════════════════════════════════════════
         uim.bloodText               = bloodTextGO.GetComponent<Text>();
         uim.woodText                = woodTextGO.GetComponent<Text>();
         uim.waveText                = waveTextGO.GetComponent<Text>();
+        uim.enemyImage              = enemyImg;
+        uim.enemySprites            = LoadEnemySprites();
         uim.enemyNameText           = enemyNameGO.GetComponent<Text>();
         uim.enemyHPFill             = enemyHPFill;
         uim.enemyHPText             = enemyHPTextGO.GetComponent<Text>();
@@ -201,14 +218,23 @@ public static class SceneBuilder
         uim.upgradeBarracksButton   = upgradeBarracksGO.GetComponent<Button>();
         uim.barracksUpgradeCostText = upgradeBarracksGO.GetComponentInChildren<Text>();
 
-        // Wire button listeners
+        // Wire ClickManager
         farmBtnGO.GetComponent<Button>().onClick.AddListener(clk.OnFarmBlood);
         buySoldierGO.GetComponent<Button>().onClick.AddListener(clk.OnBuySoldier);
         healBtnGO.GetComponent<Button>().onClick.AddListener(clk.OnHealSelf);
         buyWorkerGO.GetComponent<Button>().onClick.AddListener(clk.OnBuyWorker);
         upgradeBarracksGO.GetComponent<Button>().onClick.AddListener(clk.OnUpgradeBarracks);
 
-        // ── Save ─────────────────────────────────────────────────────────────
+        // ── Also hide the duplicate wave display — UIManager drives waveText ──
+        // waveSubGO mirrors waveText; wire it too so it stays in sync
+        // We do this by assigning waveSubGO to the same field via a second Text ref
+        // (UIManager only has one waveText; update the sub-label via the same code)
+        // Store it as waveText's companion — simplest: overwrite enemy name's Text
+        // Actually: keep waveSubGO as a second label; set it in Refresh().
+        // Wire it to a spare exposed field we'll add:
+        uim.waveSubText = waveSubGO.GetComponent<Text>();
+
+        // Save
         const string scenePath = "Assets/Scenes/MainScene.unity";
         EditorSceneManager.SaveScene(scene, scenePath);
         EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(scenePath, true) };
@@ -216,33 +242,56 @@ public static class SceneBuilder
         Debug.Log("[IdleClicker] Scene built: " + scenePath);
     }
 
-    // ── Anchor presets ───────────────────────────────────────────────────────
-    static readonly Vector2 Top = new Vector2(0.5f, 1.0f);
-    static readonly Vector2 Mid = new Vector2(0.5f, 0.5f);
-    static readonly Vector2 Bot = new Vector2(0.5f, 0.0f);
+    // ── Layout helpers ────────────────────────────────────────────────────────
 
-    // ── Helpers ──────────────────────────────────────────────────────────────
-    static GameObject CreateLabel(GameObject parent, string name, string text,
-        int fontSize, Color color, Vector2 anchor, Vector2 pos, Vector2 size)
+    // Place element: center-horizontal anchor, y measured from TOP of canvas.
+    static void PT(GameObject go, float topY, float h, float x, float w)
+    {
+        var rt = go.GetComponent<RectTransform>() ?? go.AddComponent<RectTransform>();
+        rt.anchorMin        = new Vector2(0.5f, 1f);
+        rt.anchorMax        = new Vector2(0.5f, 1f);
+        rt.anchoredPosition = new Vector2(x, -(topY + h * 0.5f));
+        rt.sizeDelta        = new Vector2(w, h);
+    }
+
+    // Full-width stretch, y from TOP, optional side padding.
+    static void PF(GameObject go, float topY, float h, float sidePad = 0)
+    {
+        var rt = go.GetComponent<RectTransform>() ?? go.AddComponent<RectTransform>();
+        rt.anchorMin        = new Vector2(0f, 1f);
+        rt.anchorMax        = new Vector2(1f, 1f);
+        rt.anchoredPosition = new Vector2(0, -(topY + h * 0.5f));
+        rt.sizeDelta        = new Vector2(-sidePad * 2, h);
+    }
+
+    // ── Factory helpers ───────────────────────────────────────────────────────
+
+    static void Panel(GameObject cv, string name, float topY, float h, Color bg)
+    {
+        var go = cv.CreateChild(name);
+        go.AddImage(bg);
+        PF(go, topY, h);
+    }
+
+    static GameObject Label(GameObject parent, string name, string text,
+        int fontSize, Color color, TextAnchor align = TextAnchor.MiddleCenter)
     {
         var go = parent.CreateChild(name);
         var t  = go.AddComponent<Text>();
         t.text      = text;
         t.fontSize  = fontSize;
         t.color     = color;
-        t.alignment = TextAnchor.MiddleCenter;
+        t.alignment = align;
         t.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        go.SetRT(anchor, anchor, pos, size);
         return go;
     }
 
-    static GameObject CreateButton(GameObject parent, string name, string label,
-        int fontSize, Color bgColor, Vector2 anchor, Vector2 pos, Vector2 size)
+    static GameObject Btn(GameObject parent, string name, string label,
+        int fontSize, Color bgColor)
     {
         var go = parent.CreateChild(name);
         go.AddComponent<Image>().color = bgColor;
         go.AddComponent<Button>();
-        go.SetRT(anchor, anchor, pos, size);
 
         var textGO = go.CreateChild("Text");
         var t      = textGO.AddComponent<Text>();
@@ -255,12 +304,14 @@ public static class SceneBuilder
         return go;
     }
 
-    static (GameObject bg, Image fill) CreateHPBar(GameObject parent, string name,
-        Color bgColor, Color fillColor, Vector2 anchor, Vector2 pos, Vector2 size)
+    // Returns (container, fillImage). If stretch=true, fills parent width.
+    static (GameObject bg, Image fill) HPBar(GameObject parent, string name,
+        float topY, float h, Color bgColor, Color fillColor, bool stretch = false)
     {
-        var bg = parent.CreateChild(name);
+        var bg = parent.CreateChild(name + "Bg");
         bg.AddComponent<Image>().color = bgColor;
-        bg.SetRT(anchor, anchor, pos, size);
+        if (stretch) PF(bg, topY, h);
+        else         PF(bg, topY, h, 40);
 
         var fillGO  = bg.CreateChild("Fill");
         var fillImg = fillGO.AddComponent<Image>();
@@ -278,19 +329,20 @@ public static class SceneBuilder
                            "demon_knight", "vampire_lord", "ancient_dragon" };
         var list = new System.Collections.Generic.List<Sprite>();
         foreach (var f in files)
-        {
-            var s = AssetDatabase.LoadAssetAtPath<Sprite>($"Assets/Resources/Sprites/{f}.png");
-            list.Add(s); // null when GenerateAssets hasn't run yet — UIManager handles gracefully
-        }
+            list.Add(AssetDatabase.LoadAssetAtPath<Sprite>(
+                $"Assets/Resources/Sprites/{f}.png"));
         return list.ToArray();
     }
 
-    static void Divider(GameObject parent, Vector2 anchor, Vector2 pos)
+    // ── Color utilities ───────────────────────────────────────────────────────
+
+    static Color HC(string hex)
     {
-        var go = parent.CreateChild("Divider");
-        go.AddComponent<Image>().color = DividerCol;
-        go.SetRT(anchor, anchor, pos, new Vector2(940f, 2f));
+        ColorUtility.TryParseHtmlString("#" + hex, out Color c);
+        return c;
     }
+
+    static Color Tone(float r, float g, float b) => new Color(r, g, b);
 }
 
 // ── Extension helpers ────────────────────────────────────────────────────────
