@@ -62,6 +62,7 @@ public class UIManager : MonoBehaviour
     void Refresh()
     {
         var gm = GameManager.Instance;
+        if (gm == null || bloodText == null) return;
 
         bloodText.text = $"Blood: {GameManager.FormatNumber(gm.Blood)}";
         woodText.text  = gm.WoodPerSecond > 0
