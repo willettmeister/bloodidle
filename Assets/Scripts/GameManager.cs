@@ -119,6 +119,7 @@ public class GameManager : MonoBehaviour
     public void FarmBlood()
     {
         AddBlood(BloodPerClick);
+        Debug.Log($"[GameManager] FarmBlood called — Blood={Blood}, subscribers={OnStateChanged?.GetInvocationList().Length ?? 0}");
         OnStateChanged?.Invoke();
     }
 

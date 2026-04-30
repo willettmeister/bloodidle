@@ -73,6 +73,7 @@ public class UIManager : MonoBehaviour
             return;
         }
 
+        Debug.Log($"[UIManager] Refresh called — Blood={gm.Blood}");
         bloodText.text = $"Blood: {GameManager.FormatNumber(gm.Blood)}";
         woodText.text  = gm.WoodPerSecond > 0
             ? $"Wood: {GameManager.FormatNumber(gm.Wood)}  +{gm.WoodPerSecond:F1}/s"
