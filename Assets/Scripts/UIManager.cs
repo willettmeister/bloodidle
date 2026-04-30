@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -35,6 +36,11 @@ public class UIManager : MonoBehaviour
     public Text barracksInfoText;
     public Button upgradeBarracksButton;
     public Text barracksUpgradeCostText; // Text component inside the upgrade button
+
+    [Header("Feature Request")]
+    public GameObject featureRequestPanel;
+    public InputField featureTitleField;
+    public InputField featureDescField;
 
     void Start()
     {
@@ -105,5 +111,32 @@ public class UIManager : MonoBehaviour
         barracksInfoText.text        = $"Barracks  Lv.{gm.BarracksLevel}  —  Max {gm.MaxSoldiers} soldiers";
         barracksUpgradeCostText.text = $"Upgrade Barracks\n({GameManager.FormatNumber(gm.BarracksUpgradeCost)} wood)";
         upgradeBarracksButton.interactable = gm.Wood >= gm.BarracksUpgradeCost;
+    }
+
+    // ── Feature Request ───────────────────────────────────────────────────────
+
+    const string k_IssueUrl = "https://github.com/willettmeister/bloodidle/issues/new";
+
+    public void ShowFeaturePanel() => featureRequestPanel.SetActive(true);
+
+    public void HideFeaturePanel()
+    {
+        featureRequestPanel.SetActive(false);
+        featureTitleField.text = "";
+        featureDescField.text  = "";
+    }
+
+    public void SubmitFeature()
+    {
+        string title = featureTitleField.text.Trim();
+        if (title.Length == 0) return;
+        string rawBody = featureDescField.text.Trim();
+        string body    = "**Community Request**\n\n" +
+                         (rawBody.Length > 0 ? rawBody : "_No description provided._");
+        string url = k_IssueUrl
+            + "?title=" + Uri.EscapeDataString(title)
+            + "&body="  + Uri.EscapeDataString(body);
+        Application.OpenURL(url);
+        HideFeaturePanel();
     }
 }

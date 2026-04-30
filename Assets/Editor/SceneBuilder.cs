@@ -17,6 +17,8 @@ using System.IO;
 // 910–1050  Action row  — Buy Soldier | Heal Self (side-by-side)
 // 1065–1230 Workers row — info left, Buy Worker right
 // 1245–1410 Barracks row— info left, Upgrade right
+// 1425–1545 Suggest     — community feature-request button
+// overlay   FeatureRequestOverlay — full-screen modal, hidden by default
 public static class SceneBuilder
 {
     // ── Palette ──────────────────────────────────────────────────────────────
@@ -195,6 +197,61 @@ public static class SceneBuilder
         PT(upgradeBarracksGO, 1255, 115, +225, 380);
 
         // ════════════════════════════════════════════════════════════════════
+        // SUGGEST BUTTON  (y 1425–1545)
+        // ════════════════════════════════════════════════════════════════════
+        var suggestBtnGO = Btn(cv, "SuggestButton", "Suggest a Feature", 44, HC("1A3A6E"));
+        PT(suggestBtnGO, 1425, 100, 0, 640);
+
+        // ════════════════════════════════════════════════════════════════════
+        // FEATURE REQUEST OVERLAY  (full-screen modal, hidden by default)
+        // ════════════════════════════════════════════════════════════════════
+        var overlay = cv.CreateChild("FeatureRequestOverlay");
+        overlay.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.82f);
+        overlay.Stretch();
+
+        // Card
+        var card = overlay.CreateChild("Card");
+        card.AddComponent<Image>().color = HC("120518");
+        var cardRT = card.GetComponent<RectTransform>();
+        cardRT.anchorMin        = new Vector2(0.5f, 0.5f);
+        cardRT.anchorMax        = new Vector2(0.5f, 0.5f);
+        cardRT.anchoredPosition = Vector2.zero;
+        cardRT.sizeDelta        = new Vector2(960, 930);
+
+        // Card header
+        var cardTitleGO = Label(card, "CardTitle", "Suggest a Feature", 54, Crimson);
+        PT(cardTitleGO, 20, 64, 0, 900);
+
+        var dividerGO = card.CreateChild("Divider");
+        dividerGO.AddComponent<Image>().color = HC("3A1020");
+        PT(dividerGO, 88, 3, 0, 880);
+
+        // Title field
+        var ftLabelGO = Label(card, "FTLabel", "Feature title  *", 30,
+            new Color(0.70f, 0.58f, 0.58f), TextAnchor.MiddleLeft);
+        PT(ftLabelGO, 100, 40, 4, 880);
+
+        var titleField = InputWidget(card, "FeatureTitleInput", 144, 80,
+            "e.g. More enemy types...");
+
+        // Description field
+        var fdLabelGO = Label(card, "FDLabel", "Description  (optional)", 30,
+            new Color(0.70f, 0.58f, 0.58f), TextAnchor.MiddleLeft);
+        PT(fdLabelGO, 236, 40, 4, 880);
+
+        var descField = InputWidget(card, "FeatureDescInput", 280, 230,
+            "Any extra details...", multiline: true);
+
+        // Submit / Cancel
+        var featureSubmitGO = Btn(card, "FeatureSubmitButton", "Open GitHub  →  Submit", 42, Crimson);
+        PT(featureSubmitGO, 524, 110, 0, 880);
+
+        var featureCancelGO = Btn(card, "FeatureCancelButton", "Cancel", 38, HC("2A2A3E"));
+        PT(featureCancelGO, 646, 90, 0, 880);
+
+        overlay.SetActive(false);
+
+        // ════════════════════════════════════════════════════════════════════
         // Wire UIManager
         // ════════════════════════════════════════════════════════════════════
         uim.bloodText               = bloodTextGO.GetComponent<Text>();
@@ -224,15 +281,17 @@ public static class SceneBuilder
         healBtnGO.GetComponent<Button>().onClick.AddListener(clk.OnHealSelf);
         buyWorkerGO.GetComponent<Button>().onClick.AddListener(clk.OnBuyWorker);
         upgradeBarracksGO.GetComponent<Button>().onClick.AddListener(clk.OnUpgradeBarracks);
+        suggestBtnGO.GetComponent<Button>().onClick.AddListener(clk.OnOpenSuggest);
+        featureSubmitGO.GetComponent<Button>().onClick.AddListener(uim.SubmitFeature);
+        featureCancelGO.GetComponent<Button>().onClick.AddListener(uim.HideFeaturePanel);
 
-        // ── Also hide the duplicate wave display — UIManager drives waveText ──
-        // waveSubGO mirrors waveText; wire it too so it stays in sync
-        // We do this by assigning waveSubGO to the same field via a second Text ref
-        // (UIManager only has one waveText; update the sub-label via the same code)
-        // Store it as waveText's companion — simplest: overwrite enemy name's Text
-        // Actually: keep waveSubGO as a second label; set it in Refresh().
-        // Wire it to a spare exposed field we'll add:
         uim.waveSubText = waveSubGO.GetComponent<Text>();
+
+        // Feature request
+        uim.featureRequestPanel = overlay;
+        uim.featureTitleField   = titleField;
+        uim.featureDescField    = descField;
+        clk.uiManager           = uim;
 
         // Save
         const string scenePath = "Assets/Scenes/MainScene.unity";
@@ -321,6 +380,48 @@ public static class SceneBuilder
         fillImg.fillAmount = 1f;
         fillGO.Stretch();
         return (bg, fillImg);
+    }
+
+    // Creates a UGUI InputField inside parent using PT-style top-down coords.
+    static InputField InputWidget(GameObject parent, string name,
+        float topY, float h, string placeholder, bool multiline = false)
+    {
+        var go = parent.CreateChild(name);
+        var bg = go.AddComponent<Image>();
+        bg.color = HC("1A0610");
+        PT(go, topY, h, 0, 880);
+
+        var phGO = go.CreateChild("Placeholder");
+        phGO.Stretch();
+        var phRT = phGO.GetComponent<RectTransform>();
+        phRT.offsetMin = new Vector2(14, 6);
+        phRT.offsetMax = new Vector2(-14, -6);
+        var ph = phGO.AddComponent<Text>();
+        ph.text      = placeholder;
+        ph.color     = new Color(0.50f, 0.32f, 0.32f);
+        ph.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        ph.fontSize  = 30;
+        ph.alignment = multiline ? TextAnchor.UpperLeft : TextAnchor.MiddleLeft;
+
+        var txGO = go.CreateChild("Text");
+        txGO.Stretch();
+        var txRT = txGO.GetComponent<RectTransform>();
+        txRT.offsetMin = new Vector2(14, 6);
+        txRT.offsetMax = new Vector2(-14, -6);
+        var tx = txGO.AddComponent<Text>();
+        tx.color     = new Color(0.92f, 0.78f, 0.78f);
+        tx.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        tx.fontSize  = 30;
+        tx.alignment = multiline ? TextAnchor.UpperLeft : TextAnchor.MiddleLeft;
+
+        var field = go.AddComponent<InputField>();
+        field.targetGraphic = bg;
+        field.textComponent = tx;
+        field.placeholder   = ph;
+        field.lineType      = multiline
+            ? InputField.LineType.MultiLineNewline
+            : InputField.LineType.SingleLine;
+        return field;
     }
 
     static Sprite[] LoadEnemySprites()
