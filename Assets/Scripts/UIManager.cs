@@ -81,7 +81,7 @@ public class UIManager : MonoBehaviour
 
         if (enemyImage != null && enemySprites != null && enemySprites.Length > 0)
         {
-            int idx = Mathf.Min(gm.Wave - 1, enemySprites.Length - 1);
+            int idx = Mathf.Min(gm.EnemySpriteIndex, enemySprites.Length - 1);
             var spr = idx >= 0 ? enemySprites[idx] : null;
             enemyImage.sprite = spr;
             enemyImage.color  = spr != null ? Color.white : Color.clear;
