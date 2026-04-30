@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.SceneManagement;
+using UnityEditor.Events;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.IO;
@@ -269,15 +270,15 @@ public static class SceneBuilder
         uim.featureSubmitButton     = featureSubmitGO.GetComponent<Button>();
         clk.uiManager               = uim;
 
-        // Wire buttons
-        farmBtnGO.GetComponent<Button>().onClick.AddListener(clk.OnFarmBlood);
-        buySoldierGO.GetComponent<Button>().onClick.AddListener(clk.OnBuySoldier);
-        healBtnGO.GetComponent<Button>().onClick.AddListener(clk.OnHealSelf);
-        buyWorkerGO.GetComponent<Button>().onClick.AddListener(clk.OnBuyWorker);
-        upgradeBarracksGO.GetComponent<Button>().onClick.AddListener(clk.OnUpgradeBarracks);
-        suggestBtnGO.GetComponent<Button>().onClick.AddListener(clk.OnOpenSuggest);
-        featureSubmitGO.GetComponent<Button>().onClick.AddListener(uim.SubmitFeature);
-        featureCancelGO.GetComponent<Button>().onClick.AddListener(uim.HideFeaturePanel);
+        // Wire buttons (persistent so listeners survive scene serialization)
+        UnityEventTools.AddPersistentListener(farmBtnGO.GetComponent<Button>().onClick,        clk.OnFarmBlood);
+        UnityEventTools.AddPersistentListener(buySoldierGO.GetComponent<Button>().onClick,     clk.OnBuySoldier);
+        UnityEventTools.AddPersistentListener(healBtnGO.GetComponent<Button>().onClick,        clk.OnHealSelf);
+        UnityEventTools.AddPersistentListener(buyWorkerGO.GetComponent<Button>().onClick,      clk.OnBuyWorker);
+        UnityEventTools.AddPersistentListener(upgradeBarracksGO.GetComponent<Button>().onClick, clk.OnUpgradeBarracks);
+        UnityEventTools.AddPersistentListener(suggestBtnGO.GetComponent<Button>().onClick,     clk.OnOpenSuggest);
+        UnityEventTools.AddPersistentListener(featureSubmitGO.GetComponent<Button>().onClick,  uim.SubmitFeature);
+        UnityEventTools.AddPersistentListener(featureCancelGO.GetComponent<Button>().onClick,  uim.HideFeaturePanel);
 
         const string scenePath = "Assets/Scenes/MainScene.unity";
         EditorSceneManager.SaveScene(scene, scenePath);
