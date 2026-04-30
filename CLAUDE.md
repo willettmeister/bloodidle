@@ -13,7 +13,7 @@ Dark blood/combat theme. Portrait-only (1080×1920 reference resolution).
 2. Unity resolves packages automatically on first open.
 3. **IdleClicker → Generate Assets** — creates `rounded_rect.png` and all enemy sprites.
 4. **IdleClicker → Setup Scene** — generates `Assets/Scenes/MainScene.unity` and wires all component references. Run Generate Assets first so panels/buttons pick up the rounded sprite.
-5. Replace `k_GhToken` in `UIManager.cs` with a GitHub Fine-grained PAT (Issues: Write, bloodidle repo only). Generate at `github.com/settings/tokens → Fine-grained tokens`.
+5. Copy `Assets/Resources/bloodidle_secrets.txt.sample` → `bloodidle_secrets.txt` (same folder, gitignored) and paste your GitHub Fine-grained PAT. Generate at `github.com/settings/tokens → Fine-grained tokens` with Issues: Write on the bloodidle repo.
 6. Switch platform: **File → Build Settings → Android → Switch Platform**.
 7. Build: **File → Build Settings → Build**.
 

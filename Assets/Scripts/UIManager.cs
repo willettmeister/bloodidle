@@ -119,10 +119,15 @@ public class UIManager : MonoBehaviour
 
     // ── Feature Request ───────────────────────────────────────────────────────
 
-    // Create a Fine-grained PAT at github.com/settings/tokens with
-    // "Issues: Write" permission scoped to the bloodidle repo, then paste it here.
-    const string k_GhToken = "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";
-    const string k_GhApi   = "https://api.github.com/repos/willettmeister/bloodidle/issues";
+    // Token is loaded from Assets/Resources/bloodidle_secrets.txt (gitignored).
+    // Copy bloodidle_secrets.txt.sample → bloodidle_secrets.txt and paste your PAT.
+    const string k_GhApi = "https://api.github.com/repos/willettmeister/bloodidle/issues";
+
+    static string GetToken()
+    {
+        var asset = Resources.Load<TextAsset>("bloodidle_secrets");
+        return asset != null ? asset.text.Trim() : string.Empty;
+    }
 
     public void ShowFeaturePanel()
     {
@@ -149,6 +154,14 @@ public class UIManager : MonoBehaviour
 
     IEnumerator PostIssue(string title, string rawBody)
     {
+        string token = GetToken();
+        if (string.IsNullOrEmpty(token))
+        {
+            featureStatusText.text           = "Submissions not configured.";
+            featureSubmitButton.interactable = true;
+            yield break;
+        }
+
         featureSubmitButton.interactable = false;
         featureStatusText.text           = "Submitting…";
 
@@ -160,7 +173,7 @@ public class UIManager : MonoBehaviour
         var req = new UnityWebRequest(k_GhApi, "POST");
         req.uploadHandler   = new UploadHandlerRaw(bytes);
         req.downloadHandler = new DownloadHandlerBuffer();
-        req.SetRequestHeader("Authorization",        "Bearer " + k_GhToken);
+        req.SetRequestHeader("Authorization",        "Bearer " + token);
         req.SetRequestHeader("Accept",               "application/vnd.github+json");
         req.SetRequestHeader("Content-Type",         "application/json");
         req.SetRequestHeader("X-GitHub-Api-Version", "2022-11-28");
