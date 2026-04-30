@@ -62,7 +62,11 @@ public class UIManager : MonoBehaviour
     void Refresh()
     {
         var gm = GameManager.Instance;
-        if (gm == null || bloodText == null) return;
+        if (gm == null || bloodText == null)
+        {
+            Debug.LogWarning("[UIManager] UI references not wired. Run IdleClicker → Setup Scene.");
+            return;
+        }
 
         bloodText.text = $"Blood: {GameManager.FormatNumber(gm.Blood)}";
         woodText.text  = gm.WoodPerSecond > 0
