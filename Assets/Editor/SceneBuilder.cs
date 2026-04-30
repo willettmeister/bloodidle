@@ -383,11 +383,11 @@ public static class SceneBuilder
         PT(go, topY, h, 0, 880);
 
         var phGO = go.CreateChild("Placeholder");
+        var ph = phGO.AddComponent<Text>();
         phGO.Stretch();
         var phRT = phGO.GetComponent<RectTransform>();
         phRT.offsetMin = new Vector2(14, 6);
         phRT.offsetMax = new Vector2(-14, -6);
-        var ph = phGO.AddComponent<Text>();
         ph.text      = placeholder;
         ph.color     = new Color(0.45f, 0.38f, 0.52f);
         ph.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
@@ -395,11 +395,11 @@ public static class SceneBuilder
         ph.alignment = multiline ? TextAnchor.UpperLeft : TextAnchor.MiddleLeft;
 
         var txGO = go.CreateChild("Text");
+        var tx = txGO.AddComponent<Text>();
         txGO.Stretch();
         var txRT = txGO.GetComponent<RectTransform>();
         txRT.offsetMin = new Vector2(14, 6);
         txRT.offsetMax = new Vector2(-14, -6);
-        var tx = txGO.AddComponent<Text>();
         tx.color     = Color.white;
         tx.font      = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
         tx.fontSize  = 30;
