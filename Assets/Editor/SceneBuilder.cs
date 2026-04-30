@@ -194,8 +194,8 @@ public static class SceneBuilder
         overlay.Stretch();
 
         var card   = overlay.CreateChild("Card");
-        var cardRT = card.GetComponent<RectTransform>() ?? card.AddComponent<RectTransform>();
         RImg(card, Surface1);
+        var cardRT = card.GetComponent<RectTransform>();
         cardRT.anchorMin        = new Vector2(0.5f, 0.5f);
         cardRT.anchorMax        = new Vector2(0.5f, 0.5f);
         cardRT.anchoredPosition = Vector2.zero;
