@@ -24,5 +24,9 @@ ExportedObj/
 *.opendb
 *.VC.db
 crashlytics-build.properties
+# GitHub PAT for feature-request submission — create from bloodidle_secrets.txt.sample
+Assets/Resources/bloodidle_secrets.txt
+Assets/Resources/bloodidle_secrets.txt.meta
+
 Assets/AssetStoreTools*
 Assets/Plugins/Editor/JetBrains*
