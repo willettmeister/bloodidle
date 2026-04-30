@@ -46,6 +46,12 @@ public class GameManager : MonoBehaviour
 
     public event Action OnStateChanged;
 
+#if UNITY_INCLUDE_TESTS
+    public static void ResetForTest() => Instance = null;
+    public void SetWoodForTest(double amount) => Wood = amount;
+    public void SetSoldierHPForTest(float hp) => SoldierHP = hp;
+#endif
+
     private static readonly string[] EnemyNames =
     {
         "Goblin", "Orc Warrior", "Cave Troll", "Stone Ogre",
