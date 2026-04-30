@@ -11,9 +11,11 @@ Dark blood/combat theme. Portrait-only (1080×1920 reference resolution).
 
 1. Open Unity Hub → **Add project from disk** → select this folder.
 2. Unity resolves packages automatically on first open.
-3. In the Unity Editor menu: **IdleClicker → Setup Scene** — generates `Assets/Scenes/MainScene.unity` and wires all component references.
-4. Switch platform: **File → Build Settings → Android → Switch Platform**.
-5. Build: **File → Build Settings → Build**.
+3. **IdleClicker → Generate Assets** — creates `rounded_rect.png` and all enemy sprites.
+4. **IdleClicker → Setup Scene** — generates `Assets/Scenes/MainScene.unity` and wires all component references. Run Generate Assets first so panels/buttons pick up the rounded sprite.
+5. Replace `k_GhToken` in `UIManager.cs` with a GitHub Fine-grained PAT (Issues: Write, bloodidle repo only). Generate at `github.com/settings/tokens → Fine-grained tokens`.
+6. Switch platform: **File → Build Settings → Android → Switch Platform**.
+7. Build: **File → Build Settings → Build**.
 
 ## CLI build (headless)
 

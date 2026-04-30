@@ -16,6 +16,7 @@ public static class AssetGenerator
     {
         Directory.CreateDirectory(OutPath);
 
+        RoundedRect();
         Background();
         Buttons();
         Hero();
@@ -29,6 +30,46 @@ public static class AssetGenerator
 
         AssetDatabase.Refresh();
         Debug.Log("[AssetGenerator] Done. Sprites in " + OutPath);
+    }
+
+    // ── Rounded rect (9-slice base for all panels/buttons) ───────────────────
+    static void RoundedRect()
+    {
+        const int S = 48, R = 12;
+        var px = new Color32[S * S];
+        var white = C(255, 255, 255, 255);
+        var clear = C(0, 0, 0, 0);
+
+        for (int y = 0; y < S; y++)
+        for (int x = 0; x < S; x++)
+        {
+            bool inCornerX = x < R || x >= S - R;
+            bool inCornerY = y < R || y >= S - R;
+            if (inCornerX && inCornerY)
+            {
+                int cx = x < R ? R : S - R - 1;
+                int cy = y < R ? R : S - R - 1;
+                float dx = x - cx, dy = y - cy;
+                Set(px, S, x, y, dx * dx + dy * dy <= (float)R * R ? white : clear);
+            }
+            else
+            {
+                Set(px, S, x, y, white);
+            }
+        }
+
+        var tex  = MakeTex(S, S, px);
+        var path = OutPath + "rounded_rect.png";
+        File.WriteAllBytes(path, tex.EncodeToPNG());
+        AssetDatabase.ImportAsset(path);
+        var imp = (TextureImporter)AssetImporter.GetAtPath(path);
+        imp.textureType         = TextureImporterType.Sprite;
+        imp.filterMode          = FilterMode.Bilinear;
+        imp.mipmapEnabled       = false;
+        imp.alphaIsTransparency = true;
+        imp.spriteBorder        = new Vector4(R, R, R, R);
+        imp.spriteImportMode    = SpriteImportMode.Single;
+        imp.SaveAndReimport();
     }
 
     // ── Background ───────────────────────────────────────────────────────────
