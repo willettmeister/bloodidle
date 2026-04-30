@@ -49,6 +49,11 @@ public class UIManager : MonoBehaviour
 
     void Start()
     {
+        if (GameManager.Instance == null)
+        {
+            Debug.LogError("[UIManager] GameManager.Instance is null in Start() — subscription failed. Check scene setup.");
+            return;
+        }
         GameManager.Instance.OnStateChanged += Refresh;
         Refresh();
     }
