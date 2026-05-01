@@ -69,7 +69,7 @@ public static class SceneBuilder
         var scaler = cv.AddComponent<CanvasScaler>();
         scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1080, 1920);
-        scaler.matchWidthOrHeight  = 0f;
+        scaler.matchWidthOrHeight  = 0.5f;
         cv.AddComponent<GraphicRaycaster>();
 
         // Background fill — full-screen, outside scroll
@@ -88,12 +88,13 @@ public static class SceneBuilder
         scrollGO.Stretch();
 
         var viewportGO = scrollGO.CreateChild("Viewport");
-        viewportGO.AddComponent<Image>().color = Color.clear;
-        viewportGO.AddComponent<Mask>().showMaskGraphic = false;
+        viewportGO.AddComponent<RectMask2D>();  // reliable clip; doesn't need a visible Image
         viewportGO.Stretch();
 
         var content   = viewportGO.CreateChild("Content");
-        content.AddComponent<Image>().color = Color.clear;
+        var contentImg = content.AddComponent<Image>();
+        contentImg.color = Color.clear;
+        contentImg.raycastTarget = false;  // don't block drag-to-scroll
         var contentRT = content.GetComponent<RectTransform>();
         contentRT.anchorMin        = new Vector2(0f, 1f);
         contentRT.anchorMax        = new Vector2(1f, 1f);
