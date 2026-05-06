@@ -244,6 +244,10 @@ public class UIManager : MonoBehaviour
         }
     }
 
+#if UNITY_INCLUDE_TESTS
+    public static string JStrForTest(string s) => JStr(s);
+#endif
+
     static string JStr(string s) =>
         "\"" + s.Replace("\\", "\\\\").Replace("\"", "\\\"")
                 .Replace("\n", "\\n").Replace("\r", "\\r")

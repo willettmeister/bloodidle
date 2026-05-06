@@ -60,9 +60,18 @@ public class GameManager : MonoBehaviour
     const float DmgTickInterval = 0.4f;
 
 #if UNITY_INCLUDE_TESTS
-    public static void ResetForTest() => Instance = null;
-    public void SetWoodForTest(double amount) => Wood = amount;
-    public void SetSoldierHPForTest(float hp) => SoldierHP = hp;
+    public static void ResetForTest()                     => Instance = null;
+    public void SetWoodForTest(double amount)              => Wood = amount;
+    public void SetSoldierHPForTest(float hp)             => SoldierHP = hp;
+    public void SaveForTest()                             => Save();
+    public void ClearSaveForTest()                        => PlayerPrefs.DeleteAll();
+
+    // Directly awards blood and triggers unlock checks — used in threshold tests
+    public void AwardBloodForTest(double amount)          => AddBlood(amount);
+
+    // Pure math for offline earnings — no singleton needed
+    public static double CalculateOfflineWood(int workers, double seconds) =>
+        workers * WorkerWoodPerSec * Math.Min(seconds, 8.0 * 3600);
 #endif
 
     private struct EnemyDef
