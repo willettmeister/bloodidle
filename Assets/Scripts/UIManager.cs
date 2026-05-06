@@ -99,9 +99,22 @@ public class UIManager : MonoBehaviour
             enemyImage.color  = spr != null ? Color.white : Color.clear;
         }
 
-        waveText.text      = $"Wave {gm.Wave}";
-        if (waveSubText != null) waveSubText.text = $"Wave {gm.Wave}";
-        enemyNameText.text = gm.EnemyName;
+        waveText.text = $"Wave {gm.Wave}";
+        if (waveSubText != null)
+            waveSubText.text = gm.IsBossWave
+                ? "★ BOSS WAVE ★"
+                : $"Boss in {gm.WavesUntilBoss} wave{(gm.WavesUntilBoss == 1 ? "" : "s")}";
+
+        if (gm.IsBossWave)
+        {
+            enemyNameText.text  = $"☠ {gm.EnemyName} ☠";
+            enemyNameText.color = new Color(1f, 0.84f, 0f);   // gold
+        }
+        else
+        {
+            enemyNameText.text  = gm.EnemyName;
+            enemyNameText.color = Color.white;
+        }
         enemyHPFill.fillAmount = gm.EnemyMaxHP > 0 ? gm.EnemyHP / gm.EnemyMaxHP : 0f;
         enemyHPText.text   = $"{GameManager.FormatHP(gm.EnemyHP)} / {GameManager.FormatHP(gm.EnemyMaxHP)}";
 

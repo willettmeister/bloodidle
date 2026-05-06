@@ -39,6 +39,8 @@ public class GameManager : MonoBehaviour
     public string EnemyName { get; private set; }
     public float EnemyAttack { get; private set; }  // total damage/sec to frontline
     public int EnemySpriteIndex { get; private set; }
+    public bool IsBossWave => Wave % 10 == 0;
+    public int WavesUntilBoss => 10 - (Wave % 10);
 
     // --- Offline earnings ---
     public double OfflineWoodEarned { get; private set; }
@@ -68,11 +70,18 @@ public class GameManager : MonoBehaviour
 
     // Directly awards blood and triggers unlock checks — used in threshold tests
     public void AwardBloodForTest(double amount)          => AddBlood(amount);
+    public void SetWaveForTest(int wave)                  => Wave = wave;
 
     // Pure math for offline earnings — no singleton needed
     public static double CalculateOfflineWood(int workers, double seconds) =>
         workers * WorkerWoodPerSec * Math.Min(seconds, 8.0 * 3600);
 #endif
+
+    private static readonly string[] BossNames =
+    {
+        "Blood Tyrant", "Skull King", "Bone Colossus", "Shadow Warlord",
+        "Crimson Devourer", "Abyssal Overlord", "Plague Archon", "Death Incarnate",
+    };
 
     private struct EnemyDef
     {
@@ -131,7 +140,9 @@ public class GameManager : MonoBehaviour
 
         if (EnemyHP <= 0f)
         {
-            AddBlood(Math.Floor(25 * Math.Pow(1.4, Wave - 1)));
+            double reward = Math.Floor(25 * Math.Pow(1.4, Wave - 1));
+            if (IsBossWave) reward *= 3;
+            AddBlood(reward);
             Wave++;
             SpawnEnemy(Wave);
             _dmgTimer = 0f;
@@ -159,12 +170,25 @@ public class GameManager : MonoBehaviour
 
     void SpawnEnemy(int wave)
     {
-        var def          = EnemyPool[UnityEngine.Random.Range(0, EnemyPool.Length)];
-        EnemyName        = def.Name;
-        EnemySpriteIndex = def.SpriteIdx;
-        EnemyMaxHP       = (float)(100 * Math.Pow(1.5, wave - 1) * def.HPMult);
-        EnemyHP          = EnemyMaxHP;
-        EnemyAttack      = (float)(3   * Math.Pow(1.3, wave - 1) * def.AtkMult);
+        bool isBoss = wave % 10 == 0;
+        if (isBoss)
+        {
+            int idx      = (wave / 10 - 1) % BossNames.Length;
+            EnemyName    = BossNames[idx];
+            EnemySpriteIndex = 6;
+            EnemyMaxHP   = (float)(100 * Math.Pow(1.5, wave - 1) * 5.0);
+            EnemyHP      = EnemyMaxHP;
+            EnemyAttack  = (float)(3   * Math.Pow(1.3, wave - 1) * 2.0);
+        }
+        else
+        {
+            var def          = EnemyPool[UnityEngine.Random.Range(0, EnemyPool.Length)];
+            EnemyName        = def.Name;
+            EnemySpriteIndex = def.SpriteIdx;
+            EnemyMaxHP       = (float)(100 * Math.Pow(1.5, wave - 1) * def.HPMult);
+            EnemyHP          = EnemyMaxHP;
+            EnemyAttack      = (float)(3   * Math.Pow(1.3, wave - 1) * def.AtkMult);
+        }
     }
 
     public void FarmBlood()
