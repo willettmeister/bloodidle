@@ -223,6 +223,37 @@ public static class SceneBuilder
         var suggestBtnGO = Btn(content, "SuggestButton", "Suggest a Feature", 42, HC("1565C0"));
         PT(suggestBtnGO, 1425, 100, 0, 680);
 
+        // ── Damage number layer (transparent, on canvas, above scroll) ──────
+        var dmgLayerGO = cv.CreateChild("DamageLayer");
+        var dmgImg     = dmgLayerGO.AddComponent<Image>();
+        dmgImg.color         = Color.clear;
+        dmgImg.raycastTarget = false;
+        dmgLayerGO.Stretch();
+
+        // ── Offline earnings modal ────────────────────────────────────────────
+        var offlineOverlay = cv.CreateChild("OfflineEarningsPanel");
+        offlineOverlay.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.86f);
+        offlineOverlay.Stretch();
+
+        var offlineCard = offlineOverlay.CreateChild("Card");
+        RImg(offlineCard, Surface1);
+        var offlineCardRT        = offlineCard.GetComponent<RectTransform>();
+        offlineCardRT.anchorMin        = new Vector2(0.5f, 0.5f);
+        offlineCardRT.anchorMax        = new Vector2(0.5f, 0.5f);
+        offlineCardRT.anchoredPosition = Vector2.zero;
+        offlineCardRT.sizeDelta        = new Vector2(800, 380);
+
+        var offlineTitleGO = Label(offlineCard, "OfflineTitle", "Welcome Back!", 52, Gold);
+        PT(offlineTitleGO, 30, 70, 0, 720);
+
+        var offlineTextGO = Label(offlineCard, "OfflineText", "", 38, Color.white);
+        PT(offlineTextGO, 115, 90, 0, 720);
+
+        var offlineDismissGO = Btn(offlineCard, "OfflineDismissButton", "Collect", 46, Crimson);
+        PT(offlineDismissGO, 228, 110, 0, 400);
+
+        offlineOverlay.SetActive(false);
+
         // ════════════════════════════════════════════════════════════════════
         // FEATURE REQUEST OVERLAY  (full-screen modal on canvas, not in scroll)
         // ════════════════════════════════════════════════════════════════════
@@ -294,6 +325,9 @@ public static class SceneBuilder
         uim.barracksInfoText        = barracksInfoGO.GetComponent<Text>();
         uim.upgradeBarracksButton   = upgradeBarracksGO.GetComponent<Button>();
         uim.barracksUpgradeCostText = upgradeBarracksGO.GetComponentInChildren<Text>();
+        uim.damageLayer             = dmgLayerGO.GetComponent<RectTransform>();
+        uim.offlinePanel            = offlineOverlay;
+        uim.offlineText             = offlineTextGO.GetComponent<Text>();
         uim.featureRequestPanel     = overlay;
         uim.featureTitleField       = titleField;
         uim.featureDescField        = descField;
@@ -308,6 +342,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(buyWorkerGO.GetComponent<Button>().onClick,       clk.OnBuyWorker);
         UnityEventTools.AddPersistentListener(upgradeBarracksGO.GetComponent<Button>().onClick, clk.OnUpgradeBarracks);
         UnityEventTools.AddPersistentListener(suggestBtnGO.GetComponent<Button>().onClick,      clk.OnOpenSuggest);
+        UnityEventTools.AddPersistentListener(offlineDismissGO.GetComponent<Button>().onClick,  uim.DismissOfflinePanel);
         UnityEventTools.AddPersistentListener(featureSubmitGO.GetComponent<Button>().onClick,   uim.SubmitFeature);
         UnityEventTools.AddPersistentListener(featureCancelGO.GetComponent<Button>().onClick,   uim.HideFeaturePanel);
 

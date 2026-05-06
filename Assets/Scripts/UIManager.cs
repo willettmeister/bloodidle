@@ -48,6 +48,13 @@ public class UIManager : MonoBehaviour
     public Text featureStatusText;
     public Button featureSubmitButton;
 
+    [Header("Offline Earnings")]
+    public GameObject offlinePanel;
+    public Text offlineText;
+
+    [Header("Damage Numbers")]
+    public RectTransform damageLayer;
+
     void Start()
     {
         if (GameManager.Instance == null)
@@ -56,13 +63,18 @@ public class UIManager : MonoBehaviour
             return;
         }
         GameManager.Instance.OnStateChanged += Refresh;
+        GameManager.Instance.OnDamageDealt  += SpawnDamageNumber;
         Refresh();
+        ShowOfflinePanel();
     }
 
     void OnDestroy()
     {
         if (GameManager.Instance != null)
+        {
             GameManager.Instance.OnStateChanged -= Refresh;
+            GameManager.Instance.OnDamageDealt  -= SpawnDamageNumber;
+        }
     }
 
     void Refresh()
@@ -74,7 +86,6 @@ public class UIManager : MonoBehaviour
             return;
         }
 
-        Debug.Log($"[UIManager] Refresh called — Blood={gm.Blood}");
         bloodText.text = $"Blood: {GameManager.FormatNumber(gm.Blood)}";
         woodText.text  = gm.WoodPerSecond > 0
             ? $"Wood: {GameManager.FormatNumber(gm.Wood)}  +{gm.WoodPerSecond:F1}/s"
@@ -123,6 +134,38 @@ public class UIManager : MonoBehaviour
         barracksInfoText.text        = $"Barracks  Lv.{gm.BarracksLevel}  —  Max {gm.MaxSoldiers} soldiers";
         barracksUpgradeCostText.text = $"Upgrade\n({GameManager.FormatNumber(gm.BarracksUpgradeCost)} wood)";
         upgradeBarracksButton.interactable = gm.Wood >= gm.BarracksUpgradeCost;
+    }
+
+    // ── Offline Earnings ──────────────────────────────────────────────────────
+
+    void ShowOfflinePanel()
+    {
+        var gm = GameManager.Instance;
+        if (offlinePanel == null || gm == null || gm.OfflineWoodEarned <= 0) return;
+        offlinePanel.SetActive(true);
+        offlineText.text = $"While you were away:\n+{GameManager.FormatNumber(gm.OfflineWoodEarned)} wood earned";
+    }
+
+    public void DismissOfflinePanel()
+    {
+        if (offlinePanel != null) offlinePanel.SetActive(false);
+        GameManager.Instance?.ClearOfflineEarnings();
+    }
+
+    // ── Damage Numbers ────────────────────────────────────────────────────────
+
+    void SpawnDamageNumber(float amount, bool isEnemy)
+    {
+        if (damageLayer == null || amount < 0.5f) return;
+        var sourceRT = isEnemy ? enemyHPFill.rectTransform : soldierHPFill.rectTransform;
+        Vector3[] corners = new Vector3[4];
+        sourceRT.GetWorldCorners(corners);
+        Vector2 screenPos = (corners[0] + corners[2]) * 0.5f;
+        if (!RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                damageLayer, screenPos, null, out Vector2 localPos)) return;
+        localPos.x += UnityEngine.Random.Range(-80f, 80f);
+        Color color = isEnemy ? new Color(1f, 0.25f, 0.25f) : new Color(1f, 0.55f, 0.1f);
+        DamageNumber.Spawn(damageLayer, Mathf.CeilToInt(amount).ToString(), color, localPos);
     }
 
     // ── Feature Request ───────────────────────────────────────────────────────

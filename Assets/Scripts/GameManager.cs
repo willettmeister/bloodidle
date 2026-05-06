@@ -40,6 +40,9 @@ public class GameManager : MonoBehaviour
     public float EnemyAttack { get; private set; }  // total damage/sec to frontline
     public int EnemySpriteIndex { get; private set; }
 
+    // --- Offline earnings ---
+    public double OfflineWoodEarned { get; private set; }
+
     // --- Workers unlock ---
     public bool WorkersUnlocked { get; private set; }
     public const double WorkersUnlockThreshold = 200.0;
@@ -51,6 +54,10 @@ public class GameManager : MonoBehaviour
     public const float HealSelfAmount = 20f;
 
     public event Action OnStateChanged;
+    public event Action<float, bool> OnDamageDealt;  // amount, isEnemyDamage
+
+    float _dmgTimer;
+    const float DmgTickInterval = 0.4f;
 
 #if UNITY_INCLUDE_TESTS
     public static void ResetForTest() => Instance = null;
@@ -109,7 +116,6 @@ public class GameManager : MonoBehaviour
             OnStateChanged?.Invoke();
     }
 
-    // Returns true whenever state changed (always, when called)
     bool RunCombat(float dt)
     {
         EnemyHP = Mathf.Max(0f, EnemyHP - SoldierCount * SoldierAttack * dt);
@@ -119,6 +125,7 @@ public class GameManager : MonoBehaviour
             AddBlood(Math.Floor(25 * Math.Pow(1.4, Wave - 1)));
             Wave++;
             SpawnEnemy(Wave);
+            _dmgTimer = 0f;
             return true;
         }
 
@@ -127,6 +134,15 @@ public class GameManager : MonoBehaviour
         {
             SoldierCount--;
             SoldierHP = SoldierCount > 0 ? SoldierMaxHP : 0f;
+        }
+
+        _dmgTimer += dt;
+        if (_dmgTimer >= DmgTickInterval)
+        {
+            _dmgTimer = 0f;
+            OnDamageDealt?.Invoke(SoldierCount * SoldierAttack * DmgTickInterval, true);
+            if (SoldierCount > 0)
+                OnDamageDealt?.Invoke(EnemyAttack * DmgTickInterval, false);
         }
 
         return true;
@@ -145,7 +161,6 @@ public class GameManager : MonoBehaviour
     public void FarmBlood()
     {
         AddBlood(BloodPerClick);
-        Debug.Log($"[GameManager] FarmBlood called — Blood={Blood}, subscribers={OnStateChanged?.GetInvocationList().Length ?? 0}");
         OnStateChanged?.Invoke();
     }
 
@@ -220,6 +235,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetString("EnemyName",           EnemyName);
         PlayerPrefs.SetFloat ("EnemyAttack",         EnemyAttack);
         PlayerPrefs.SetInt   ("EnemySpriteIndex",    EnemySpriteIndex);
+        PlayerPrefs.SetString("SaveTime",            DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture));
         PlayerPrefs.Save();
     }
 
@@ -244,7 +260,21 @@ public class GameManager : MonoBehaviour
         EnemyName           = PlayerPrefs.GetString("EnemyName",           "Goblin");
         EnemyAttack         = PlayerPrefs.GetFloat ("EnemyAttack",         3f);
         EnemySpriteIndex    = PlayerPrefs.GetInt   ("EnemySpriteIndex",    0);
+
+        // Offline wood earnings (capped at 8 hours)
+        if (WorkerCount > 0 && PlayerPrefs.HasKey("SaveTime"))
+        {
+            var styles = System.Globalization.DateTimeStyles.RoundtripKind;
+            if (DateTime.TryParse(PlayerPrefs.GetString("SaveTime"), null, styles, out DateTime lastSave))
+            {
+                double secs = Math.Min((DateTime.UtcNow - lastSave).TotalSeconds, 8 * 3600);
+                OfflineWoodEarned = WorkerCount * WorkerWoodPerSec * secs;
+                Wood += OfflineWoodEarned;
+            }
+        }
     }
+
+    public void ClearOfflineEarnings() => OfflineWoodEarned = 0;
 
     public static string FormatNumber(double value)
     {
