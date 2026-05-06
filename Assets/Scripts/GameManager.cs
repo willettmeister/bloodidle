@@ -39,8 +39,9 @@ public class GameManager : MonoBehaviour
     public string EnemyName { get; private set; }
     public float EnemyAttack { get; private set; }  // total damage/sec to frontline
     public int EnemySpriteIndex { get; private set; }
-    public bool IsBossWave => Wave % 10 == 0;
-    public int WavesUntilBoss => 10 - (Wave % 10);
+    public int NextBossWave { get; private set; }
+    public bool IsBossWave => Wave == NextBossWave;
+    public int WavesUntilBoss => NextBossWave - Wave;
 
     // --- Offline earnings ---
     public double OfflineWoodEarned { get; private set; }
@@ -71,6 +72,7 @@ public class GameManager : MonoBehaviour
     // Directly awards blood and triggers unlock checks — used in threshold tests
     public void AwardBloodForTest(double amount)          => AddBlood(amount);
     public void SetWaveForTest(int wave)                  => Wave = wave;
+    public void SetNextBossWaveForTest(int wave)          => NextBossWave = wave;
 
     // Pure math for offline earnings — no singleton needed
     public static double CalculateOfflineWood(int workers, double seconds) =>
@@ -112,6 +114,7 @@ public class GameManager : MonoBehaviour
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        NextBossWave = UnityEngine.Random.Range(6, 13);  // overwritten by Load() if save exists
         SpawnEnemy(1);
         Load();
     }
@@ -140,10 +143,12 @@ public class GameManager : MonoBehaviour
 
         if (EnemyHP <= 0f)
         {
+            bool wasBoss = IsBossWave;
             double reward = Math.Floor(25 * Math.Pow(1.4, Wave - 1));
-            if (IsBossWave) reward *= 3;
+            if (wasBoss) reward *= 3;
             AddBlood(reward);
             Wave++;
+            if (wasBoss) NextBossWave = Wave + UnityEngine.Random.Range(5, 11);
             SpawnEnemy(Wave);
             _dmgTimer = 0f;
             return true;
@@ -170,10 +175,10 @@ public class GameManager : MonoBehaviour
 
     void SpawnEnemy(int wave)
     {
-        bool isBoss = wave % 10 == 0;
+        bool isBoss = wave == NextBossWave;
         if (isBoss)
         {
-            int idx      = (wave / 10 - 1) % BossNames.Length;
+            int idx      = UnityEngine.Random.Range(0, BossNames.Length);
             EnemyName    = BossNames[idx];
             EnemySpriteIndex = 6;
             EnemyMaxHP   = (float)(100 * Math.Pow(1.5, wave - 1) * 5.0);
@@ -268,6 +273,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetString("EnemyName",           EnemyName);
         PlayerPrefs.SetFloat ("EnemyAttack",         EnemyAttack);
         PlayerPrefs.SetInt   ("EnemySpriteIndex",    EnemySpriteIndex);
+        PlayerPrefs.SetInt   ("NextBossWave",        NextBossWave);
         PlayerPrefs.SetString("SaveTime",            DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture));
         PlayerPrefs.Save();
     }
@@ -293,6 +299,8 @@ public class GameManager : MonoBehaviour
         EnemyName           = PlayerPrefs.GetString("EnemyName",           "Goblin");
         EnemyAttack         = PlayerPrefs.GetFloat ("EnemyAttack",         3f);
         EnemySpriteIndex    = PlayerPrefs.GetInt   ("EnemySpriteIndex",    0);
+        int savedNext       = PlayerPrefs.GetInt   ("NextBossWave",        0);
+        NextBossWave        = savedNext > 0 ? savedNext : Wave + UnityEngine.Random.Range(5, 11);
 
         // Offline wood earnings (capped at 8 hours)
         if (WorkerCount > 0 && PlayerPrefs.HasKey("SaveTime"))

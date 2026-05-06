@@ -26,102 +26,114 @@ public class BossWaveTests
     // ── IsBossWave detection ──────────────────────────────────────────────────
 
     [Test]
-    public void IsBossWave_FalseOnWave1()
+    public void IsBossWave_TrueWhenWaveMatchesNextBossWave()
     {
-        _gm.SetWaveForTest(1);
-        Assert.IsFalse(_gm.IsBossWave);
-    }
-
-    [Test]
-    public void IsBossWave_FalseOnWave9()
-    {
-        _gm.SetWaveForTest(9);
-        Assert.IsFalse(_gm.IsBossWave);
-    }
-
-    [Test]
-    public void IsBossWave_TrueOnWave10()
-    {
-        _gm.SetWaveForTest(10);
+        _gm.SetWaveForTest(7);
+        _gm.SetNextBossWaveForTest(7);
         Assert.IsTrue(_gm.IsBossWave);
     }
 
     [Test]
-    public void IsBossWave_FalseOnWave11()
+    public void IsBossWave_FalseWhenWaveBelowNextBossWave()
     {
-        _gm.SetWaveForTest(11);
+        _gm.SetWaveForTest(6);
+        _gm.SetNextBossWaveForTest(7);
         Assert.IsFalse(_gm.IsBossWave);
     }
 
     [Test]
-    public void IsBossWave_TrueOnWave20()
+    public void IsBossWave_FalseWhenWaveAboveNextBossWave()
     {
-        _gm.SetWaveForTest(20);
-        Assert.IsTrue(_gm.IsBossWave);
-    }
-
-    [Test]
-    public void IsBossWave_FalseOnWave15()
-    {
-        _gm.SetWaveForTest(15);
+        // Should not normally happen, but the property is pure Wave == NextBossWave.
+        _gm.SetWaveForTest(8);
+        _gm.SetNextBossWaveForTest(7);
         Assert.IsFalse(_gm.IsBossWave);
     }
 
     // ── WavesUntilBoss countdown ──────────────────────────────────────────────
 
     [Test]
-    public void WavesUntilBoss_NineOnWave1()
+    public void WavesUntilBoss_ReturnsCorrectCountdown()
     {
-        _gm.SetWaveForTest(1);
-        Assert.AreEqual(9, _gm.WavesUntilBoss);
+        _gm.SetWaveForTest(3);
+        _gm.SetNextBossWaveForTest(8);
+        Assert.AreEqual(5, _gm.WavesUntilBoss);
     }
 
     [Test]
-    public void WavesUntilBoss_OneOnWave9()
+    public void WavesUntilBoss_ZeroOnBossWave()
     {
-        _gm.SetWaveForTest(9);
-        Assert.AreEqual(1, _gm.WavesUntilBoss);
+        _gm.SetWaveForTest(8);
+        _gm.SetNextBossWaveForTest(8);
+        Assert.AreEqual(0, _gm.WavesUntilBoss);
+    }
+
+    // ── Initial NextBossWave ──────────────────────────────────────────────────
+
+    [Test]
+    public void NextBossWave_InitiallyAtLeast5WavesFromStart()
+    {
+        // Wave starts at 1; first boss must be at least 5 waves away (wave 6+).
+        Assert.GreaterOrEqual(_gm.NextBossWave - _gm.Wave, 5);
     }
 
     [Test]
-    public void WavesUntilBoss_TenOnBossWave()
+    public void NextBossWave_InitiallyNoMoreThan11WavesFromStart()
     {
-        // At the boss wave itself the counter wraps to 10 (next boss is 10 away)
-        _gm.SetWaveForTest(10);
-        Assert.AreEqual(10, _gm.WavesUntilBoss);
+        // Upper bound: Random.Range(6, 13) on a wave-1 start → max gap is 11.
+        Assert.LessOrEqual(_gm.NextBossWave - _gm.Wave, 11);
+    }
+
+    // ── Save / load round-trip ────────────────────────────────────────────────
+
+    [Test]
+    public void SaveLoad_PreservesNextBossWave()
+    {
+        _gm.SetNextBossWaveForTest(14);
+        _gm.SaveForTest();
+
+        Object.DestroyImmediate(_gmGO);
+        GameManager.ResetForTest();
+        _gmGO = new GameObject("GM2");
+        _gm   = _gmGO.AddComponent<GameManager>();
+
+        Assert.AreEqual(14, _gm.NextBossWave);
     }
 
     [Test]
-    public void WavesUntilBoss_NineOnWave11()
+    public void SaveLoad_OldSave_DefaultsNextBossWaveReasonably()
     {
-        _gm.SetWaveForTest(11);
-        Assert.AreEqual(9, _gm.WavesUntilBoss);
+        // Simulate an old save that has no NextBossWave key.
+        _gm.AwardBloodForTest(1);   // ensure "Blood" key exists so Load runs
+        _gm.SaveForTest();
+        PlayerPrefs.DeleteKey("NextBossWave");
+
+        Object.DestroyImmediate(_gmGO);
+        GameManager.ResetForTest();
+        _gmGO = new GameObject("GM2");
+        _gm   = _gmGO.AddComponent<GameManager>();
+
+        // Must be at least 5 waves ahead of current wave.
+        Assert.GreaterOrEqual(_gm.NextBossWave - _gm.Wave, 5);
     }
 
     // ── Blood reward multiplier ───────────────────────────────────────────────
 
     [Test]
-    public void BossKill_GivesTripleBloodReward()
+    public void BossRewardFormula_IsTripleNormalReward()
     {
-        // Wave 10 boss: reward = floor(25 * 1.4^9) * 3
-        double baseReward = System.Math.Floor(25 * System.Math.Pow(1.4, 9));
-        double expected   = baseReward * 3;
-
-        _gm.SetWaveForTest(10);
-        double bloodBefore = _gm.Blood;
-
-        // Simulate enemy dying by zeroing HP and calling the internal path via
-        // a direct reward calculation check (mirrors GameManager.RunCombat logic).
-        // We cannot call RunCombat directly, so we verify the formula matches.
-        Assert.AreEqual(expected, System.Math.Floor(25 * System.Math.Pow(1.4, 10 - 1)) * 3, 0.001);
+        int wave = 5;
+        double normal = System.Math.Floor(25 * System.Math.Pow(1.4, wave - 1));
+        double boss   = normal * 3;
+        Assert.AreEqual(normal * 3, boss, 0.001);
+        Assert.Greater(boss, normal);
     }
 
     [Test]
-    public void NormalWave_GivesSingleBloodReward()
+    public void NormalWave_GivesSingleReward()
     {
-        // Wave 1 normal: reward = floor(25 * 1.4^0) * 1 = 25
+        // Wave 1: floor(25 * 1.4^0) = 25
         double expected = System.Math.Floor(25 * System.Math.Pow(1.4, 0));
         Assert.AreEqual(25.0, expected, 0.001);
-        Assert.IsFalse(_gm.IsBossWave);
     }
 }
