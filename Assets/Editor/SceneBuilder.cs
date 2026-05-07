@@ -20,7 +20,9 @@ using System.IO;
 // 1240–1405 Barracks card
 // 1415–1555 Blood Ritual card
 // 1565–1705 Prestige card (visible at wave 20+)
-// 1720–1820 Suggest button
+// 1715–1855 Blood Surge card (visible after 500 blood earned)
+// 1870–2095 Prestige Shop card (visible after first prestige)
+// 2110–2210 Bottom row — Stats | Suggest
 // overlay   FeatureRequestOverlay — modal, hidden by default
 public static class SceneBuilder
 {
@@ -104,7 +106,7 @@ public static class SceneBuilder
         contentRT.anchorMax        = new Vector2(1f, 1f);
         contentRT.pivot            = new Vector2(0.5f, 1f);
         contentRT.anchoredPosition = Vector2.zero;
-        contentRT.sizeDelta        = new Vector2(0, 1930);
+        contentRT.sizeDelta        = new Vector2(0, 2220);
 
         var scroll = scrollGO.AddComponent<ScrollRect>();
         scroll.viewport          = viewportGO.GetComponent<RectTransform>();
@@ -276,13 +278,79 @@ public static class SceneBuilder
         prestigePanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
-        // BOTTOM ROW  (y 1720–1820) — Stats | Suggest
+        // BLOOD SURGE CARD  (y 1715–1855) — visible after 500 blood earned
+        // ════════════════════════════════════════════════════════════════════
+        var bloodSurgePanel = content.CreateChild("BloodSurgePanel");
+        bloodSurgePanel.AddImage(Color.clear);
+        PF(bloodSurgePanel, 1715, 140);
+
+        Panel(bloodSurgePanel, "BloodSurgeCardBg", 0, 140, Surface1, 24);
+
+        var bloodSurgeInfoGO = Label(bloodSurgePanel, "BloodSurgeInfoText",
+            "Blood Surge  —  2× attack for 10s",
+            32, Color.white, TextAnchor.MiddleLeft);
+        PT(bloodSurgeInfoGO, 18, 52, -175, 500);
+
+        var surgeBtnGO = Btn(bloodSurgePanel, "BloodSurgeButton",
+            "Surge!\n(50 blood)", 34, Crimson);
+        PT(surgeBtnGO, 10, 110, +232, 370);
+
+        bloodSurgePanel.SetActive(false);
+
+        // ════════════════════════════════════════════════════════════════════
+        // PRESTIGE SHOP CARD  (y 1870–2095) — visible after first prestige
+        // ════════════════════════════════════════════════════════════════════
+        var prestigeShopPanel = content.CreateChild("PrestigeShopPanel");
+        prestigeShopPanel.AddImage(Color.clear);
+        PF(prestigeShopPanel, 1870, 225);
+
+        Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 225, HC("150A30"), 24);
+
+        var shopTitleGO = Label(prestigeShopPanel, "PrestigeShopTitle",
+            "Prestige Shop", 40, Gold, TextAnchor.MiddleLeft);
+        PT(shopTitleGO, 8, 44, -200, 400);
+
+        var shopPtsGO = Label(prestigeShopPanel, "PrestigeShopPointsText",
+            "Prestige Points: 0", 34, Gold, TextAnchor.MiddleRight);
+        PT(shopPtsGO, 8, 44, +165, 460);
+
+        // Row 1 — Soldier Cap
+        var pSoldierCapInfoGO = Label(prestigeShopPanel, "PSoldierCapInfoText",
+            "Soldier Cap +10  (Lv.0)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(pSoldierCapInfoGO, 60, 48, -175, 500);
+
+        var pSoldierCapBtnGO = Btn(prestigeShopPanel, "PSoldierCapButton",
+            "Buy (1 PP)", 30, HC("6A1B9A"));
+        PT(pSoldierCapBtnGO, 58, 54, +245, 260);
+
+        // Row 2 — Click Bonus
+        var pClickBonusInfoGO = Label(prestigeShopPanel, "PClickBonusInfoText",
+            "Click Bonus +0.5  (Lv.0)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(pClickBonusInfoGO, 118, 48, -175, 500);
+
+        var pClickBonusBtnGO = Btn(prestigeShopPanel, "PClickBonusButton",
+            "Buy (1 PP)", 30, HC("6A1B9A"));
+        PT(pClickBonusBtnGO, 116, 54, +245, 260);
+
+        // Row 3 — Ritual Efficiency
+        var pRitualEffInfoGO = Label(prestigeShopPanel, "PRitualEffInfoText",
+            "Ritual Eff. +0.5/s  (Lv.0)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(pRitualEffInfoGO, 176, 48, -175, 500);
+
+        var pRitualEffBtnGO = Btn(prestigeShopPanel, "PRitualEffButton",
+            "Buy (1 PP)", 30, HC("6A1B9A"));
+        PT(pRitualEffBtnGO, 174, 54, +245, 260);
+
+        prestigeShopPanel.SetActive(false);
+
+        // ════════════════════════════════════════════════════════════════════
+        // BOTTOM ROW  (y 2110–2210) — Stats | Suggest
         // ════════════════════════════════════════════════════════════════════
         var statsBtnGO = Btn(content, "StatsButton", "Statistics", 40, HC("00695C"));
-        PT(statsBtnGO, 1720, 100, -175, 320);
+        PT(statsBtnGO, 2110, 100, -175, 320);
 
         var suggestBtnGO = Btn(content, "SuggestButton", "Suggest a Feature", 36, HC("1565C0"));
-        PT(suggestBtnGO, 1720, 100, +175, 320);
+        PT(suggestBtnGO, 2110, 100, +175, 320);
 
         // ── Damage number layer ───────────────────────────────────────────────
         var dmgLayerGO = cv.CreateChild("DamageLayer");
@@ -435,6 +503,17 @@ public static class SceneBuilder
         uim.prestigePanel           = prestigePanel;
         uim.prestigeInfoText        = prestigeInfoGO.GetComponent<Text>();
         uim.prestigeButton          = prestigeBtnGO.GetComponent<Button>();
+        uim.bloodSurgePanel         = bloodSurgePanel;
+        uim.bloodSurgeInfoText      = bloodSurgeInfoGO.GetComponent<Text>();
+        uim.bloodSurgeButton        = surgeBtnGO.GetComponent<Button>();
+        uim.prestigeShopPanel       = prestigeShopPanel;
+        uim.prestigeShopPointsText  = shopPtsGO.GetComponent<Text>();
+        uim.pSoldierCapInfoText     = pSoldierCapInfoGO.GetComponent<Text>();
+        uim.pSoldierCapButton       = pSoldierCapBtnGO.GetComponent<Button>();
+        uim.pClickBonusInfoText     = pClickBonusInfoGO.GetComponent<Text>();
+        uim.pClickBonusButton       = pClickBonusBtnGO.GetComponent<Button>();
+        uim.pRitualEffInfoText      = pRitualEffInfoGO.GetComponent<Text>();
+        uim.pRitualEffButton        = pRitualEffBtnGO.GetComponent<Button>();
         uim.barracksInfoText        = barracksInfoGO.GetComponent<Text>();
         uim.upgradeBarracksButton   = upgradeBarracksGO.GetComponent<Button>();
         uim.barracksUpgradeCostText = upgradeBarracksGO.GetComponentInChildren<Text>();
@@ -457,10 +536,14 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(buyTankGO.GetComponent<Button>().onClick,          clk.OnBuyTank);
         UnityEventTools.AddPersistentListener(buyBerserkerGO.GetComponent<Button>().onClick,     clk.OnBuyBerserker);
         UnityEventTools.AddPersistentListener(healBtnGO.GetComponent<Button>().onClick,          clk.OnHealSelf);
+        UnityEventTools.AddPersistentListener(surgeBtnGO.GetComponent<Button>().onClick,         clk.OnUseSurge);
         UnityEventTools.AddPersistentListener(buyWorkerGO.GetComponent<Button>().onClick,        clk.OnBuyWorker);
         UnityEventTools.AddPersistentListener(buyBloodRitualGO.GetComponent<Button>().onClick,   clk.OnBuyBloodRitual);
         UnityEventTools.AddPersistentListener(upgradeBarracksGO.GetComponent<Button>().onClick,  clk.OnUpgradeBarracks);
         UnityEventTools.AddPersistentListener(prestigeBtnGO.GetComponent<Button>().onClick,      clk.OnPrestige);
+        UnityEventTools.AddPersistentListener(pSoldierCapBtnGO.GetComponent<Button>().onClick,   clk.OnBuyPSoldierCap);
+        UnityEventTools.AddPersistentListener(pClickBonusBtnGO.GetComponent<Button>().onClick,   clk.OnBuyPClickBonus);
+        UnityEventTools.AddPersistentListener(pRitualEffBtnGO.GetComponent<Button>().onClick,    clk.OnBuyPRitualEff);
         UnityEventTools.AddPersistentListener(statsBtnGO.GetComponent<Button>().onClick,          clk.OnOpenStats);
         UnityEventTools.AddPersistentListener(suggestBtnGO.GetComponent<Button>().onClick,       clk.OnOpenSuggest);
         UnityEventTools.AddPersistentListener(statsCloseGO.GetComponent<Button>().onClick,       uim.HideStatsPanel);

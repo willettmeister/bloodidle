@@ -29,6 +29,11 @@ public class UIManager : MonoBehaviour
     public GameObject healSelfPanel;
     public Button healSelfButton;
 
+    [Header("Blood Surge")]
+    public GameObject bloodSurgePanel;
+    public Text bloodSurgeInfoText;
+    public Button bloodSurgeButton;
+
     [Header("Workers")]
     public GameObject workersPanel;
     public Text workerInfoText;
@@ -44,6 +49,16 @@ public class UIManager : MonoBehaviour
     public GameObject prestigePanel;
     public Text prestigeInfoText;
     public Button prestigeButton;
+
+    [Header("Prestige Shop")]
+    public GameObject prestigeShopPanel;
+    public Text prestigeShopPointsText;
+    public Text pSoldierCapInfoText;
+    public Button pSoldierCapButton;
+    public Text pClickBonusInfoText;
+    public Button pClickBonusButton;
+    public Text pRitualEffInfoText;
+    public Button pRitualEffButton;
 
     [Header("Stats")]
     public GameObject statsPanel;
@@ -100,6 +115,7 @@ public class UIManager : MonoBehaviour
         GameManager.Instance.OnStateChanged        += Refresh;
         GameManager.Instance.OnDamageDealt         += SpawnDamageNumber;
         GameManager.Instance.OnAchievementUnlocked += ShowAchievementToast;
+        GameManager.Instance.OnMilestoneChest      += ShowMilestoneToast;
         Refresh();
         ShowOfflinePanel();
     }
@@ -111,6 +127,7 @@ public class UIManager : MonoBehaviour
             GameManager.Instance.OnStateChanged        -= Refresh;
             GameManager.Instance.OnDamageDealt         -= SpawnDamageNumber;
             GameManager.Instance.OnAchievementUnlocked -= ShowAchievementToast;
+            GameManager.Instance.OnMilestoneChest      -= ShowMilestoneToast;
         }
     }
 
@@ -169,8 +186,9 @@ public class UIManager : MonoBehaviour
         bool hasSoldiers = gm.SoldierCount > 0;
         bool atCap       = gm.SoldierCount >= gm.MaxSoldiers;
 
+        string compBonus = gm.IsAllTank ? "  ♦ Regen" : gm.IsAllBerserker ? "  ⚡ Crit" : "";
         soldierCountText.text = hasSoldiers
-            ? $"Soldiers: {gm.SoldierCount}/{gm.MaxSoldiers}  [T:{gm.TankCount} B:{gm.BerserkerCount}]"
+            ? $"Soldiers: {gm.SoldierCount}/{gm.MaxSoldiers}  [T:{gm.TankCount} B:{gm.BerserkerCount}]{compBonus}"
             : $"No soldiers — buy one!  (max {gm.MaxSoldiers})";
 
         soldierHPRow.SetActive(hasSoldiers);
@@ -190,6 +208,19 @@ public class UIManager : MonoBehaviour
             healSelfButton.interactable = gm.Blood >= GameManager.HealSelfCost
                 && hasSoldiers
                 && gm.SoldierHP < gm.FrontlineMaxHP;
+
+        // Blood Surge
+        if (bloodSurgePanel != null) bloodSurgePanel.SetActive(gm.SurgeUnlocked);
+        if (gm.SurgeUnlocked && bloodSurgeInfoText != null)
+        {
+            bloodSurgeInfoText.text = gm.SurgeActive
+                ? $"Blood Surge  —  2× attack  {Mathf.CeilToInt(gm.SurgeTimeRemaining)}s remaining"
+                : "Blood Surge  —  2× attack for 10s";
+            if (bloodSurgeButton != null)
+                bloodSurgeButton.interactable = !gm.SurgeActive
+                    && gm.Blood >= GameManager.SurgeCost
+                    && hasSoldiers;
+        }
 
         if (workersPanel != null) workersPanel.SetActive(gm.WorkersUnlocked);
         workerInfoText.text          = $"Workers: {gm.WorkerCount}";
@@ -215,6 +246,25 @@ public class UIManager : MonoBehaviour
                 ? $"Prestige Lv.{gm.PrestigeCount}  —  all blood ×{gm.PrestigeMultiplier:F2}"
                 : $"Prestige  —  reset for ×{gm.PrestigeMultiplier + 0.5:F2} blood bonus";
             if (prestigeButton != null) prestigeButton.interactable = true;
+        }
+
+        // Prestige Shop
+        bool showShop = gm.PrestigeCount >= 1;
+        if (prestigeShopPanel != null) prestigeShopPanel.SetActive(showShop);
+        if (showShop)
+        {
+            bool canSpend = gm.PrestigePoints >= GameManager.PrestigeShopCost;
+            if (prestigeShopPointsText != null)
+                prestigeShopPointsText.text = $"Prestige Points: {gm.PrestigePoints}";
+            if (pSoldierCapInfoText != null)
+                pSoldierCapInfoText.text = $"Soldier Cap +10  (Lv.{gm.PSoldierCapLevel})";
+            if (pSoldierCapButton != null)  pSoldierCapButton.interactable  = canSpend;
+            if (pClickBonusInfoText != null)
+                pClickBonusInfoText.text = $"Click Bonus +0.5  (Lv.{gm.PClickBonusLevel})";
+            if (pClickBonusButton != null)  pClickBonusButton.interactable  = canSpend;
+            if (pRitualEffInfoText != null)
+                pRitualEffInfoText.text = $"Ritual Eff. +0.5/s  (Lv.{gm.PRitualEffLevel})";
+            if (pRitualEffButton != null)   pRitualEffButton.interactable   = canSpend;
         }
 
         barracksInfoText.text        = $"Barracks  Lv.{gm.BarracksLevel}  —  Max {gm.MaxSoldiers} soldiers";
@@ -268,6 +318,8 @@ public class UIManager : MonoBehaviour
         StartCoroutine(ToastRoutine($"Achievement: {title}"));
     }
 
+    void ShowMilestoneToast(string message) => StartCoroutine(ToastRoutine(message));
+
     IEnumerator ToastRoutine(string message)
     {
         if (achievementToast == null) yield break;
@@ -282,9 +334,15 @@ public class UIManager : MonoBehaviour
     void ShowOfflinePanel()
     {
         var gm = GameManager.Instance;
-        if (offlinePanel == null || gm == null || gm.OfflineWoodEarned <= 0) return;
+        if (offlinePanel == null || gm == null) return;
+        bool hasWood  = gm.OfflineWoodEarned  > 0;
+        bool hasBlood = gm.OfflineBloodEarned > 0;
+        if (!hasWood && !hasBlood) return;
         offlinePanel.SetActive(true);
-        offlineText.text = $"While you were away:\n+{GameManager.FormatNumber(gm.OfflineWoodEarned)} wood earned";
+        var sb = new StringBuilder("While you were away:\n");
+        if (hasBlood) sb.AppendLine($"+{GameManager.FormatNumber(gm.OfflineBloodEarned)} blood");
+        if (hasWood)  sb.Append($"+{GameManager.FormatNumber(gm.OfflineWoodEarned)} wood");
+        offlineText.text = sb.ToString();
     }
 
     public void DismissOfflinePanel()
