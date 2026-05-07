@@ -15,16 +15,18 @@ using System.IO;
 // 120–455   Enemy card
 // 465–670   Army card
 // 690–900   Farm Blood
-// 910–1045  Action row — Buy Soldier | Heal Self
+// 910–1045  Action row — Buy Tank | Buy Berserker | Heal Self
 // 1060–1225 Workers card
 // 1240–1405 Barracks card
-// 1425–1525 Suggest button
+// 1415–1555 Blood Ritual card
+// 1565–1705 Prestige card (visible at wave 20+)
+// 1720–1820 Suggest button
 // overlay   FeatureRequestOverlay — modal, hidden by default
 public static class SceneBuilder
 {
     const string OutSprites = "Assets/Resources/Sprites/";
 
-    static Sprite s_Rounded; // loaded from rounded_rect.png; null = flat fallback
+    static Sprite s_Rounded;
 
     // ── Palette ──────────────────────────────────────────────────────────────
     static readonly Color BgBase   = HC("0B0B18");
@@ -40,6 +42,8 @@ public static class SceneBuilder
     static readonly Color SHPFill  = HC("2E7D32");
     static readonly Color SHPBg    = HC("0F2A10");
     static readonly Color TextSec  = HC("B0B0C8");
+    static readonly Color DeepOrange = HC("BF360C");
+    static readonly Color Amber    = HC("FF6F00");
 
     // ── Build ────────────────────────────────────────────────────────────────
     [MenuItem("IdleClicker/Setup Scene", priority = 1)]
@@ -72,7 +76,7 @@ public static class SceneBuilder
         scaler.matchWidthOrHeight  = 0.5f;
         cv.AddComponent<GraphicRaycaster>();
 
-        // Background fill — full-screen, outside scroll
+        // Background fill
         var bgGO = cv.CreateChild("Background");
         bgGO.AddImage(BgBase); bgGO.Stretch();
 
@@ -88,19 +92,19 @@ public static class SceneBuilder
         scrollGO.Stretch();
 
         var viewportGO = scrollGO.CreateChild("Viewport");
-        viewportGO.AddComponent<RectMask2D>();  // reliable clip; doesn't need a visible Image
+        viewportGO.AddComponent<RectMask2D>();
         viewportGO.Stretch();
 
-        var content   = viewportGO.CreateChild("Content");
+        var content    = viewportGO.CreateChild("Content");
         var contentImg = content.AddComponent<Image>();
         contentImg.color = Color.clear;
-        contentImg.raycastTarget = false;  // don't block drag-to-scroll
+        contentImg.raycastTarget = false;
         var contentRT = content.GetComponent<RectTransform>();
         contentRT.anchorMin        = new Vector2(0f, 1f);
         contentRT.anchorMax        = new Vector2(1f, 1f);
         contentRT.pivot            = new Vector2(0.5f, 1f);
         contentRT.anchoredPosition = Vector2.zero;
-        contentRT.sizeDelta        = new Vector2(0, 1600);
+        contentRT.sizeDelta        = new Vector2(0, 1930);
 
         var scroll = scrollGO.AddComponent<ScrollRect>();
         scroll.viewport          = viewportGO.GetComponent<RectTransform>();
@@ -171,7 +175,7 @@ public static class SceneBuilder
         var (_, soldierHPFill) = HPBar(soldierHPRowGO, "SoldierHPBar", 0, 28, SHPBg, SHPFill, stretch: true);
 
         var soldierHPTextGO = Label(soldierHPRowGO, "SoldierHPText",
-            "Frontline: 50 / 50 HP", 28, HC("81C784"));
+            "Tank: 50 / 50 HP", 28, HC("81C784"));
         soldierHPTextGO.SetRT(new Vector2(0.5f, 0f), new Vector2(0.5f, 0f),
             new Vector2(0, 22), new Vector2(700, 34));
 
@@ -184,15 +188,20 @@ public static class SceneBuilder
         PT(farmBtnGO, 690, 210, 0, 680);
 
         // ════════════════════════════════════════════════════════════════════
-        // ACTION ROW  (y 910–1045)
+        // ACTION ROW  (y 910–1045) — Buy Tank | Buy Berserker | Heal Self
         // ════════════════════════════════════════════════════════════════════
-        var buySoldierGO = Btn(content, "BuySoldierButton", "Buy Soldier\n10 blood", 40, Blue);
-        PT(buySoldierGO, 910, 130, -267, 506);
+        var buyTankGO = Btn(content, "BuyTankButton",
+            "Tank\n50HP  5atk\n10 blood", 32, Blue);
+        PT(buyTankGO, 910, 130, -345, 320);
+
+        var buyBerserkerGO = Btn(content, "BuyBerserkerButton",
+            "Berserker\n25HP  12atk\n10 blood", 28, DeepOrange);
+        PT(buyBerserkerGO, 910, 130, -10, 320);
 
         var healPanelGO = content.CreateChild("HealSelfPanel");
-        healPanelGO.AddImage(Color.clear); PT(healPanelGO, 910, 130, +267, 506);
+        healPanelGO.AddImage(Color.clear); PT(healPanelGO, 910, 130, +315, 310);
 
-        var healBtnGO = Btn(healPanelGO, "HealSelfButton", "Heal Self  +20 HP\n25 blood", 40, Purple);
+        var healBtnGO = Btn(healPanelGO, "HealSelfButton", "Heal Self  +20 HP\n25 blood", 36, Purple);
         healBtnGO.Stretch(); healPanelGO.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
@@ -227,12 +236,52 @@ public static class SceneBuilder
         PT(upgradeBarracksGO, 1253, 110, +232, 370);
 
         // ════════════════════════════════════════════════════════════════════
-        // SUGGEST BUTTON  (y 1425–1525)
+        // BLOOD RITUAL CARD  (y 1415–1555) — same unlock as workers
+        // ════════════════════════════════════════════════════════════════════
+        var bloodRitualPanel = content.CreateChild("BloodRitualPanel");
+        bloodRitualPanel.AddImage(Color.clear);
+        PF(bloodRitualPanel, 1415, 140);
+
+        Panel(bloodRitualPanel, "BloodRitualCardBg", 0, 140, Surface1, 24);
+
+        var bloodRitualInfoGO = Label(bloodRitualPanel, "BloodRitualInfoText",
+            "Blood Ritual  —  passive blood income",
+            32, Color.white, TextAnchor.MiddleLeft);
+        PT(bloodRitualInfoGO, 18, 52, -175, 500);
+
+        var buyBloodRitualGO = Btn(bloodRitualPanel, "BuyBloodRitualButton",
+            "Perform\n(30 wood)", 34, Purple);
+        PT(buyBloodRitualGO, 10, 110, +232, 370);
+
+        bloodRitualPanel.SetActive(false);
+
+        // ════════════════════════════════════════════════════════════════════
+        // PRESTIGE CARD  (y 1565–1705) — visible at wave 20+
+        // ════════════════════════════════════════════════════════════════════
+        var prestigePanel = content.CreateChild("PrestigePanel");
+        prestigePanel.AddImage(Color.clear);
+        PF(prestigePanel, 1565, 140);
+
+        Panel(prestigePanel, "PrestigeCardBg", 0, 140, HC("1A0A00"), 24);
+
+        var prestigeInfoGO = Label(prestigePanel, "PrestigeInfoText",
+            "Prestige  —  reset for a blood bonus",
+            32, Gold, TextAnchor.MiddleLeft);
+        PT(prestigeInfoGO, 18, 52, -175, 500);
+
+        var prestigeBtnGO = Btn(prestigePanel, "PrestigeButton",
+            "PRESTIGE\n(reset progress)", 32, Amber);
+        PT(prestigeBtnGO, 10, 110, +232, 370);
+
+        prestigePanel.SetActive(false);
+
+        // ════════════════════════════════════════════════════════════════════
+        // SUGGEST BUTTON  (y 1720–1820)
         // ════════════════════════════════════════════════════════════════════
         var suggestBtnGO = Btn(content, "SuggestButton", "Suggest a Feature", 42, HC("1565C0"));
-        PT(suggestBtnGO, 1425, 100, 0, 680);
+        PT(suggestBtnGO, 1720, 100, 0, 680);
 
-        // ── Damage number layer (transparent, on canvas, above scroll) ──────
+        // ── Damage number layer ───────────────────────────────────────────────
         var dmgLayerGO = cv.CreateChild("DamageLayer");
         var dmgImg     = dmgLayerGO.AddComponent<Image>();
         dmgImg.color         = Color.clear;
@@ -264,7 +313,7 @@ public static class SceneBuilder
         offlineOverlay.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
-        // FEATURE REQUEST OVERLAY  (full-screen modal on canvas, not in scroll)
+        // FEATURE REQUEST OVERLAY
         // ════════════════════════════════════════════════════════════════════
         var overlay = cv.CreateChild("FeatureRequestOverlay");
         overlay.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.86f);
@@ -327,12 +376,20 @@ public static class SceneBuilder
         uim.soldierHPRow            = soldierHPRowGO;
         uim.soldierHPFill           = soldierHPFill;
         uim.soldierHPText           = soldierHPTextGO.GetComponent<Text>();
-        uim.buySoldierButton        = buySoldierGO.GetComponent<Button>();
+        uim.buyTankButton           = buyTankGO.GetComponent<Button>();
+        uim.buyBerserkerButton      = buyBerserkerGO.GetComponent<Button>();
         uim.healSelfPanel           = healPanelGO;
         uim.healSelfButton          = healBtnGO.GetComponent<Button>();
         uim.workersPanel            = workersPanel;
         uim.workerInfoText          = workerInfoGO.GetComponent<Text>();
         uim.buyWorkerButton         = buyWorkerGO.GetComponent<Button>();
+        uim.bloodRitualPanel        = bloodRitualPanel;
+        uim.bloodRitualInfoText     = bloodRitualInfoGO.GetComponent<Text>();
+        uim.buyBloodRitualButton    = buyBloodRitualGO.GetComponent<Button>();
+        uim.bloodRitualCostText     = buyBloodRitualGO.GetComponentInChildren<Text>();
+        uim.prestigePanel           = prestigePanel;
+        uim.prestigeInfoText        = prestigeInfoGO.GetComponent<Text>();
+        uim.prestigeButton          = prestigeBtnGO.GetComponent<Button>();
         uim.barracksInfoText        = barracksInfoGO.GetComponent<Text>();
         uim.upgradeBarracksButton   = upgradeBarracksGO.GetComponent<Button>();
         uim.barracksUpgradeCostText = upgradeBarracksGO.GetComponentInChildren<Text>();
@@ -346,16 +403,19 @@ public static class SceneBuilder
         uim.featureSubmitButton     = featureSubmitGO.GetComponent<Button>();
         clk.uiManager               = uim;
 
-        // Wire buttons (persistent so listeners survive scene serialization)
-        UnityEventTools.AddPersistentListener(farmBtnGO.GetComponent<Button>().onClick,         clk.OnFarmBlood);
-        UnityEventTools.AddPersistentListener(buySoldierGO.GetComponent<Button>().onClick,      clk.OnBuySoldier);
-        UnityEventTools.AddPersistentListener(healBtnGO.GetComponent<Button>().onClick,         clk.OnHealSelf);
-        UnityEventTools.AddPersistentListener(buyWorkerGO.GetComponent<Button>().onClick,       clk.OnBuyWorker);
-        UnityEventTools.AddPersistentListener(upgradeBarracksGO.GetComponent<Button>().onClick, clk.OnUpgradeBarracks);
-        UnityEventTools.AddPersistentListener(suggestBtnGO.GetComponent<Button>().onClick,      clk.OnOpenSuggest);
-        UnityEventTools.AddPersistentListener(offlineDismissGO.GetComponent<Button>().onClick,  uim.DismissOfflinePanel);
-        UnityEventTools.AddPersistentListener(featureSubmitGO.GetComponent<Button>().onClick,   uim.SubmitFeature);
-        UnityEventTools.AddPersistentListener(featureCancelGO.GetComponent<Button>().onClick,   uim.HideFeaturePanel);
+        // Wire buttons
+        UnityEventTools.AddPersistentListener(farmBtnGO.GetComponent<Button>().onClick,          clk.OnFarmBlood);
+        UnityEventTools.AddPersistentListener(buyTankGO.GetComponent<Button>().onClick,          clk.OnBuyTank);
+        UnityEventTools.AddPersistentListener(buyBerserkerGO.GetComponent<Button>().onClick,     clk.OnBuyBerserker);
+        UnityEventTools.AddPersistentListener(healBtnGO.GetComponent<Button>().onClick,          clk.OnHealSelf);
+        UnityEventTools.AddPersistentListener(buyWorkerGO.GetComponent<Button>().onClick,        clk.OnBuyWorker);
+        UnityEventTools.AddPersistentListener(buyBloodRitualGO.GetComponent<Button>().onClick,   clk.OnBuyBloodRitual);
+        UnityEventTools.AddPersistentListener(upgradeBarracksGO.GetComponent<Button>().onClick,  clk.OnUpgradeBarracks);
+        UnityEventTools.AddPersistentListener(prestigeBtnGO.GetComponent<Button>().onClick,      clk.OnPrestige);
+        UnityEventTools.AddPersistentListener(suggestBtnGO.GetComponent<Button>().onClick,       clk.OnOpenSuggest);
+        UnityEventTools.AddPersistentListener(offlineDismissGO.GetComponent<Button>().onClick,   uim.DismissOfflinePanel);
+        UnityEventTools.AddPersistentListener(featureSubmitGO.GetComponent<Button>().onClick,    uim.SubmitFeature);
+        UnityEventTools.AddPersistentListener(featureCancelGO.GetComponent<Button>().onClick,    uim.HideFeaturePanel);
 
         const string scenePath = "Assets/Scenes/MainScene.unity";
         EditorSceneManager.SaveScene(scene, scenePath);
@@ -386,7 +446,6 @@ public static class SceneBuilder
 
     // ── Factory helpers ───────────────────────────────────────────────────────
 
-    // Adds an Image that uses the rounded sprite when available (9-slice).
     static Image RImg(GameObject go, Color color)
     {
         var img = go.AddComponent<Image>();
@@ -503,8 +562,6 @@ public static class SceneBuilder
                 $"Assets/Resources/Sprites/{f}.png"));
         return list.ToArray();
     }
-
-    // ── Color utilities ───────────────────────────────────────────────────────
 
     static Color HC(string hex)
     {

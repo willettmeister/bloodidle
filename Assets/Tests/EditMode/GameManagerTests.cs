@@ -181,15 +181,16 @@ public class GameManagerTests
     [Test]
     public void UseHealSelf_FailsWithNoSoldiers()
     {
-        for (int i = 0; i < 50; i++) _gm.FarmBlood(); // unlock, no soldier
+        _gm.ForceUnlockHealSelfForTest();
+        _gm.AwardBloodForTest(GameManager.HealSelfCost + 1);
         Assert.IsFalse(_gm.UseHealSelf());
     }
 
     [Test]
     public void UseHealSelf_FailsAtFullHP()
     {
-        // Unlock (50 earned) + buy soldier (10) = need >= 60; farm 85 for blood headroom
-        for (int i = 0; i < 85; i++) _gm.FarmBlood();
+        _gm.AwardBloodForTest(GameManager.SoldierCost + GameManager.HealSelfCost + 1);
+        _gm.ForceUnlockHealSelfForTest();
         _gm.BuySoldier(); // soldier at full HP
         Assert.IsFalse(_gm.UseHealSelf());
     }
@@ -197,9 +198,10 @@ public class GameManagerTests
     [Test]
     public void UseHealSelf_FailsWithInsufficientBlood()
     {
-        // Farm 60 (unlocks at 50), buy 4 soldiers (40 blood) → 20 blood left < 25 cost
-        for (int i = 0; i < 60; i++) _gm.FarmBlood();
-        for (int i = 0; i < 4; i++) _gm.BuySoldier();
+        // Buy a soldier and wound it; blood left < HealSelfCost
+        _gm.AwardBloodForTest(GameManager.SoldierCost + GameManager.HealSelfCost - 1);
+        _gm.ForceUnlockHealSelfForTest();
+        _gm.BuySoldier(); // blood = HealSelfCost - 1 = 24
         _gm.SetSoldierHPForTest(10f);
         Assert.IsFalse(_gm.UseHealSelf());
     }
@@ -207,20 +209,23 @@ public class GameManagerTests
     [Test]
     public void UseHealSelf_HealsAndDeductsBlood()
     {
-        for (int i = 0; i < 85; i++) _gm.FarmBlood(); // blood=85, unlocked
-        _gm.BuySoldier(); // blood=75
+        _gm.AwardBloodForTest(GameManager.SoldierCost + GameManager.HealSelfCost + 50);
+        _gm.ForceUnlockHealSelfForTest();
+        _gm.BuySoldier();
+        double bloodBefore = _gm.Blood;
         _gm.SetSoldierHPForTest(10f);
         Assert.IsTrue(_gm.UseHealSelf());
-        Assert.AreEqual(50.0, _gm.Blood, 0.001);     // 75 - 25
+        Assert.AreEqual(bloodBefore - GameManager.HealSelfCost, _gm.Blood, 0.001);
         Assert.AreEqual(30f, _gm.SoldierHP, 0.001f); // 10 + 20
     }
 
     [Test]
     public void UseHealSelf_CapsHPAtMax()
     {
-        for (int i = 0; i < 85; i++) _gm.FarmBlood();
+        _gm.AwardBloodForTest(GameManager.SoldierCost + GameManager.HealSelfCost + 50);
+        _gm.ForceUnlockHealSelfForTest();
         _gm.BuySoldier();
-        _gm.SetSoldierHPForTest(40f); // 10 below cap; heal +20 would overshoot
+        _gm.SetSoldierHPForTest(GameManager.SoldierMaxHP - 10f); // 10 below tank cap
         _gm.UseHealSelf();
         Assert.AreEqual(GameManager.SoldierMaxHP, _gm.SoldierHP);
     }

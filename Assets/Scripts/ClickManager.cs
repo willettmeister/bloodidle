@@ -4,10 +4,13 @@ public class ClickManager : MonoBehaviour
 {
     public UIManager uiManager;
 
-    public void OnFarmBlood()       => GameManager.Instance.FarmBlood();
-    public void OnBuySoldier()      => GameManager.Instance.BuySoldier();
-    public void OnHealSelf()        => GameManager.Instance.UseHealSelf();
-    public void OnBuyWorker()       => GameManager.Instance.BuyWorker();
-    public void OnUpgradeBarracks() => GameManager.Instance.UpgradeBarracks();
-    public void OnOpenSuggest()     => uiManager.ShowFeaturePanel();
+    public void OnFarmBlood()        => GameManager.Instance.FarmBlood();
+    public void OnBuyTank()          => GameManager.Instance.BuyTank();
+    public void OnBuyBerserker()     => GameManager.Instance.BuyBerserker();
+    public void OnHealSelf()         => GameManager.Instance.UseHealSelf();
+    public void OnBuyWorker()        => GameManager.Instance.BuyWorker();
+    public void OnBuyBloodRitual()   => GameManager.Instance.BuyBloodRitual();
+    public void OnUpgradeBarracks()  => GameManager.Instance.UpgradeBarracks();
+    public void OnPrestige()         => GameManager.Instance.Prestige();
+    public void OnOpenSuggest()      => uiManager.ShowFeaturePanel();
 }

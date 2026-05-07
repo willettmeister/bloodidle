@@ -25,7 +25,8 @@ public class UIManager : MonoBehaviour
     public GameObject soldierHPRow;
     public Image soldierHPFill;
     public Text soldierHPText;
-    public Button buySoldierButton;
+    public Button buyTankButton;
+    public Button buyBerserkerButton;
     public GameObject healSelfPanel;
     public Button healSelfButton;
 
@@ -33,6 +34,17 @@ public class UIManager : MonoBehaviour
     public GameObject workersPanel;
     public Text workerInfoText;
     public Button buyWorkerButton;
+
+    [Header("Blood Ritual")]
+    public GameObject bloodRitualPanel;
+    public Text bloodRitualInfoText;
+    public Button buyBloodRitualButton;
+    public Text bloodRitualCostText;
+
+    [Header("Prestige")]
+    public GameObject prestigePanel;
+    public Text prestigeInfoText;
+    public Button prestigeButton;
 
     [Header("Sprites")]
     public Image enemyImage;
@@ -88,8 +100,10 @@ public class UIManager : MonoBehaviour
             return;
         }
 
-        bloodText.text = $"Blood: {GameManager.FormatNumber(gm.Blood)}";
-        woodText.text  = gm.WoodPerSecond > 0
+        bloodText.text = gm.BloodPerSec > 0
+            ? $"Blood: {GameManager.FormatNumber(gm.Blood)}  +{gm.BloodPerSec:F1}/s"
+            : $"Blood: {GameManager.FormatNumber(gm.Blood)}";
+        woodText.text = gm.WoodPerSecond > 0
             ? $"Wood: {GameManager.FormatNumber(gm.Wood)}  +{gm.WoodPerSecond:F1}/s"
             : $"Wood: {GameManager.FormatNumber(gm.Wood)}";
 
@@ -110,7 +124,7 @@ public class UIManager : MonoBehaviour
         if (gm.IsBossWave)
         {
             enemyNameText.text  = $"☠ {gm.EnemyName} ☠";
-            enemyNameText.color = new Color(1f, 0.84f, 0f);   // gold
+            enemyNameText.color = new Color(1f, 0.84f, 0f);
         }
         else
         {
@@ -127,33 +141,58 @@ public class UIManager : MonoBehaviour
             bossTimerText.color = secs <= 10 ? new Color(1f, 0.2f, 0.2f) : new Color(1f, 0.6f, 0.1f);
         }
         enemyHPFill.fillAmount = gm.EnemyMaxHP > 0 ? gm.EnemyHP / gm.EnemyMaxHP : 0f;
-        enemyHPText.text   = $"{GameManager.FormatHP(gm.EnemyHP)} / {GameManager.FormatHP(gm.EnemyMaxHP)}";
+        enemyHPText.text = $"{GameManager.FormatHP(gm.EnemyHP)} / {GameManager.FormatHP(gm.EnemyMaxHP)}";
 
         bool hasSoldiers = gm.SoldierCount > 0;
         bool atCap       = gm.SoldierCount >= gm.MaxSoldiers;
 
         soldierCountText.text = hasSoldiers
-            ? $"Soldiers: {gm.SoldierCount} / {gm.MaxSoldiers}"
+            ? $"Soldiers: {gm.SoldierCount}/{gm.MaxSoldiers}  [T:{gm.TankCount} B:{gm.BerserkerCount}]"
             : $"No soldiers — buy one!  (max {gm.MaxSoldiers})";
 
         soldierHPRow.SetActive(hasSoldiers);
         if (hasSoldiers)
         {
-            soldierHPFill.fillAmount = gm.SoldierHP / GameManager.SoldierMaxHP;
-            soldierHPText.text = $"Frontline: {GameManager.FormatHP(gm.SoldierHP)} / {GameManager.FormatHP(GameManager.SoldierMaxHP)} HP";
+            soldierHPFill.fillAmount = gm.FrontlineMaxHP > 0 ? gm.SoldierHP / gm.FrontlineMaxHP : 0f;
+            string cls = gm.FrontlineIsTank ? "Tank" : "Berserker";
+            soldierHPText.text = $"{cls}: {GameManager.FormatHP(gm.SoldierHP)} / {GameManager.FormatHP(gm.FrontlineMaxHP)} HP";
         }
 
-        buySoldierButton.interactable = gm.Blood >= GameManager.SoldierCost && !atCap;
+        bool canBuySoldier = gm.Blood >= GameManager.SoldierCost && !atCap;
+        if (buyTankButton      != null) buyTankButton.interactable      = canBuySoldier;
+        if (buyBerserkerButton != null) buyBerserkerButton.interactable = canBuySoldier;
 
         healSelfPanel.SetActive(gm.HealSelfUnlocked);
         if (gm.HealSelfUnlocked)
             healSelfButton.interactable = gm.Blood >= GameManager.HealSelfCost
                 && hasSoldiers
-                && gm.SoldierHP < GameManager.SoldierMaxHP;
+                && gm.SoldierHP < gm.FrontlineMaxHP;
 
         if (workersPanel != null) workersPanel.SetActive(gm.WorkersUnlocked);
         workerInfoText.text          = $"Workers: {gm.WorkerCount}";
         buyWorkerButton.interactable = gm.Blood >= GameManager.WorkerCost;
+
+        if (bloodRitualPanel != null) bloodRitualPanel.SetActive(gm.WorkersUnlocked);
+        if (gm.WorkersUnlocked && bloodRitualInfoText != null)
+        {
+            bloodRitualInfoText.text = gm.BloodRitualCount > 0
+                ? $"Blood Ritual: {gm.BloodRitualCount}  +{gm.BloodPerSec:F1} blood/s"
+                : "Blood Ritual  —  passive blood income";
+            if (buyBloodRitualButton != null)
+                buyBloodRitualButton.interactable = gm.Wood >= gm.BloodRitualCost;
+            if (bloodRitualCostText != null)
+                bloodRitualCostText.text = $"Perform\n({GameManager.FormatNumber(gm.BloodRitualCost)} wood)";
+        }
+
+        bool canPrestige = gm.Wave >= GameManager.PrestigeWaveRequirement;
+        if (prestigePanel != null) prestigePanel.SetActive(canPrestige);
+        if (canPrestige && prestigeInfoText != null)
+        {
+            prestigeInfoText.text = gm.PrestigeCount > 0
+                ? $"Prestige Lv.{gm.PrestigeCount}  —  all blood ×{gm.PrestigeMultiplier:F2}"
+                : $"Prestige  —  reset for ×{gm.PrestigeMultiplier + 0.5:F2} blood bonus";
+            if (prestigeButton != null) prestigeButton.interactable = true;
+        }
 
         barracksInfoText.text        = $"Barracks  Lv.{gm.BarracksLevel}  —  Max {gm.MaxSoldiers} soldiers";
         barracksUpgradeCostText.text = $"Upgrade\n({GameManager.FormatNumber(gm.BarracksUpgradeCost)} wood)";
@@ -194,8 +233,6 @@ public class UIManager : MonoBehaviour
 
     // ── Feature Request ───────────────────────────────────────────────────────
 
-    // Token is loaded from Assets/Resources/bloodidle_secrets.txt (gitignored).
-    // Copy bloodidle_secrets.txt.sample → bloodidle_secrets.txt and paste your PAT.
     const string k_GhApi = "https://api.github.com/repos/willettmeister/bloodidle/issues";
 
     static string GetToken()
