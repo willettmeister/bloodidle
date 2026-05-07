@@ -276,10 +276,13 @@ public static class SceneBuilder
         prestigePanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
-        // SUGGEST BUTTON  (y 1720–1820)
+        // BOTTOM ROW  (y 1720–1820) — Stats | Suggest
         // ════════════════════════════════════════════════════════════════════
-        var suggestBtnGO = Btn(content, "SuggestButton", "Suggest a Feature", 42, HC("1565C0"));
-        PT(suggestBtnGO, 1720, 100, 0, 680);
+        var statsBtnGO = Btn(content, "StatsButton", "Statistics", 40, HC("00695C"));
+        PT(statsBtnGO, 1720, 100, -175, 320);
+
+        var suggestBtnGO = Btn(content, "SuggestButton", "Suggest a Feature", 36, HC("1565C0"));
+        PT(suggestBtnGO, 1720, 100, +175, 320);
 
         // ── Damage number layer ───────────────────────────────────────────────
         var dmgLayerGO = cv.CreateChild("DamageLayer");
@@ -287,6 +290,48 @@ public static class SceneBuilder
         dmgImg.color         = Color.clear;
         dmgImg.raycastTarget = false;
         dmgLayerGO.Stretch();
+
+        // ── Achievement toast (bottom strip, always on canvas) ───────────────
+        var toastGO = cv.CreateChild("AchievementToast");
+        RImg(toastGO, new Color(0.8f, 0.55f, 0f, 0.96f));
+        var toastRT = toastGO.GetComponent<RectTransform>();
+        toastRT.anchorMin        = new Vector2(0f, 0f);
+        toastRT.anchorMax        = new Vector2(1f, 0f);
+        toastRT.pivot            = new Vector2(0.5f, 0f);
+        toastRT.anchoredPosition = new Vector2(0f, 12f);
+        toastRT.sizeDelta        = new Vector2(0f, 64f);
+        var toastTextGO = Label(toastGO, "AchievementToastText", "Achievement!", 34, Color.white);
+        toastTextGO.Stretch();
+        toastGO.SetActive(false);
+
+        // ── Stats overlay (modal on canvas) ──────────────────────────────────
+        var statsOverlay = cv.CreateChild("StatsPanel");
+        statsOverlay.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.88f);
+        statsOverlay.Stretch();
+
+        var statsCard   = statsOverlay.CreateChild("Card");
+        RImg(statsCard, Surface1);
+        var statsCardRT = statsCard.GetComponent<RectTransform>();
+        statsCardRT.anchorMin        = new Vector2(0.5f, 0.5f);
+        statsCardRT.anchorMax        = new Vector2(0.5f, 0.5f);
+        statsCardRT.anchoredPosition = Vector2.zero;
+        statsCardRT.sizeDelta        = new Vector2(900, 840);
+
+        var statsTitleGO = Label(statsCard, "StatsTitle", "Statistics", 52, Gold);
+        PT(statsTitleGO, 22, 62, 0, 860);
+
+        var statsDivGO = statsCard.CreateChild("StatsDiv");
+        statsDivGO.AddImage(HC("2D2D4A")); PT(statsDivGO, 88, 2, 0, 860);
+
+        var statsTextGO = Label(statsCard, "StatsText", "", 28, Color.white, TextAnchor.UpperLeft);
+        statsTextGO.GetComponent<Text>().verticalOverflow   = VerticalWrapMode.Overflow;
+        statsTextGO.GetComponent<Text>().horizontalOverflow = HorizontalWrapMode.Wrap;
+        PT(statsTextGO, 100, 640, 0, 840);
+
+        var statsCloseGO = Btn(statsCard, "StatsCloseButton", "Close", 42, Crimson);
+        PT(statsCloseGO, 754, 70, 0, 400);
+
+        statsOverlay.SetActive(false);
 
         // ── Offline earnings modal ────────────────────────────────────────────
         var offlineOverlay = cv.CreateChild("OfflineEarningsPanel");
@@ -396,6 +441,10 @@ public static class SceneBuilder
         uim.damageLayer             = dmgLayerGO.GetComponent<RectTransform>();
         uim.offlinePanel            = offlineOverlay;
         uim.offlineText             = offlineTextGO.GetComponent<Text>();
+        uim.statsPanel              = statsOverlay;
+        uim.statsText               = statsTextGO.GetComponent<Text>();
+        uim.achievementToast        = toastGO;
+        uim.achievementToastText    = toastTextGO.GetComponent<Text>();
         uim.featureRequestPanel     = overlay;
         uim.featureTitleField       = titleField;
         uim.featureDescField        = descField;
@@ -412,7 +461,9 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(buyBloodRitualGO.GetComponent<Button>().onClick,   clk.OnBuyBloodRitual);
         UnityEventTools.AddPersistentListener(upgradeBarracksGO.GetComponent<Button>().onClick,  clk.OnUpgradeBarracks);
         UnityEventTools.AddPersistentListener(prestigeBtnGO.GetComponent<Button>().onClick,      clk.OnPrestige);
+        UnityEventTools.AddPersistentListener(statsBtnGO.GetComponent<Button>().onClick,          clk.OnOpenStats);
         UnityEventTools.AddPersistentListener(suggestBtnGO.GetComponent<Button>().onClick,       clk.OnOpenSuggest);
+        UnityEventTools.AddPersistentListener(statsCloseGO.GetComponent<Button>().onClick,       uim.HideStatsPanel);
         UnityEventTools.AddPersistentListener(offlineDismissGO.GetComponent<Button>().onClick,   uim.DismissOfflinePanel);
         UnityEventTools.AddPersistentListener(featureSubmitGO.GetComponent<Button>().onClick,    uim.SubmitFeature);
         UnityEventTools.AddPersistentListener(featureCancelGO.GetComponent<Button>().onClick,    uim.HideFeaturePanel);

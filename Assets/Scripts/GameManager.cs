@@ -2,6 +2,22 @@ using UnityEngine;
 using System;
 using System.Globalization;
 
+// ── Achievement bitmask ───────────────────────────────────────────────────────
+[Flags]
+public enum AchievementFlags
+{
+    None          = 0,
+    FirstKill     = 1 << 0,
+    Wave10        = 1 << 1,
+    Wave25        = 1 << 2,
+    Blood1K       = 1 << 3,
+    Blood10K      = 1 << 4,
+    FirstSoldier  = 1 << 5,
+    FullLegion    = 1 << 6,
+    FirstRitual   = 1 << 7,
+    FirstPrestige = 1 << 8,
+}
+
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
@@ -29,25 +45,25 @@ public class GameManager : MonoBehaviour
     public float TotalAttack     => TankCount * SoldierAttack + BerserkerCount * BerserkerAttack;
 
     public int MaxSoldiers { get; private set; } = 10;
-    public const float  SoldierMaxHP    = 50f;    // tank HP
+    public const float  SoldierMaxHP    = 50f;
     public const double SoldierCost     = 10.0;
-    public const float  SoldierAttack   = 5f;     // tank dmg/sec per soldier
+    public const float  SoldierAttack   = 5f;
     public const float  BerserkerMaxHP  = 25f;
-    public const float  BerserkerAttack = 12f;    // berserker dmg/sec per soldier
+    public const float  BerserkerAttack = 12f;
 
     // --- Barracks ---
     public int BarracksLevel { get; private set; } = 1;
     public double BarracksUpgradeCost { get; private set; } = 20.0;
-    public const int    BarracksSoldierBonus     = 5;
-    public const double BarracksCostMultiplier   = 2.0;
+    public const int    BarracksSoldierBonus    = 5;
+    public const double BarracksCostMultiplier  = 2.0;
 
-    // --- Blood Ritual (passive blood income) ---
+    // --- Blood Ritual ---
     public int    BloodRitualCount { get; private set; }
     public double BloodRitualCost  { get; private set; } = BloodRitualBaseCost;
     public double BloodPerSec      => BloodRitualCount * BloodRitualBloodPerSec * PrestigeMultiplier;
-    public const double BloodRitualBaseCost        = 30.0;
-    public const double BloodRitualBloodPerSec     = 1.0;
-    public const double BloodRitualCostMultiplier  = 2.0;
+    public const double BloodRitualBaseCost       = 30.0;
+    public const double BloodRitualBloodPerSec    = 1.0;
+    public const double BloodRitualCostMultiplier = 2.0;
 
     // --- Prestige ---
     public int    PrestigeCount      { get; private set; }
@@ -65,9 +81,17 @@ public class GameManager : MonoBehaviour
     public bool IsBossWave => Wave == NextBossWave;
     public int WavesUntilBoss => NextBossWave - Wave;
     public float BossTimeRemaining { get; private set; }
-    public const float BossTimeLimit            = 90f;
-    public const int   BossWaveRollback         = 3;
-    public const float BossFailBloodPenaltyPct  = 0.25f;
+    public const float BossTimeLimit           = 90f;
+    public const int   BossWaveRollback        = 3;
+    public const float BossFailBloodPenaltyPct = 0.25f;
+
+    // --- Statistics ---
+    public int    TotalEnemiesKilled { get; private set; }
+    public double TimePlayed         { get; private set; }
+
+    // --- Achievements ---
+    public AchievementFlags Achievements { get; private set; }
+    public event Action<AchievementFlags> OnAchievementUnlocked;
 
     // --- Offline earnings ---
     public double OfflineWoodEarned { get; private set; }
@@ -83,24 +107,26 @@ public class GameManager : MonoBehaviour
     public const float  HealSelfAmount = 20f;
 
     public event Action OnStateChanged;
-    public event Action<float, bool> OnDamageDealt;  // amount, isEnemyDamage
+    public event Action<float, bool> OnDamageDealt;
 
     float _dmgTimer;
     const float DmgTickInterval = 0.4f;
 
-#if UNITY_INCLUDE_TESTS
-    public static void ResetForTest()                     => Instance = null;
-    public void SetWoodForTest(double amount)              => Wood = amount;
-    public void SetSoldierHPForTest(float hp)             => SoldierHP = hp;
-    public void SaveForTest()                             => Save();
-    public void ClearSaveForTest()                        => PlayerPrefs.DeleteAll();
+    AudioSource _audio;
+    AudioClip   _clipFarm, _clipKill, _clipBossKill;
 
-    public void AwardBloodForTest(double amount)          => AddBlood(amount);
-    public void SetWaveForTest(int wave)                  => Wave = wave;
-    public void SetNextBossWaveForTest(int wave)          => NextBossWave = wave;
-    public void SpawnEnemyForTest(int wave)               => SpawnEnemy(wave);
-    public void TriggerBossTimeoutForTest()               => BossTimerExpired();
-    public void ForceUnlockHealSelfForTest()              => HealSelfUnlocked = true;
+#if UNITY_INCLUDE_TESTS
+    public static void ResetForTest()                      => Instance = null;
+    public void SetWoodForTest(double amount)               => Wood = amount;
+    public void SetSoldierHPForTest(float hp)              => SoldierHP = hp;
+    public void SaveForTest()                              => Save();
+    public void ClearSaveForTest()                         => PlayerPrefs.DeleteAll();
+    public void AwardBloodForTest(double amount)           => AddBlood(amount);
+    public void SetWaveForTest(int wave)                   => Wave = wave;
+    public void SetNextBossWaveForTest(int wave)           => NextBossWave = wave;
+    public void SpawnEnemyForTest(int wave)                => SpawnEnemy(wave);
+    public void TriggerBossTimeoutForTest()                => BossTimerExpired();
+    public void ForceUnlockHealSelfForTest()               => HealSelfUnlocked = true;
 
     public static double CalculateOfflineWood(int workers, double seconds) =>
         workers * WorkerWoodPerSec * Math.Min(seconds, 8.0 * 3600);
@@ -122,7 +148,7 @@ public class GameManager : MonoBehaviour
 
     private static readonly EnemyDef[] EnemyPool =
     {
-        new EnemyDef { Name = "Goblin",          HPMult = 0.6f, AtkMult = 0.7f, SpriteIdx = 0 },
+        new EnemyDef { Name = "Goblin",         HPMult = 0.6f, AtkMult = 0.7f, SpriteIdx = 0 },
         new EnemyDef { Name = "Skeleton",        HPMult = 0.7f, AtkMult = 0.9f, SpriteIdx = 0 },
         new EnemyDef { Name = "Orc Warrior",     HPMult = 1.0f, AtkMult = 1.0f, SpriteIdx = 1 },
         new EnemyDef { Name = "Cave Troll",      HPMult = 1.5f, AtkMult = 0.8f, SpriteIdx = 2 },
@@ -144,12 +170,20 @@ public class GameManager : MonoBehaviour
         NextBossWave = UnityEngine.Random.Range(6, 13);
         SpawnEnemy(1);
         Load();
+
+        _audio = gameObject.AddComponent<AudioSource>();
+        _audio.playOnAwake = false;
+        _clipFarm     = Resources.Load<AudioClip>("Audio/blood_farm");
+        _clipKill     = Resources.Load<AudioClip>("Audio/enemy_kill");
+        _clipBossKill = Resources.Load<AudioClip>("Audio/boss_kill");
     }
 
     void Update()
     {
         float dt = Time.deltaTime;
         bool changed = false;
+
+        TimePlayed += dt;
 
         if (WorkerCount > 0)
         {
@@ -191,10 +225,17 @@ public class GameManager : MonoBehaviour
             double reward = Math.Floor(25 * Math.Pow(1.4, Wave - 1) * PrestigeMultiplier);
             if (wasBoss) reward *= 3;
             AddBlood(reward);
+
+            TotalEnemiesKilled++;
+            TryUnlock(AchievementFlags.FirstKill);
             Wave++;
+            if (Wave >= 10) TryUnlock(AchievementFlags.Wave10);
+            if (Wave >= 25) TryUnlock(AchievementFlags.Wave25);
+
             if (wasBoss) NextBossWave = Wave + UnityEngine.Random.Range(5, 11);
             SpawnEnemy(Wave);
             _dmgTimer = 0f;
+            PlaySound(wasBoss ? _clipBossKill : _clipKill);
             return true;
         }
 
@@ -258,6 +299,7 @@ public class GameManager : MonoBehaviour
     public void FarmBlood()
     {
         AddBlood(BloodPerClick * PrestigeMultiplier);
+        PlaySound(_clipFarm);
         OnStateChanged?.Invoke();
     }
 
@@ -267,6 +309,20 @@ public class GameManager : MonoBehaviour
         TotalBloodEarned += amount;
         if (!WorkersUnlocked  && TotalBloodEarned >= WorkersUnlockThreshold)  WorkersUnlocked  = true;
         if (!HealSelfUnlocked && TotalBloodEarned >= HealSelfUnlockThreshold) HealSelfUnlocked = true;
+        if (TotalBloodEarned >= 1_000)  TryUnlock(AchievementFlags.Blood1K);
+        if (TotalBloodEarned >= 10_000) TryUnlock(AchievementFlags.Blood10K);
+    }
+
+    void TryUnlock(AchievementFlags flag)
+    {
+        if ((Achievements & flag) != 0) return;
+        Achievements |= flag;
+        OnAchievementUnlocked?.Invoke(flag);
+    }
+
+    void PlaySound(AudioClip clip)
+    {
+        if (clip != null && _audio != null) _audio.PlayOneShot(clip, 0.7f);
     }
 
     public bool BuySoldier() => BuyTank();
@@ -276,7 +332,8 @@ public class GameManager : MonoBehaviour
         if (Blood < SoldierCost || SoldierCount >= MaxSoldiers) return false;
         Blood -= SoldierCost;
         TankCount++;
-        if (SoldierCount == 1) SoldierHP = SoldierMaxHP;
+        if (SoldierCount == 1) { SoldierHP = SoldierMaxHP; TryUnlock(AchievementFlags.FirstSoldier); }
+        if (SoldierCount >= MaxSoldiers) TryUnlock(AchievementFlags.FullLegion);
         OnStateChanged?.Invoke();
         return true;
     }
@@ -286,7 +343,8 @@ public class GameManager : MonoBehaviour
         if (Blood < SoldierCost || SoldierCount >= MaxSoldiers) return false;
         Blood -= SoldierCost;
         BerserkerCount++;
-        if (SoldierCount == 1) SoldierHP = BerserkerMaxHP;
+        if (SoldierCount == 1) { SoldierHP = BerserkerMaxHP; TryUnlock(AchievementFlags.FirstSoldier); }
+        if (SoldierCount >= MaxSoldiers) TryUnlock(AchievementFlags.FullLegion);
         OnStateChanged?.Invoke();
         return true;
     }
@@ -305,6 +363,7 @@ public class GameManager : MonoBehaviour
         if (Wood < BloodRitualCost) return false;
         Wood -= BloodRitualCost;
         BloodRitualCount++;
+        if (BloodRitualCount == 1) TryUnlock(AchievementFlags.FirstRitual);
         BloodRitualCost = Math.Floor(BloodRitualCost * BloodRitualCostMultiplier);
         OnStateChanged?.Invoke();
         return true;
@@ -335,6 +394,7 @@ public class GameManager : MonoBehaviour
     {
         if (Wave < PrestigeWaveRequirement) return false;
         PrestigeCount++;
+        TryUnlock(AchievementFlags.FirstPrestige);
         Blood               = 0;
         Wood                = 0;
         TankCount           = 0;
@@ -354,8 +414,20 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
-    void OnApplicationPause(bool pausing) { if (pausing) Save(); }
-    void OnApplicationQuit()              { Save(); }
+    void OnApplicationPause(bool pausing)
+    {
+        if (pausing)
+        {
+            Save();
+            NotificationManager.ScheduleIdleReminder(SoldierCount == 0);
+        }
+        else
+        {
+            NotificationManager.CancelAll();
+        }
+    }
+
+    void OnApplicationQuit() { Save(); }
 
     void Save()
     {
@@ -376,6 +448,9 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("WorkersUnlocked",     WorkersUnlocked  ? 1 : 0);
         PlayerPrefs.SetInt   ("HealSelfUnlocked",    HealSelfUnlocked ? 1 : 0);
         PlayerPrefs.SetInt   ("PrestigeCount",       PrestigeCount);
+        PlayerPrefs.SetInt   ("TotalEnemiesKilled",  TotalEnemiesKilled);
+        PlayerPrefs.SetString("TimePlayed",          TimePlayed.ToString("R", ic));
+        PlayerPrefs.SetInt   ("Achievements",        (int)Achievements);
         PlayerPrefs.SetFloat ("EnemyHP",             EnemyHP);
         PlayerPrefs.SetFloat ("EnemyMaxHP",          EnemyMaxHP);
         PlayerPrefs.SetString("EnemyName",           EnemyName);
@@ -393,8 +468,7 @@ public class GameManager : MonoBehaviour
         Blood               = double.Parse(PlayerPrefs.GetString("Blood",               "0"),  ic);
         Wood                = double.Parse(PlayerPrefs.GetString("Wood",                "0"),  ic);
         Wave                = PlayerPrefs.GetInt   ("Wave",                1);
-        // Migrate old "SoldierCount" saves → all tanks
-        TankCount           = PlayerPrefs.GetInt("TankCount",      PlayerPrefs.GetInt("SoldierCount", 0));
+        TankCount           = PlayerPrefs.GetInt("TankCount", PlayerPrefs.GetInt("SoldierCount", 0));
         BerserkerCount      = PlayerPrefs.GetInt("BerserkerCount", 0);
         SoldierHP           = PlayerPrefs.GetFloat ("SoldierHP",           0f);
         WorkerCount         = PlayerPrefs.GetInt   ("WorkerCount",         0);
@@ -407,6 +481,9 @@ public class GameManager : MonoBehaviour
         WorkersUnlocked     = PlayerPrefs.GetInt   ("WorkersUnlocked",     0) == 1;
         HealSelfUnlocked    = PlayerPrefs.GetInt   ("HealSelfUnlocked",    0) == 1;
         PrestigeCount       = PlayerPrefs.GetInt   ("PrestigeCount",       0);
+        TotalEnemiesKilled  = PlayerPrefs.GetInt   ("TotalEnemiesKilled",  0);
+        TimePlayed          = double.Parse(PlayerPrefs.GetString("TimePlayed", "0"), ic);
+        Achievements        = (AchievementFlags)PlayerPrefs.GetInt("Achievements", 0);
         EnemyHP             = PlayerPrefs.GetFloat ("EnemyHP",             100f);
         EnemyMaxHP          = PlayerPrefs.GetFloat ("EnemyMaxHP",          100f);
         EnemyName           = PlayerPrefs.GetString("EnemyName",           "Goblin");
@@ -414,7 +491,6 @@ public class GameManager : MonoBehaviour
         EnemySpriteIndex    = PlayerPrefs.GetInt   ("EnemySpriteIndex",    0);
         int savedNext       = PlayerPrefs.GetInt   ("NextBossWave",        0);
         NextBossWave        = savedNext > 0 ? savedNext : Wave + UnityEngine.Random.Range(5, 11);
-        // Offline time doesn't count against boss timer — always reload fresh
         BossTimeRemaining   = IsBossWave ? BossTimeLimit : 0f;
 
         if (WorkerCount > 0 && PlayerPrefs.HasKey("SaveTime"))

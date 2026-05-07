@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEditor;
 using System;
 using System.IO;
+using System.Collections.Generic;
 
 // Generates all game sprites programmatically.
 // Run: IdleClicker > Generate Assets  (before or after Setup Scene)
@@ -28,8 +29,106 @@ public static class AssetGenerator
         VampireLord();
         AncientDragon();
 
+        GenerateAudio();
+
         AssetDatabase.Refresh();
         Debug.Log("[AssetGenerator] Done. Sprites in " + OutPath);
+    }
+
+    // ── Audio clips ──────────────────────────────────────────────────────────
+    const string AudioPath = "Assets/Resources/Audio/";
+    const int    SampleRate = 44100;
+
+    static void GenerateAudio()
+    {
+        Directory.CreateDirectory(AudioPath);
+
+        // Short crisp tap — Farm Blood click
+        SaveWav(AudioPath + "blood_farm.wav",
+            ApplyEnvelope(SineWave(1100f, 0.07f), attackFrac: 0.05f, decayFrac: 0.6f));
+
+        // Descending thud — normal enemy kill
+        SaveWav(AudioPath + "enemy_kill.wav",
+            ApplyEnvelope(DescendingTone(520f, 160f, 0.18f), attackFrac: 0.03f, decayFrac: 0.4f));
+
+        // Punchy two-hit — boss kill
+        var part1 = ApplyEnvelope(DescendingTone(800f, 200f, 0.22f), attackFrac: 0.02f, decayFrac: 0.3f);
+        var part2 = ApplyEnvelope(SineWave(260f, 0.18f), attackFrac: 0.02f, decayFrac: 0.7f);
+        SaveWav(AudioPath + "boss_kill.wav", Concat(part1, Silence(0.04f), part2));
+    }
+
+    static float[] SineWave(float freqHz, float durationSec)
+    {
+        int n = (int)(durationSec * SampleRate);
+        var buf = new float[n];
+        for (int i = 0; i < n; i++)
+            buf[i] = Mathf.Sin(2f * Mathf.PI * freqHz * i / SampleRate);
+        return buf;
+    }
+
+    static float[] DescendingTone(float startHz, float endHz, float durationSec)
+    {
+        int n = (int)(durationSec * SampleRate);
+        var buf = new float[n];
+        double phase = 0;
+        for (int i = 0; i < n; i++)
+        {
+            float freq = Mathf.Lerp(startHz, endHz, (float)i / n);
+            buf[i] = Mathf.Sin((float)phase);
+            phase += 2 * Math.PI * freq / SampleRate;
+        }
+        return buf;
+    }
+
+    static float[] ApplyEnvelope(float[] buf, float attackFrac = 0.1f, float decayFrac = 0.3f)
+    {
+        int n      = buf.Length;
+        int attack = Mathf.Max(1, (int)(n * attackFrac));
+        int decay  = Mathf.Max(1, (int)(n * decayFrac));
+        for (int i = 0; i < n; i++)
+        {
+            float env;
+            if      (i < attack)      env = (float)i / attack;
+            else if (i < n - decay)   env = 1f;
+            else                      env = (float)(n - i) / decay;
+            buf[i] *= env;
+        }
+        return buf;
+    }
+
+    static float[] Silence(float durationSec)
+        => new float[(int)(durationSec * SampleRate)];
+
+    static float[] Concat(params float[][] parts)
+    {
+        int total = 0;
+        foreach (var p in parts) total += p.Length;
+        var out_ = new float[total];
+        int pos = 0;
+        foreach (var p in parts) { Array.Copy(p, 0, out_, pos, p.Length); pos += p.Length; }
+        return out_;
+    }
+
+    static void SaveWav(string path, float[] samples)
+    {
+        int n = samples.Length;
+        using var fs = new FileStream(path, FileMode.Create, FileAccess.Write);
+        using var bw = new System.IO.BinaryWriter(fs);
+        bw.Write(new byte[] { (byte)'R',(byte)'I',(byte)'F',(byte)'F' });
+        bw.Write(36 + n * 2);
+        bw.Write(new byte[] { (byte)'W',(byte)'A',(byte)'V',(byte)'E',
+                               (byte)'f',(byte)'m',(byte)'t',(byte)' ' });
+        bw.Write(16);                   // fmt chunk size
+        bw.Write((short)1);             // PCM
+        bw.Write((short)1);             // mono
+        bw.Write(SampleRate);
+        bw.Write(SampleRate * 2);       // byte rate
+        bw.Write((short)2);             // block align
+        bw.Write((short)16);            // bits per sample
+        bw.Write(new byte[] { (byte)'d',(byte)'a',(byte)'t',(byte)'a' });
+        bw.Write(n * 2);
+        foreach (float s in samples)
+            bw.Write((short)Mathf.Clamp(s * 32767f, -32768f, 32767f));
     }
 
     // ── Rounded rect (9-slice base for all panels/buttons) ───────────────────

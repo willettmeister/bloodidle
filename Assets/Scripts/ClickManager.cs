@@ -12,5 +12,6 @@ public class ClickManager : MonoBehaviour
     public void OnBuyBloodRitual()   => GameManager.Instance.BuyBloodRitual();
     public void OnUpgradeBarracks()  => GameManager.Instance.UpgradeBarracks();
     public void OnPrestige()         => GameManager.Instance.Prestige();
+    public void OnOpenStats()        => uiManager.ShowStatsPanel();
     public void OnOpenSuggest()      => uiManager.ShowFeaturePanel();
 }

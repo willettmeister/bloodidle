@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Text;
 using UnityEngine;
@@ -46,6 +45,14 @@ public class UIManager : MonoBehaviour
     public Text prestigeInfoText;
     public Button prestigeButton;
 
+    [Header("Stats")]
+    public GameObject statsPanel;
+    public Text statsText;
+
+    [Header("Achievement Toast")]
+    public GameObject achievementToast;
+    public Text achievementToastText;
+
     [Header("Sprites")]
     public Image enemyImage;
     public Sprite[] enemySprites;
@@ -69,15 +76,30 @@ public class UIManager : MonoBehaviour
     [Header("Damage Numbers")]
     public RectTransform damageLayer;
 
+    // Achievement name lookup (order matches AchievementFlags bit order)
+    static readonly (AchievementFlags flag, string title)[] k_AchievDefs =
+    {
+        (AchievementFlags.FirstKill,     "First Blood"),
+        (AchievementFlags.Wave10,        "Wave 10 Reached"),
+        (AchievementFlags.Wave25,        "Wave 25 Reached"),
+        (AchievementFlags.Blood1K,       "Blood Hoarder (1K)"),
+        (AchievementFlags.Blood10K,      "Blood Baron (10K)"),
+        (AchievementFlags.FirstSoldier,  "First Recruit"),
+        (AchievementFlags.FullLegion,    "Full Legion"),
+        (AchievementFlags.FirstRitual,   "Blood Ritualist"),
+        (AchievementFlags.FirstPrestige, "Reborn in Blood"),
+    };
+
     void Start()
     {
         if (GameManager.Instance == null)
         {
-            Debug.LogError("[UIManager] GameManager.Instance is null in Start() — subscription failed. Check scene setup.");
+            Debug.LogError("[UIManager] GameManager.Instance is null — check scene setup.");
             return;
         }
-        GameManager.Instance.OnStateChanged += Refresh;
-        GameManager.Instance.OnDamageDealt  += SpawnDamageNumber;
+        GameManager.Instance.OnStateChanged        += Refresh;
+        GameManager.Instance.OnDamageDealt         += SpawnDamageNumber;
+        GameManager.Instance.OnAchievementUnlocked += ShowAchievementToast;
         Refresh();
         ShowOfflinePanel();
     }
@@ -86,8 +108,9 @@ public class UIManager : MonoBehaviour
     {
         if (GameManager.Instance != null)
         {
-            GameManager.Instance.OnStateChanged -= Refresh;
-            GameManager.Instance.OnDamageDealt  -= SpawnDamageNumber;
+            GameManager.Instance.OnStateChanged        -= Refresh;
+            GameManager.Instance.OnDamageDealt         -= SpawnDamageNumber;
+            GameManager.Instance.OnAchievementUnlocked -= ShowAchievementToast;
         }
     }
 
@@ -199,6 +222,61 @@ public class UIManager : MonoBehaviour
         upgradeBarracksButton.interactable = gm.Wood >= gm.BarracksUpgradeCost;
     }
 
+    // ── Stats Panel ───────────────────────────────────────────────────────────
+
+    public void ShowStatsPanel()
+    {
+        if (statsPanel == null) return;
+        RefreshStats();
+        statsPanel.SetActive(true);
+    }
+
+    public void HideStatsPanel()
+    {
+        if (statsPanel != null) statsPanel.SetActive(false);
+    }
+
+    void RefreshStats()
+    {
+        var gm = GameManager.Instance;
+        if (gm == null || statsText == null) return;
+
+        int h = (int)(gm.TimePlayed / 3600);
+        int m = (int)((gm.TimePlayed % 3600) / 60);
+        int s = (int)(gm.TimePlayed % 60);
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"Enemies Defeated:  {gm.TotalEnemiesKilled}");
+        sb.AppendLine($"Blood Earned:      {GameManager.FormatNumber(gm.TotalBloodEarned)}");
+        sb.AppendLine($"Time Played:       {h}h {m}m {s}s");
+        sb.AppendLine($"Prestige Level:    {gm.PrestigeCount}");
+        sb.AppendLine();
+        sb.AppendLine("── Achievements ──────────────────");
+        foreach (var (flag, title) in k_AchievDefs)
+            sb.AppendLine($"  {((gm.Achievements & flag) != 0 ? "✓" : "○")}  {title}");
+
+        statsText.text = sb.ToString();
+    }
+
+    // ── Achievement Toast ─────────────────────────────────────────────────────
+
+    void ShowAchievementToast(AchievementFlags flag)
+    {
+        string title = flag.ToString();
+        foreach (var (f, t) in k_AchievDefs)
+            if (f == flag) { title = t; break; }
+        StartCoroutine(ToastRoutine($"Achievement: {title}"));
+    }
+
+    IEnumerator ToastRoutine(string message)
+    {
+        if (achievementToast == null) yield break;
+        achievementToastText.text = message;
+        achievementToast.SetActive(true);
+        yield return new WaitForSeconds(3f);
+        achievementToast.SetActive(false);
+    }
+
     // ── Offline Earnings ──────────────────────────────────────────────────────
 
     void ShowOfflinePanel()
@@ -280,7 +358,7 @@ public class UIManager : MonoBehaviour
         string body  = "**Community Request**\n\n" +
                        (rawBody.Length > 0 ? rawBody : "_No description provided._");
         string json  = "{\"title\":" + JStr(title) + ",\"body\":" + JStr(body) + "}";
-        byte[] bytes = Encoding.UTF8.GetBytes(json);
+        byte[] bytes = System.Text.Encoding.UTF8.GetBytes(json);
 
         var req = new UnityWebRequest(k_GhApi, "POST");
         req.uploadHandler   = new UploadHandlerRaw(bytes);
