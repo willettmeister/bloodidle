@@ -17,6 +17,8 @@ public class UIManager : MonoBehaviour
     public Text enemyNameText;
     public Image enemyHPFill;
     public Text enemyHPText;
+    public Text bossTimerText;
+    public GameObject bossTimerRow;
 
     [Header("Soldiers")]
     public Text soldierCountText;
@@ -114,6 +116,15 @@ public class UIManager : MonoBehaviour
         {
             enemyNameText.text  = gm.EnemyName;
             enemyNameText.color = Color.white;
+        }
+
+        bool showTimer = gm.IsBossWave && gm.SoldierCount > 0 && gm.BossTimeRemaining > 0f;
+        if (bossTimerRow != null) bossTimerRow.SetActive(showTimer);
+        if (showTimer && bossTimerText != null)
+        {
+            int secs = Mathf.CeilToInt(gm.BossTimeRemaining);
+            bossTimerText.text  = $"⏱ {secs}s  — defeat the boss or face the penalty!";
+            bossTimerText.color = secs <= 10 ? new Color(1f, 0.2f, 0.2f) : new Color(1f, 0.6f, 0.1f);
         }
         enemyHPFill.fillAmount = gm.EnemyMaxHP > 0 ? gm.EnemyHP / gm.EnemyMaxHP : 0f;
         enemyHPText.text   = $"{GameManager.FormatHP(gm.EnemyHP)} / {GameManager.FormatHP(gm.EnemyMaxHP)}";

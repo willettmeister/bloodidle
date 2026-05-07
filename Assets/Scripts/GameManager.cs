@@ -42,6 +42,10 @@ public class GameManager : MonoBehaviour
     public int NextBossWave { get; private set; }
     public bool IsBossWave => Wave == NextBossWave;
     public int WavesUntilBoss => NextBossWave - Wave;
+    public float BossTimeRemaining { get; private set; }
+    public const float BossTimeLimit = 90f;
+    public const int BossWaveRollback = 3;
+    public const float BossFailBloodPenaltyPct = 0.25f;
 
     // --- Offline earnings ---
     public double OfflineWoodEarned { get; private set; }
@@ -73,6 +77,8 @@ public class GameManager : MonoBehaviour
     public void AwardBloodForTest(double amount)          => AddBlood(amount);
     public void SetWaveForTest(int wave)                  => Wave = wave;
     public void SetNextBossWaveForTest(int wave)          => NextBossWave = wave;
+    public void SpawnEnemyForTest(int wave)               => SpawnEnemy(wave);
+    public void TriggerBossTimeoutForTest()               => BossTimerExpired();
 
     // Pure math for offline earnings — no singleton needed
     public static double CalculateOfflineWood(int workers, double seconds) =>
@@ -133,6 +139,17 @@ public class GameManager : MonoBehaviour
         if (SoldierCount > 0 && EnemyHP > 0)
             changed |= RunCombat(dt);
 
+        if (IsBossWave && SoldierCount > 0 && EnemyHP > 0)
+        {
+            BossTimeRemaining -= dt;
+            if (BossTimeRemaining <= 0f)
+            {
+                BossTimerExpired();
+                return;
+            }
+            changed = true;
+        }
+
         if (changed)
             OnStateChanged?.Invoke();
     }
@@ -178,12 +195,13 @@ public class GameManager : MonoBehaviour
         bool isBoss = wave == NextBossWave;
         if (isBoss)
         {
-            int idx      = UnityEngine.Random.Range(0, BossNames.Length);
-            EnemyName    = BossNames[idx];
+            int idx          = UnityEngine.Random.Range(0, BossNames.Length);
+            EnemyName        = BossNames[idx];
             EnemySpriteIndex = 6;
-            EnemyMaxHP   = (float)(100 * Math.Pow(1.5, wave - 1) * 5.0);
-            EnemyHP      = EnemyMaxHP;
-            EnemyAttack  = (float)(3   * Math.Pow(1.3, wave - 1) * 2.0);
+            EnemyMaxHP       = (float)(100 * Math.Pow(1.5, wave - 1) * 5.0);
+            EnemyHP          = EnemyMaxHP;
+            EnemyAttack      = (float)(3   * Math.Pow(1.3, wave - 1) * 2.0);
+            BossTimeRemaining = BossTimeLimit;
         }
         else
         {
@@ -194,6 +212,18 @@ public class GameManager : MonoBehaviour
             EnemyHP          = EnemyMaxHP;
             EnemyAttack      = (float)(3   * Math.Pow(1.3, wave - 1) * def.AtkMult);
         }
+    }
+
+    void BossTimerExpired()
+    {
+        SoldierCount = 0;
+        SoldierHP    = 0f;
+        Blood        = Math.Floor(Blood * (1.0 - BossFailBloodPenaltyPct));
+        Wave         = Math.Max(1, Wave - BossWaveRollback);
+        NextBossWave = Wave + UnityEngine.Random.Range(5, 11);
+        BossTimeRemaining = 0f;
+        SpawnEnemy(Wave);
+        OnStateChanged?.Invoke();
     }
 
     public void FarmBlood()
@@ -301,6 +331,8 @@ public class GameManager : MonoBehaviour
         EnemySpriteIndex    = PlayerPrefs.GetInt   ("EnemySpriteIndex",    0);
         int savedNext       = PlayerPrefs.GetInt   ("NextBossWave",        0);
         NextBossWave        = savedNext > 0 ? savedNext : Wave + UnityEngine.Random.Range(5, 11);
+        // Offline time doesn't count against boss timer — always reload fresh
+        BossTimeRemaining   = IsBossWave ? BossTimeLimit : 0f;
 
         // Offline wood earnings (capped at 8 hours)
         if (WorkerCount > 0 && PlayerPrefs.HasKey("SaveTime"))

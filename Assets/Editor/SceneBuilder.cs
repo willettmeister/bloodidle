@@ -147,6 +147,15 @@ public static class SceneBuilder
         var enemyHPTextGO    = Label(content, "EnemyHPText", "100 / 100", 28, TextSec);
         PT(enemyHPTextGO, 310, 34, 0, 660);
 
+        var bossTimerRowGO = content.CreateChild("BossTimerRow");
+        bossTimerRowGO.AddComponent<RectTransform>();
+        PF(bossTimerRowGO, 350, 38, 0);
+        var bossTimerTextGO = Label(bossTimerRowGO, "BossTimerText",
+            "⏱ 90s — defeat the boss or face the penalty!", 26,
+            new Color(1f, 0.6f, 0.1f), TextAnchor.MiddleCenter);
+        Stretch(bossTimerTextGO.GetComponent<RectTransform>());
+        bossTimerRowGO.SetActive(false);
+
         // ════════════════════════════════════════════════════════════════════
         // ARMY CARD  (y 465–670)
         // ════════════════════════════════════════════════════════════════════
@@ -312,6 +321,8 @@ public static class SceneBuilder
         uim.enemyNameText           = enemyNameGO.GetComponent<Text>();
         uim.enemyHPFill             = enemyHPFill;
         uim.enemyHPText             = enemyHPTextGO.GetComponent<Text>();
+        uim.bossTimerText           = bossTimerTextGO.GetComponent<Text>();
+        uim.bossTimerRow            = bossTimerRowGO;
         uim.soldierCountText        = soldierCountGO.GetComponent<Text>();
         uim.soldierHPRow            = soldierHPRowGO;
         uim.soldierHPFill           = soldierHPFill;

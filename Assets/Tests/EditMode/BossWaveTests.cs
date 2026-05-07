@@ -132,8 +132,80 @@ public class BossWaveTests
     [Test]
     public void NormalWave_GivesSingleReward()
     {
-        // Wave 1: floor(25 * 1.4^0) = 25
         double expected = System.Math.Floor(25 * System.Math.Pow(1.4, 0));
         Assert.AreEqual(25.0, expected, 0.001);
+    }
+
+    // ── Boss timer ────────────────────────────────────────────────────────────
+
+    [Test]
+    public void BossTimer_StartsAtBossTimeLimit()
+    {
+        _gm.SetWaveForTest(7);
+        _gm.SetNextBossWaveForTest(7);
+        _gm.SpawnEnemyForTest(7);
+        Assert.AreEqual(GameManager.BossTimeLimit, _gm.BossTimeRemaining, 0.001f);
+    }
+
+    // ── Boss timeout penalty ──────────────────────────────────────────────────
+
+    [Test]
+    public void BossTimeout_WipesAllSoldiers()
+    {
+        _gm.AwardBloodForTest(GameManager.SoldierCost * 3);
+        _gm.BuySoldier(); _gm.BuySoldier(); _gm.BuySoldier();
+        _gm.SetWaveForTest(7);
+        _gm.SetNextBossWaveForTest(7);
+
+        _gm.TriggerBossTimeoutForTest();
+
+        Assert.AreEqual(0, _gm.SoldierCount);
+        Assert.AreEqual(0f, _gm.SoldierHP, 0.001f);
+    }
+
+    [Test]
+    public void BossTimeout_RollsWaveBack()
+    {
+        _gm.SetWaveForTest(10);
+        _gm.SetNextBossWaveForTest(10);
+
+        _gm.TriggerBossTimeoutForTest();
+
+        Assert.AreEqual(10 - GameManager.BossWaveRollback, _gm.Wave);
+    }
+
+    [Test]
+    public void BossTimeout_WaveNeverBelowOne()
+    {
+        _gm.SetWaveForTest(2);
+        _gm.SetNextBossWaveForTest(2);
+
+        _gm.TriggerBossTimeoutForTest();
+
+        Assert.GreaterOrEqual(_gm.Wave, 1);
+    }
+
+    [Test]
+    public void BossTimeout_PenalizesBlood()
+    {
+        _gm.AwardBloodForTest(100.0);
+        _gm.SetWaveForTest(7);
+        _gm.SetNextBossWaveForTest(7);
+
+        _gm.TriggerBossTimeoutForTest();
+
+        double expected = System.Math.Floor(100.0 * (1.0 - GameManager.BossFailBloodPenaltyPct));
+        Assert.AreEqual(expected, _gm.Blood, 0.001);
+    }
+
+    [Test]
+    public void BossTimeout_SetsNewNextBossWaveAtLeast5Ahead()
+    {
+        _gm.SetWaveForTest(10);
+        _gm.SetNextBossWaveForTest(10);
+
+        _gm.TriggerBossTimeoutForTest();
+
+        Assert.GreaterOrEqual(_gm.NextBossWave - _gm.Wave, 5);
     }
 }
