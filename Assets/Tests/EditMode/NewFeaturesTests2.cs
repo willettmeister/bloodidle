@@ -244,6 +244,68 @@ public class NewFeaturesTests2
         Assert.AreEqual(0, _gm.TalismanLevel);
     }
 
+    [Test]
+    public void TotalAttack_IncludesWeaponBonus()
+    {
+        _gm.AwardBloodForTest(GameManager.SoldierCost * 2);
+        _gm.BuyTank();
+        _gm.BuyBerserker();
+        _gm.SetWoodForTest(100000);
+        _gm.UpgradeWeapon(); // WeaponLevel = 1, EquipAttackBonus = 3
+
+        float expected = 1 * (GameManager.SoldierAttack   + _gm.EquipAttackBonus)
+                       + 1 * (GameManager.BerserkerAttack + _gm.EquipAttackBonus);
+        Assert.AreEqual(expected, _gm.TotalAttack, 0.001f);
+    }
+
+    [Test]
+    public void FrontlineMaxHP_IncludesArmorBonus()
+    {
+        _gm.AwardBloodForTest(GameManager.SoldierCost);
+        _gm.BuyTank(); // FrontlineIsTank = true
+        _gm.SetWoodForTest(100000);
+        _gm.UpgradeArmor(); // ArmorLevel = 1, EquipArmorBonus = 10
+
+        float expected = GameManager.SoldierMaxHP + _gm.EquipArmorBonus;
+        Assert.AreEqual(expected, _gm.FrontlineMaxHP, 0.001f);
+    }
+
+    [Test]
+    public void Armor_UpgradeHeals_ExistingSoldiers()
+    {
+        _gm.AwardBloodForTest(GameManager.SoldierCost);
+        _gm.BuyTank();
+        _gm.SetSoldierHPForTest(20f); // wound the soldier
+        _gm.SetWoodForTest(100000);
+
+        _gm.UpgradeArmor();
+
+        Assert.Greater(_gm.SoldierHP, 20f);
+    }
+
+    [Test]
+    public void Armor_UpgradeHeal_CappedAtNewMax()
+    {
+        _gm.AwardBloodForTest(GameManager.SoldierCost);
+        _gm.BuyTank(); // SoldierHP = SoldierMaxHP (50)
+        _gm.SetWoodForTest(100000);
+
+        _gm.UpgradeArmor(); // new max = 60; heal min(50+10, 60) = 60
+
+        Assert.AreEqual(_gm.FrontlineMaxHP, _gm.SoldierHP, 0.001f);
+    }
+
+    [Test]
+    public void Armor_UpgradeNoHeal_WhenNoSoldiers()
+    {
+        _gm.SetWoodForTest(100000);
+        float hpBefore = _gm.SoldierHP; // 0
+
+        _gm.UpgradeArmor();
+
+        Assert.AreEqual(hpBefore, _gm.SoldierHP, 0.001f);
+    }
+
     // ── Daily Login Bonus ─────────────────────────────────────────────────────
 
     [Test]
@@ -397,10 +459,9 @@ public class NewFeaturesTests2
     [Test]
     public void BloodPact_Fails_WhenNotUnlocked()
     {
-        _gm.AwardBloodForTest(GameManager.BloodPactBloodCost * 2);
-        // WorkersUnlocked requires 200 total blood — we have it, so it's unlocked
-        // Force test blood pact locked state
-        Assert.IsFalse(!_gm.BloodPactUnlocked || _gm.Blood < GameManager.BloodPactBloodCost);
+        // Fresh state: workers not yet unlocked, no blood — must return false
+        Assert.IsFalse(_gm.BloodPactUnlocked);
+        Assert.IsFalse(_gm.UseBloodPact());
     }
 
     [Test]
