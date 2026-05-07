@@ -12,17 +12,18 @@ using System.IO;
 //
 // Section map (y in px from top):
 //   0–110   Header     — Blood | Wave | Wood
-// 120–455   Enemy card
-// 465–670   Army card
+// 120–455   Enemy card  [EnemyModifierText at y=393]
+// 465–670   Army card   [Formation toggle at y=618]
 // 690–900   Farm Blood
 // 910–1045  Action row — Buy Tank | Buy Berserker | Heal Self
 // 1060–1225 Workers card
 // 1240–1405 Barracks card
-// 1415–1555 Blood Ritual card
-// 1565–1705 Prestige card (visible at wave 20+)
-// 1715–1855 Blood Surge card (visible after 500 blood earned)
-// 1870–2095 Prestige Shop card (visible after first prestige)
-// 2110–2210 Bottom row — Stats | Suggest
+// 1415–1660 Equipment card  (new — Weapon/Armor/Talisman)
+// 1670–1885 Blood Ritual + Blood Pact card (215px)
+// 1895–2035 Prestige card (visible at wave 20+)
+// 2045–2185 Blood Surge card (visible after 500 blood earned)
+// 2200–2425 Prestige Shop card (visible after first prestige)
+// 2440–2540 Bottom row — Stats | Suggest
 // overlay   FeatureRequestOverlay — modal, hidden by default
 public static class SceneBuilder
 {
@@ -106,7 +107,7 @@ public static class SceneBuilder
         contentRT.anchorMax        = new Vector2(1f, 1f);
         contentRT.pivot            = new Vector2(0.5f, 1f);
         contentRT.anchoredPosition = Vector2.zero;
-        contentRT.sizeDelta        = new Vector2(0, 2220);
+        contentRT.sizeDelta        = new Vector2(0, 2555);
 
         var scroll = scrollGO.AddComponent<ScrollRect>();
         scroll.viewport          = viewportGO.GetComponent<RectTransform>();
@@ -162,6 +163,11 @@ public static class SceneBuilder
         Stretch(bossTimerTextGO.GetComponent<RectTransform>());
         bossTimerRowGO.SetActive(false);
 
+        var enemyModifierTextGO = Label(content, "EnemyModifierText", "", 30,
+            new Color(1f, 0.65f, 0.1f), TextAnchor.MiddleCenter);
+        PF(enemyModifierTextGO, 393, 38, 60);
+        enemyModifierTextGO.SetActive(false);
+
         // ════════════════════════════════════════════════════════════════════
         // ARMY CARD  (y 465–670)
         // ════════════════════════════════════════════════════════════════════
@@ -182,6 +188,9 @@ public static class SceneBuilder
             new Vector2(0, 22), new Vector2(700, 34));
 
         soldierHPRowGO.SetActive(false);
+
+        var formationBtnGO = Btn(content, "FormationButton", "Formation: Tank Front", 28, HC("1A1A3A"));
+        PF(formationBtnGO, 618, 38, 40);
 
         // ════════════════════════════════════════════════════════════════════
         // FARM BLOOD  (y 690–900)
@@ -238,13 +247,51 @@ public static class SceneBuilder
         PT(upgradeBarracksGO, 1253, 110, +232, 370);
 
         // ════════════════════════════════════════════════════════════════════
-        // BLOOD RITUAL CARD  (y 1415–1555) — same unlock as workers
+        // EQUIPMENT CARD  (y 1415–1660) — same unlock as workers
+        // ════════════════════════════════════════════════════════════════════
+        var equipmentPanel = content.CreateChild("EquipmentPanel");
+        equipmentPanel.AddImage(Color.clear);
+        PF(equipmentPanel, 1415, 245);
+
+        Panel(equipmentPanel, "EquipmentCardBg", 0, 245, Surface1, 24);
+
+        var equipTitleGO = Label(equipmentPanel, "EquipmentTitle", "Equipment", 40, Gold, TextAnchor.MiddleLeft);
+        PT(equipTitleGO, 10, 44, -200, 400);
+
+        // Weapon row
+        var weaponInfoGO = Label(equipmentPanel, "WeaponInfoText",
+            "Weapon  Lv.0/5  (+0 atk)", 28, Color.white, TextAnchor.MiddleLeft);
+        PT(weaponInfoGO, 62, 44, -175, 500);
+
+        var upgradeWeaponGO = Btn(equipmentPanel, "UpgradeWeaponButton", "Upgrade\n(20 wood)", 28, Brown);
+        PT(upgradeWeaponGO, 58, 56, +232, 330);
+
+        // Armor row
+        var armorInfoGO = Label(equipmentPanel, "ArmorInfoText",
+            "Armor  Lv.0/5  (+0 HP)", 28, Color.white, TextAnchor.MiddleLeft);
+        PT(armorInfoGO, 122, 44, -175, 500);
+
+        var upgradeArmorGO = Btn(equipmentPanel, "UpgradeArmorButton", "Upgrade\n(15 wood)", 28, HC("1565C0"));
+        PT(upgradeArmorGO, 118, 56, +232, 330);
+
+        // Talisman row
+        var talismanInfoGO = Label(equipmentPanel, "TalismanInfoText",
+            "Talisman  Lv.0/5  (+0% reward)", 28, Color.white, TextAnchor.MiddleLeft);
+        PT(talismanInfoGO, 182, 44, -175, 500);
+
+        var upgradeTalismanGO = Btn(equipmentPanel, "UpgradeTalismanButton", "Upgrade\n(25 wood)", 28, HC("6A1B9A"));
+        PT(upgradeTalismanGO, 178, 56, +232, 330);
+
+        equipmentPanel.SetActive(false);
+
+        // ════════════════════════════════════════════════════════════════════
+        // BLOOD RITUAL + BLOOD PACT CARD  (y 1670–1885) — same unlock as workers
         // ════════════════════════════════════════════════════════════════════
         var bloodRitualPanel = content.CreateChild("BloodRitualPanel");
         bloodRitualPanel.AddImage(Color.clear);
-        PF(bloodRitualPanel, 1415, 140);
+        PF(bloodRitualPanel, 1670, 215);
 
-        Panel(bloodRitualPanel, "BloodRitualCardBg", 0, 140, Surface1, 24);
+        Panel(bloodRitualPanel, "BloodRitualCardBg", 0, 215, Surface1, 24);
 
         var bloodRitualInfoGO = Label(bloodRitualPanel, "BloodRitualInfoText",
             "Blood Ritual  —  passive blood income",
@@ -255,14 +302,26 @@ public static class SceneBuilder
             "Perform\n(30 wood)", 34, Purple);
         PT(buyBloodRitualGO, 10, 110, +232, 370);
 
+        var ritualDivGO = bloodRitualPanel.CreateChild("RitualDiv");
+        ritualDivGO.AddImage(HC("2D2D4A")); PT(ritualDivGO, 128, 2, 0, 640);
+
+        var bloodPactInfoGO = Label(bloodRitualPanel, "BloodPactInfoText",
+            "Blood Pact  —  200 blood → 100 wood",
+            28, TextSec, TextAnchor.MiddleLeft);
+        PT(bloodPactInfoGO, 137, 38, -175, 500);
+
+        var bloodPactGO = Btn(bloodRitualPanel, "BloodPactButton",
+            "Convert\n(200 blood)", 28, Crimson);
+        PT(bloodPactGO, 132, 72, +232, 370);
+
         bloodRitualPanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
-        // PRESTIGE CARD  (y 1565–1705) — visible at wave 20+
+        // PRESTIGE CARD  (y 1895–2035) — visible at wave 20+
         // ════════════════════════════════════════════════════════════════════
         var prestigePanel = content.CreateChild("PrestigePanel");
         prestigePanel.AddImage(Color.clear);
-        PF(prestigePanel, 1565, 140);
+        PF(prestigePanel, 1895, 140);
 
         Panel(prestigePanel, "PrestigeCardBg", 0, 140, HC("1A0A00"), 24);
 
@@ -278,11 +337,11 @@ public static class SceneBuilder
         prestigePanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
-        // BLOOD SURGE CARD  (y 1715–1855) — visible after 500 blood earned
+        // BLOOD SURGE CARD  (y 2045–2185) — visible after 500 blood earned
         // ════════════════════════════════════════════════════════════════════
         var bloodSurgePanel = content.CreateChild("BloodSurgePanel");
         bloodSurgePanel.AddImage(Color.clear);
-        PF(bloodSurgePanel, 1715, 140);
+        PF(bloodSurgePanel, 2045, 140);
 
         Panel(bloodSurgePanel, "BloodSurgeCardBg", 0, 140, Surface1, 24);
 
@@ -298,11 +357,11 @@ public static class SceneBuilder
         bloodSurgePanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
-        // PRESTIGE SHOP CARD  (y 1870–2095) — visible after first prestige
+        // PRESTIGE SHOP CARD  (y 2200–2425) — visible after first prestige
         // ════════════════════════════════════════════════════════════════════
         var prestigeShopPanel = content.CreateChild("PrestigeShopPanel");
         prestigeShopPanel.AddImage(Color.clear);
-        PF(prestigeShopPanel, 1870, 225);
+        PF(prestigeShopPanel, 2200, 225);
 
         Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 225, HC("150A30"), 24);
 
@@ -344,13 +403,13 @@ public static class SceneBuilder
         prestigeShopPanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
-        // BOTTOM ROW  (y 2110–2210) — Stats | Suggest
+        // BOTTOM ROW  (y 2440–2540) — Stats | Suggest
         // ════════════════════════════════════════════════════════════════════
         var statsBtnGO = Btn(content, "StatsButton", "Statistics", 40, HC("00695C"));
-        PT(statsBtnGO, 2110, 100, -175, 320);
+        PT(statsBtnGO, 2440, 100, -175, 320);
 
         var suggestBtnGO = Btn(content, "SuggestButton", "Suggest a Feature", 36, HC("1565C0"));
-        PT(suggestBtnGO, 2110, 100, +175, 320);
+        PT(suggestBtnGO, 2440, 100, +175, 320);
 
         // ── Damage number layer ───────────────────────────────────────────────
         var dmgLayerGO = cv.CreateChild("DamageLayer");
@@ -481,6 +540,7 @@ public static class SceneBuilder
         uim.enemyImage              = enemyImg;
         uim.enemySprites            = LoadEnemySprites();
         uim.enemyNameText           = enemyNameGO.GetComponent<Text>();
+        uim.enemyModifierText       = enemyModifierTextGO.GetComponent<Text>();
         uim.enemyHPFill             = enemyHPFill;
         uim.enemyHPText             = enemyHPTextGO.GetComponent<Text>();
         uim.bossTimerText           = bossTimerTextGO.GetComponent<Text>();
@@ -491,11 +551,25 @@ public static class SceneBuilder
         uim.soldierHPText           = soldierHPTextGO.GetComponent<Text>();
         uim.buyTankButton           = buyTankGO.GetComponent<Button>();
         uim.buyBerserkerButton      = buyBerserkerGO.GetComponent<Button>();
+        uim.formationButton         = formationBtnGO.GetComponent<Button>();
+        uim.formationButtonText     = formationBtnGO.GetComponentInChildren<Text>();
         uim.healSelfPanel           = healPanelGO;
         uim.healSelfButton          = healBtnGO.GetComponent<Button>();
         uim.workersPanel            = workersPanel;
         uim.workerInfoText          = workerInfoGO.GetComponent<Text>();
         uim.buyWorkerButton         = buyWorkerGO.GetComponent<Button>();
+        uim.bloodPactButton         = bloodPactGO.GetComponent<Button>();
+        uim.bloodPactText           = bloodPactGO.GetComponentInChildren<Text>();
+        uim.equipmentPanel          = equipmentPanel;
+        uim.weaponInfoText          = weaponInfoGO.GetComponent<Text>();
+        uim.upgradeWeaponButton     = upgradeWeaponGO.GetComponent<Button>();
+        uim.weaponCostText          = upgradeWeaponGO.GetComponentInChildren<Text>();
+        uim.armorInfoText           = armorInfoGO.GetComponent<Text>();
+        uim.upgradeArmorButton      = upgradeArmorGO.GetComponent<Button>();
+        uim.armorCostText           = upgradeArmorGO.GetComponentInChildren<Text>();
+        uim.talismanInfoText        = talismanInfoGO.GetComponent<Text>();
+        uim.upgradeTalismanButton   = upgradeTalismanGO.GetComponent<Button>();
+        uim.talismanCostText        = upgradeTalismanGO.GetComponentInChildren<Text>();
         uim.bloodRitualPanel        = bloodRitualPanel;
         uim.bloodRitualInfoText     = bloodRitualInfoGO.GetComponent<Text>();
         uim.buyBloodRitualButton    = buyBloodRitualGO.GetComponent<Button>();
@@ -544,6 +618,11 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(pSoldierCapBtnGO.GetComponent<Button>().onClick,   clk.OnBuyPSoldierCap);
         UnityEventTools.AddPersistentListener(pClickBonusBtnGO.GetComponent<Button>().onClick,   clk.OnBuyPClickBonus);
         UnityEventTools.AddPersistentListener(pRitualEffBtnGO.GetComponent<Button>().onClick,    clk.OnBuyPRitualEff);
+        UnityEventTools.AddPersistentListener(formationBtnGO.GetComponent<Button>().onClick,     clk.OnToggleFormation);
+        UnityEventTools.AddPersistentListener(bloodPactGO.GetComponent<Button>().onClick,        clk.OnUseBloodPact);
+        UnityEventTools.AddPersistentListener(upgradeWeaponGO.GetComponent<Button>().onClick,    clk.OnUpgradeWeapon);
+        UnityEventTools.AddPersistentListener(upgradeArmorGO.GetComponent<Button>().onClick,     clk.OnUpgradeArmor);
+        UnityEventTools.AddPersistentListener(upgradeTalismanGO.GetComponent<Button>().onClick,  clk.OnUpgradeTalisman);
         UnityEventTools.AddPersistentListener(statsBtnGO.GetComponent<Button>().onClick,          clk.OnOpenStats);
         UnityEventTools.AddPersistentListener(suggestBtnGO.GetComponent<Button>().onClick,       clk.OnOpenSuggest);
         UnityEventTools.AddPersistentListener(statsCloseGO.GetComponent<Button>().onClick,       uim.HideStatsPanel);

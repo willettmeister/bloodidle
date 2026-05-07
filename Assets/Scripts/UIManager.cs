@@ -14,6 +14,7 @@ public class UIManager : MonoBehaviour
     public Text waveText;
     public Text waveSubText;
     public Text enemyNameText;
+    public Text enemyModifierText;
     public Image enemyHPFill;
     public Text enemyHPText;
     public Text bossTimerText;
@@ -26,6 +27,8 @@ public class UIManager : MonoBehaviour
     public Text soldierHPText;
     public Button buyTankButton;
     public Button buyBerserkerButton;
+    public Button formationButton;
+    public Text formationButtonText;
     public GameObject healSelfPanel;
     public Button healSelfButton;
 
@@ -38,6 +41,20 @@ public class UIManager : MonoBehaviour
     public GameObject workersPanel;
     public Text workerInfoText;
     public Button buyWorkerButton;
+    public Button bloodPactButton;
+    public Text bloodPactText;
+
+    [Header("Equipment")]
+    public GameObject equipmentPanel;
+    public Text weaponInfoText;
+    public Button upgradeWeaponButton;
+    public Text weaponCostText;
+    public Text armorInfoText;
+    public Button upgradeArmorButton;
+    public Text armorCostText;
+    public Text talismanInfoText;
+    public Button upgradeTalismanButton;
+    public Text talismanCostText;
 
     [Header("Blood Ritual")]
     public GameObject bloodRitualPanel;
@@ -91,7 +108,6 @@ public class UIManager : MonoBehaviour
     [Header("Damage Numbers")]
     public RectTransform damageLayer;
 
-    // Achievement name lookup (order matches AchievementFlags bit order)
     static readonly (AchievementFlags flag, string title)[] k_AchievDefs =
     {
         (AchievementFlags.FirstKill,     "First Blood"),
@@ -140,13 +156,16 @@ public class UIManager : MonoBehaviour
             return;
         }
 
+        // Header
+        string dailyTag = gm.DailyBonusAvailable ? "  ★ DAILY ×10" : "";
         bloodText.text = gm.BloodPerSec > 0
-            ? $"Blood: {GameManager.FormatNumber(gm.Blood)}  +{gm.BloodPerSec:F1}/s"
-            : $"Blood: {GameManager.FormatNumber(gm.Blood)}";
+            ? $"Blood: {GameManager.FormatNumber(gm.Blood)}  +{gm.BloodPerSec:F1}/s{dailyTag}"
+            : $"Blood: {GameManager.FormatNumber(gm.Blood)}{dailyTag}";
         woodText.text = gm.WoodPerSecond > 0
             ? $"Wood: {GameManager.FormatNumber(gm.Wood)}  +{gm.WoodPerSecond:F1}/s"
             : $"Wood: {GameManager.FormatNumber(gm.Wood)}";
 
+        // Enemy sprite
         if (enemyImage != null && enemySprites != null && enemySprites.Length > 0)
         {
             int idx = Mathf.Min(gm.EnemySpriteIndex, enemySprites.Length - 1);
@@ -160,6 +179,12 @@ public class UIManager : MonoBehaviour
             waveSubText.text = gm.IsBossWave
                 ? "★ BOSS WAVE ★"
                 : $"Boss in {gm.WavesUntilBoss} wave{(gm.WavesUntilBoss == 1 ? "" : "s")}";
+
+        if (enemyModifierText != null)
+        {
+            enemyModifierText.text = gm.EnemyModifierDisplay;
+            enemyModifierText.gameObject.SetActive(gm.CurrentEnemyModifier != EnemyModifier.None);
+        }
 
         if (gm.IsBossWave)
         {
@@ -183,6 +208,7 @@ public class UIManager : MonoBehaviour
         enemyHPFill.fillAmount = gm.EnemyMaxHP > 0 ? gm.EnemyHP / gm.EnemyMaxHP : 0f;
         enemyHPText.text = $"{GameManager.FormatHP(gm.EnemyHP)} / {GameManager.FormatHP(gm.EnemyMaxHP)}";
 
+        // Army
         bool hasSoldiers = gm.SoldierCount > 0;
         bool atCap       = gm.SoldierCount >= gm.MaxSoldiers;
 
@@ -198,6 +224,9 @@ public class UIManager : MonoBehaviour
             string cls = gm.FrontlineIsTank ? "Tank" : "Berserker";
             soldierHPText.text = $"{cls}: {GameManager.FormatHP(gm.SoldierHP)} / {GameManager.FormatHP(gm.FrontlineMaxHP)} HP";
         }
+
+        if (formationButtonText != null)
+            formationButtonText.text = gm.BerserkerFront ? "Formation: Berserker Front" : "Formation: Tank Front";
 
         bool canBuySoldier = gm.Blood >= GameManager.SoldierCost && !atCap;
         if (buyTankButton      != null) buyTankButton.interactable      = canBuySoldier;
@@ -222,10 +251,50 @@ public class UIManager : MonoBehaviour
                     && hasSoldiers;
         }
 
+        // Workers + Blood Pact
         if (workersPanel != null) workersPanel.SetActive(gm.WorkersUnlocked);
         workerInfoText.text          = $"Workers: {gm.WorkerCount}";
         buyWorkerButton.interactable = gm.Blood >= GameManager.WorkerCost;
+        if (bloodPactButton != null)
+        {
+            bloodPactButton.interactable = gm.Blood >= GameManager.BloodPactBloodCost;
+            if (bloodPactText != null)
+                bloodPactText.text = $"Blood Pact\n({GameManager.FormatNumber(GameManager.BloodPactBloodCost)} blood → {GameManager.FormatNumber(GameManager.BloodPactWoodGain)} wood)";
+        }
 
+        // Equipment
+        if (equipmentPanel != null) equipmentPanel.SetActive(gm.WorkersUnlocked);
+        if (gm.WorkersUnlocked)
+        {
+            if (weaponInfoText != null)
+                weaponInfoText.text = $"Weapon  Lv.{gm.WeaponLevel}/{GameManager.MaxEquipLevel}  (+{gm.EquipAttackBonus:F0} atk)";
+            if (upgradeWeaponButton != null)
+                upgradeWeaponButton.interactable = gm.WeaponLevel < GameManager.MaxEquipLevel && gm.Wood >= gm.WeaponUpgradeCost;
+            if (weaponCostText != null)
+                weaponCostText.text = gm.WeaponLevel < GameManager.MaxEquipLevel
+                    ? $"Upgrade\n({GameManager.FormatNumber(gm.WeaponUpgradeCost)} wood)"
+                    : "MAX";
+
+            if (armorInfoText != null)
+                armorInfoText.text = $"Armor  Lv.{gm.ArmorLevel}/{GameManager.MaxEquipLevel}  (+{gm.EquipArmorBonus:F0} HP)";
+            if (upgradeArmorButton != null)
+                upgradeArmorButton.interactable = gm.ArmorLevel < GameManager.MaxEquipLevel && gm.Wood >= gm.ArmorUpgradeCost;
+            if (armorCostText != null)
+                armorCostText.text = gm.ArmorLevel < GameManager.MaxEquipLevel
+                    ? $"Upgrade\n({GameManager.FormatNumber(gm.ArmorUpgradeCost)} wood)"
+                    : "MAX";
+
+            if (talismanInfoText != null)
+                talismanInfoText.text = $"Talisman  Lv.{gm.TalismanLevel}/{GameManager.MaxEquipLevel}  (+{gm.EquipTalismanBonus * 100:F0}% reward)";
+            if (upgradeTalismanButton != null)
+                upgradeTalismanButton.interactable = gm.TalismanLevel < GameManager.MaxEquipLevel && gm.Wood >= gm.TalismanUpgradeCost;
+            if (talismanCostText != null)
+                talismanCostText.text = gm.TalismanLevel < GameManager.MaxEquipLevel
+                    ? $"Upgrade\n({GameManager.FormatNumber(gm.TalismanUpgradeCost)} wood)"
+                    : "MAX";
+        }
+
+        // Blood Ritual
         if (bloodRitualPanel != null) bloodRitualPanel.SetActive(gm.WorkersUnlocked);
         if (gm.WorkersUnlocked && bloodRitualInfoText != null)
         {
@@ -238,6 +307,7 @@ public class UIManager : MonoBehaviour
                 bloodRitualCostText.text = $"Perform\n({GameManager.FormatNumber(gm.BloodRitualCost)} wood)";
         }
 
+        // Prestige
         bool canPrestige = gm.Wave >= GameManager.PrestigeWaveRequirement;
         if (prestigePanel != null) prestigePanel.SetActive(canPrestige);
         if (canPrestige && prestigeInfoText != null)
@@ -308,7 +378,7 @@ public class UIManager : MonoBehaviour
         statsText.text = sb.ToString();
     }
 
-    // ── Achievement Toast ─────────────────────────────────────────────────────
+    // ── Toasts ────────────────────────────────────────────────────────────────
 
     void ShowAchievementToast(AchievementFlags flag)
     {

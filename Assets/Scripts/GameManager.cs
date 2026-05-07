@@ -18,6 +18,8 @@ public enum AchievementFlags
     FirstPrestige = 1 << 8,
 }
 
+public enum EnemyModifier { None, Armored, Enraged, Regen }
+
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
@@ -41,11 +43,15 @@ public class GameManager : MonoBehaviour
     public int SoldierCount    => TankCount + BerserkerCount;
     public float SoldierHP     { get; private set; }
 
-    public bool  FrontlineIsTank  => TankCount > 0;
-    public float FrontlineMaxHP   => FrontlineIsTank ? SoldierMaxHP : BerserkerMaxHP;
-    public float TotalAttack      => TankCount * SoldierAttack + BerserkerCount * BerserkerAttack;
-    public bool  IsAllTank        => TankCount > 0 && BerserkerCount == 0;
-    public bool  IsAllBerserker   => BerserkerCount > 0 && TankCount == 0;
+    public bool  BerserkerFront  { get; private set; }
+    public bool  FrontlineIsTank => BerserkerFront
+        ? (BerserkerCount == 0 && TankCount > 0)
+        : (TankCount > 0);
+    public float FrontlineMaxHP  => (FrontlineIsTank ? SoldierMaxHP : BerserkerMaxHP) + EquipArmorBonus;
+    public float TotalAttack     => TankCount * (SoldierAttack + EquipAttackBonus)
+                                  + BerserkerCount * (BerserkerAttack + EquipAttackBonus);
+    public bool  IsAllTank       => TankCount > 0 && BerserkerCount == 0;
+    public bool  IsAllBerserker  => BerserkerCount > 0 && TankCount == 0;
 
     public int MaxSoldiers { get; private set; } = 10;
     public const float  SoldierMaxHP       = 50f;
@@ -53,9 +59,21 @@ public class GameManager : MonoBehaviour
     public const float  SoldierAttack      = 5f;
     public const float  BerserkerMaxHP     = 25f;
     public const float  BerserkerAttack    = 12f;
-    public const float  TankRegenRate      = 2f;   // HP/sec for pure-tank army
-    public const float  BerserkerCritChance = 0.2f; // per damage tick
+    public const float  TankRegenRate      = 2f;
+    public const float  BerserkerCritChance = 0.2f;
     public const float  BerserkerCritMult  = 2f;
+
+    // --- Equipment ---
+    public int WeaponLevel   { get; private set; }
+    public int ArmorLevel    { get; private set; }
+    public int TalismanLevel { get; private set; }
+    public float  EquipAttackBonus    => WeaponLevel   * 3f;
+    public float  EquipArmorBonus     => ArmorLevel    * 10f;
+    public double EquipTalismanBonus  => TalismanLevel * 0.15;
+    public double WeaponUpgradeCost   => Math.Floor(20  * Math.Pow(2, WeaponLevel));
+    public double ArmorUpgradeCost    => Math.Floor(15  * Math.Pow(2, ArmorLevel));
+    public double TalismanUpgradeCost => Math.Floor(25  * Math.Pow(2, TalismanLevel));
+    public const int MaxEquipLevel = 5;
 
     // --- Barracks ---
     public int BarracksLevel { get; private set; } = 1;
@@ -70,6 +88,11 @@ public class GameManager : MonoBehaviour
     public const double BloodRitualBaseCost       = 30.0;
     public const double BloodRitualBloodPerSec    = 1.0;
     public const double BloodRitualCostMultiplier = 2.0;
+
+    // --- Blood Pact spell ---
+    public bool BloodPactUnlocked => WorkersUnlocked;
+    public const double BloodPactBloodCost = 200.0;
+    public const double BloodPactWoodGain  = 100.0;
 
     // --- Prestige ---
     public int    PrestigeCount      { get; private set; }
@@ -106,6 +129,23 @@ public class GameManager : MonoBehaviour
     public const float BossTimeLimit           = 90f;
     public const int   BossWaveRollback        = 3;
     public const float BossFailBloodPenaltyPct = 0.25f;
+
+    // --- Enemy Modifier ---
+    public EnemyModifier CurrentEnemyModifier { get; private set; }
+    public string EnemyModifierDisplay => CurrentEnemyModifier switch
+    {
+        EnemyModifier.Armored => "⚔ Armored",
+        EnemyModifier.Enraged => "💢 Enraged",
+        EnemyModifier.Regen   => "♻ Regen",
+        _                     => "",
+    };
+    public const float EnemyArmoredDmgMult = 0.5f;
+    public const float EnemyEnragedAtkMult = 1.5f;
+    public const float EnemyRegenPct       = 0.02f; // 2% maxHP/sec
+
+    // --- Daily login bonus ---
+    public bool DailyBonusAvailable { get; private set; }
+    public const float DailyBonusMultiplier = 10f;
 
     // --- Statistics ---
     public int    TotalEnemiesKilled { get; private set; }
@@ -155,6 +195,9 @@ public class GameManager : MonoBehaviour
     public void AwardPrestigePointsForTest(int pts)          => PrestigePoints += pts;
     public void SetPRitualEffLevelForTest(int level)         => PRitualEffLevel = level;
     public void TriggerMilestoneChestForTest(int wave)       => GrantMilestoneChest(wave);
+    public void SetDailyBonusForTest(bool available)         => DailyBonusAvailable = available;
+    public void SetEnemyModifierForTest(EnemyModifier m)     => CurrentEnemyModifier = m;
+    public void SetEnemyHPForTest(float hp)                  { EnemyHP = hp; EnemyMaxHP = hp; }
 
     public static double CalculateOfflineWood(int workers, double seconds) =>
         workers * WorkerWoodPerSec * Math.Min(seconds, 8.0 * 3600);
@@ -241,6 +284,12 @@ public class GameManager : MonoBehaviour
             changed = true;
         }
 
+        if (CurrentEnemyModifier == EnemyModifier.Regen && EnemyHP > 0 && EnemyHP < EnemyMaxHP)
+        {
+            EnemyHP = Mathf.Min(EnemyHP + EnemyMaxHP * EnemyRegenPct * dt, EnemyMaxHP);
+            changed = true;
+        }
+
         if (SoldierCount > 0 && EnemyHP > 0)
             changed |= RunCombat(dt);
 
@@ -262,12 +311,13 @@ public class GameManager : MonoBehaviour
     bool RunCombat(float dt)
     {
         float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f);
+        if (CurrentEnemyModifier == EnemyModifier.Armored) eff *= EnemyArmoredDmgMult;
         EnemyHP = Mathf.Max(0f, EnemyHP - eff * dt);
 
         if (EnemyHP <= 0f)
         {
             bool wasBoss = IsBossWave;
-            double reward = Math.Floor(25 * Math.Pow(1.4, Wave - 1) * PrestigeMultiplier);
+            double reward = Math.Floor(25 * Math.Pow(1.4, Wave - 1) * PrestigeMultiplier * (1.0 + EquipTalismanBonus));
             if (wasBoss) reward *= 3;
             AddBlood(reward);
 
@@ -304,7 +354,7 @@ public class GameManager : MonoBehaviour
             if (IsAllBerserker && UnityEngine.Random.value < BerserkerCritChance)
             {
                 tickDmg *= BerserkerCritMult;
-                EnemyHP = Mathf.Max(0f, EnemyHP - tickDmg); // crit bonus damage
+                EnemyHP = Mathf.Max(0f, EnemyHP - tickDmg);
             }
             OnDamageDealt?.Invoke(tickDmg, true);
             if (SoldierCount > 0)
@@ -361,6 +411,7 @@ public class GameManager : MonoBehaviour
             EnemyHP          = EnemyMaxHP;
             EnemyAttack      = (float)(3   * Math.Pow(1.3, wave - 1) * 2.0);
             BossTimeRemaining = BossTimeLimit;
+            CurrentEnemyModifier = EnemyModifier.None;
         }
         else
         {
@@ -370,6 +421,17 @@ public class GameManager : MonoBehaviour
             EnemyMaxHP       = (float)(100 * Math.Pow(1.5, wave - 1) * def.HPMult);
             EnemyHP          = EnemyMaxHP;
             EnemyAttack      = (float)(3   * Math.Pow(1.3, wave - 1) * def.AtkMult);
+
+            if (UnityEngine.Random.value < 0.25f)
+            {
+                CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 4);
+                if (CurrentEnemyModifier == EnemyModifier.Enraged)
+                    EnemyAttack *= EnemyEnragedAtkMult;
+            }
+            else
+            {
+                CurrentEnemyModifier = EnemyModifier.None;
+            }
         }
     }
 
@@ -388,7 +450,15 @@ public class GameManager : MonoBehaviour
 
     public void FarmBlood()
     {
-        AddBlood(EffectiveBloodPerClick);
+        double amount = EffectiveBloodPerClick;
+        if (DailyBonusAvailable)
+        {
+            amount *= DailyBonusMultiplier;
+            DailyBonusAvailable = false;
+            PlayerPrefs.SetString("LastLoginDate", DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            PlayerPrefs.Save();
+        }
+        AddBlood(amount);
         PlaySound(_clipFarm);
         OnStateChanged?.Invoke();
     }
@@ -423,7 +493,7 @@ public class GameManager : MonoBehaviour
         if (Blood < SoldierCost || SoldierCount >= MaxSoldiers) return false;
         Blood -= SoldierCost;
         TankCount++;
-        if (SoldierCount == 1) { SoldierHP = SoldierMaxHP; TryUnlock(AchievementFlags.FirstSoldier); }
+        if (SoldierCount == 1) { SoldierHP = FrontlineMaxHP; TryUnlock(AchievementFlags.FirstSoldier); }
         if (SoldierCount >= MaxSoldiers) TryUnlock(AchievementFlags.FullLegion);
         OnStateChanged?.Invoke();
         return true;
@@ -434,7 +504,7 @@ public class GameManager : MonoBehaviour
         if (Blood < SoldierCost || SoldierCount >= MaxSoldiers) return false;
         Blood -= SoldierCost;
         BerserkerCount++;
-        if (SoldierCount == 1) { SoldierHP = BerserkerMaxHP; TryUnlock(AchievementFlags.FirstSoldier); }
+        if (SoldierCount == 1) { SoldierHP = FrontlineMaxHP; TryUnlock(AchievementFlags.FirstSoldier); }
         if (SoldierCount >= MaxSoldiers) TryUnlock(AchievementFlags.FullLegion);
         OnStateChanged?.Invoke();
         return true;
@@ -491,6 +561,50 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool UseBloodPact()
+    {
+        if (!BloodPactUnlocked || Blood < BloodPactBloodCost) return false;
+        Blood -= BloodPactBloodCost;
+        Wood  += BloodPactWoodGain;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    public bool UpgradeWeapon()
+    {
+        if (WeaponLevel >= MaxEquipLevel || Wood < WeaponUpgradeCost) return false;
+        Wood -= WeaponUpgradeCost;
+        WeaponLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    public bool UpgradeArmor()
+    {
+        if (ArmorLevel >= MaxEquipLevel || Wood < ArmorUpgradeCost) return false;
+        Wood -= ArmorUpgradeCost;
+        ArmorLevel++;
+        // Heal existing soldiers up to new max when armor increases
+        if (SoldierCount > 0) SoldierHP = Mathf.Min(SoldierHP + 10f, FrontlineMaxHP);
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    public bool UpgradeTalisman()
+    {
+        if (TalismanLevel >= MaxEquipLevel || Wood < TalismanUpgradeCost) return false;
+        Wood -= TalismanUpgradeCost;
+        TalismanLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    public void ToggleFormation()
+    {
+        BerserkerFront = !BerserkerFront;
+        OnStateChanged?.Invoke();
+    }
+
     public bool BuyPSoldierCap()
     {
         if (PrestigePoints < PrestigeShopCost) return false;
@@ -541,6 +655,9 @@ public class GameManager : MonoBehaviour
         BossTimeRemaining   = 0f;
         SurgeActive         = false;
         SurgeTimeRemaining  = 0f;
+        WeaponLevel         = 0;
+        ArmorLevel          = 0;
+        TalismanLevel       = 0;
         SpawnEnemy(1);
         OnStateChanged?.Invoke();
         return true;
@@ -584,6 +701,10 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("PSoldierCapLevel",    PSoldierCapLevel);
         PlayerPrefs.SetInt   ("PClickBonusLevel",    PClickBonusLevel);
         PlayerPrefs.SetInt   ("PRitualEffLevel",     PRitualEffLevel);
+        PlayerPrefs.SetInt   ("WeaponLevel",         WeaponLevel);
+        PlayerPrefs.SetInt   ("ArmorLevel",          ArmorLevel);
+        PlayerPrefs.SetInt   ("TalismanLevel",       TalismanLevel);
+        PlayerPrefs.SetInt   ("BerserkerFront",      BerserkerFront ? 1 : 0);
         PlayerPrefs.SetInt   ("TotalEnemiesKilled",  TotalEnemiesKilled);
         PlayerPrefs.SetString("TimePlayed",          TimePlayed.ToString("R", ic));
         PlayerPrefs.SetInt   ("Achievements",        (int)Achievements);
@@ -621,6 +742,10 @@ public class GameManager : MonoBehaviour
         PSoldierCapLevel    = PlayerPrefs.GetInt   ("PSoldierCapLevel",    0);
         PClickBonusLevel    = PlayerPrefs.GetInt   ("PClickBonusLevel",    0);
         PRitualEffLevel     = PlayerPrefs.GetInt   ("PRitualEffLevel",     0);
+        WeaponLevel         = PlayerPrefs.GetInt   ("WeaponLevel",         0);
+        ArmorLevel          = PlayerPrefs.GetInt   ("ArmorLevel",          0);
+        TalismanLevel       = PlayerPrefs.GetInt   ("TalismanLevel",       0);
+        BerserkerFront      = PlayerPrefs.GetInt   ("BerserkerFront",      0) == 1;
         SurgeUnlocked       = TotalBloodEarned >= SurgeUnlockThreshold;
         TotalEnemiesKilled  = PlayerPrefs.GetInt   ("TotalEnemiesKilled",  0);
         TimePlayed          = double.Parse(PlayerPrefs.GetString("TimePlayed", "0"), ic);
@@ -633,6 +758,10 @@ public class GameManager : MonoBehaviour
         int savedNext       = PlayerPrefs.GetInt   ("NextBossWave",        0);
         NextBossWave        = savedNext > 0 ? savedNext : Wave + UnityEngine.Random.Range(5, 11);
         BossTimeRemaining   = IsBossWave ? BossTimeLimit : 0f;
+
+        string savedDate = PlayerPrefs.GetString("LastLoginDate", "");
+        string today     = DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        DailyBonusAvailable = savedDate != today;
 
         if ((WorkerCount > 0 || BloodRitualCount > 0) && PlayerPrefs.HasKey("SaveTime"))
         {
