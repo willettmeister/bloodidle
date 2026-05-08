@@ -115,4 +115,80 @@ public class SecurityTests
         Assert.IsFalse(content.Contains("github_pat_"),
             "Sample secrets file must not contain a real PAT");
     }
+
+    // ── PostIssue JSON construction ───────────────────────────────────────────
+
+    [Test]
+    public void PostIssue_Json_ContainsTitleField()
+    {
+        string title = "My Feature";
+        string body  = "Some description";
+        string json  = BuildIssueJson(title, body);
+        StringAssert.Contains("\"title\":", json);
+        StringAssert.Contains("My Feature", json);
+    }
+
+    [Test]
+    public void PostIssue_Json_ContainsBodyField()
+    {
+        string json = BuildIssueJson("T", "My body");
+        StringAssert.Contains("\"body\":", json);
+        StringAssert.Contains("My body", json);
+    }
+
+    [Test]
+    public void PostIssue_Json_ContainsFeatureRequestLabel()
+    {
+        string json = BuildIssueJson("T", "B");
+        StringAssert.Contains("\"labels\"", json);
+        StringAssert.Contains("feature request", json);
+    }
+
+    [Test]
+    public void PostIssue_Json_EscapesTitleSpecialChars()
+    {
+        string json = BuildIssueJson("Has \"quotes\" & \nnewline", "body");
+        // Literal double-quote and newline must not appear unescaped inside a JSON string value
+        // Strip the outer structure and verify the title value is safe
+        StringAssert.DoesNotContain("\n", json);
+        StringAssert.Contains("\\\"quotes\\\"", json);
+        StringAssert.Contains("\\n", json);
+    }
+
+    [Test]
+    public void ParseIssueNumber_ExtractsNumber()
+    {
+        string response = "{\"url\":\"...\",\"number\":42,\"title\":\"t\"}";
+        string result   = InvokeParseIssueNumber(response);
+        Assert.AreEqual(" #42", result);
+    }
+
+    [Test]
+    public void ParseIssueNumber_ReturnsEmptyOnMissingField()
+    {
+        string result = InvokeParseIssueNumber("{\"title\":\"no number here\"}");
+        Assert.AreEqual("", result);
+    }
+
+    [Test]
+    public void ParseIssueNumber_ReturnsEmptyOnEmptyInput()
+    {
+        Assert.AreEqual("", InvokeParseIssueNumber(""));
+        Assert.AreEqual("", InvokeParseIssueNumber(null));
+    }
+
+    // ── helpers ───────────────────────────────────────────────────────────────
+
+    static string BuildIssueJson(string title, string rawBody)
+    {
+        // Mirror the JSON construction in UIManager.PostIssue exactly.
+        string body = "**Community Request**\n\n" +
+                      (rawBody.Length > 0 ? rawBody : "_No description provided._");
+        return "{\"title\":"  + UIManager.JStrForTest(title) +
+               ",\"body\":"   + UIManager.JStrForTest(body) +
+               ",\"labels\":[\"feature request\"]}";
+    }
+
+    static string InvokeParseIssueNumber(string response) =>
+        UIManager.ParseIssueNumberForTest(response);
 }

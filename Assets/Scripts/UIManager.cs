@@ -1,4 +1,6 @@
+using System;
 using System.Collections;
+using System.Globalization;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
@@ -678,15 +680,24 @@ public class UIManager : MonoBehaviour
         return asset != null ? asset.text.Trim() : string.Empty;
     }
 
+    const string k_RateLimitKey    = "LastFeatureSubmit";
+    const int    k_RateLimitMinutes = 60;
+    const int    k_MaxTitleLen      = 120;
+    const int    k_MaxBodyLen       = 1000;
+
     public void ShowFeaturePanel()
     {
+        if (featureRequestPanel == null) return;
         featureRequestPanel.SetActive(true);
-        featureStatusText.text           = "";
         featureSubmitButton.interactable = true;
+        featureStatusText.text           = RateLimitStatus();
+        if (featureStatusText.text.Length > 0)
+            featureSubmitButton.interactable = false;
     }
 
     public void HideFeaturePanel()
     {
+        if (featureRequestPanel == null) return;
         featureRequestPanel.SetActive(false);
         featureTitleField.text           = "";
         featureDescField.text            = "";
@@ -697,8 +708,28 @@ public class UIManager : MonoBehaviour
     public void SubmitFeature()
     {
         string title = featureTitleField.text.Trim();
-        if (title.Length == 0) { featureStatusText.text = "Please enter a title."; return; }
+        if (title.Length == 0)      { featureStatusText.text = "Please enter a title."; return; }
+        if (title.Length > k_MaxTitleLen)
+        {
+            featureStatusText.text = $"Title too long ({title.Length}/{k_MaxTitleLen} chars).";
+            return;
+        }
+        string rateLimitMsg = RateLimitStatus();
+        if (rateLimitMsg.Length > 0) { featureStatusText.text = rateLimitMsg; return; }
         StartCoroutine(PostIssue(title, featureDescField.text.Trim()));
+    }
+
+    // Returns a non-empty string when the player must wait before submitting again.
+    string RateLimitStatus()
+    {
+        if (!PlayerPrefs.HasKey(k_RateLimitKey)) return "";
+        var styles = DateTimeStyles.RoundtripKind;
+        if (!DateTime.TryParse(PlayerPrefs.GetString(k_RateLimitKey), null, styles, out DateTime last))
+            return "";
+        double minutesSince = (DateTime.UtcNow - last).TotalMinutes;
+        if (minutesSince >= k_RateLimitMinutes) return "";
+        int remaining = Mathf.CeilToInt((float)(k_RateLimitMinutes - minutesSince));
+        return $"Please wait {remaining} min before submitting again.";
     }
 
     IEnumerator PostIssue(string title, string rawBody)
@@ -714,9 +745,19 @@ public class UIManager : MonoBehaviour
         featureSubmitButton.interactable = false;
         featureStatusText.text           = "Submitting…";
 
-        string body  = "**Community Request**\n\n" +
-                       (rawBody.Length > 0 ? rawBody : "_No description provided._");
-        string json  = "{\"title\":" + JStr(title) + ",\"body\":" + JStr(body) + "}";
+        // Truncate body to avoid hitting GitHub's request size limits
+        if (rawBody.Length > k_MaxBodyLen)
+            rawBody = rawBody.Substring(0, k_MaxBodyLen) + "… (truncated)";
+
+        // Build issue body with player context so submissions are immediately actionable
+        string context = BuildPlayerContext();
+        string body = "**Community Request**\n\n" +
+                      (rawBody.Length > 0 ? rawBody : "_No description provided._") +
+                      context;
+
+        string json  = "{\"title\":"  + JStr(title) +
+                       ",\"body\":"   + JStr(body) +
+                       ",\"labels\":[\"feature request\"]}";
         byte[] bytes = System.Text.Encoding.UTF8.GetBytes(json);
 
         var req = new UnityWebRequest(k_GhApi, "POST");
@@ -731,19 +772,61 @@ public class UIManager : MonoBehaviour
 
         if (req.result == UnityWebRequest.Result.Success)
         {
-            featureStatusText.text = "Submitted! Thank you.";
-            yield return new WaitForSeconds(2f);
+            // Stamp rate-limit timestamp
+            PlayerPrefs.SetString(k_RateLimitKey,
+                DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture));
+            PlayerPrefs.Save();
+
+            featureStatusText.text = "Submitted" + ParseIssueNumber(req.downloadHandler.text) +
+                                     "! Thank you.";
+            yield return new WaitForSeconds(2.5f);
             HideFeaturePanel();
         }
         else
         {
-            featureStatusText.text           = "Failed — check your connection.";
+            long code = req.responseCode;
+            featureStatusText.text = code == 422
+                ? "Label 'feature request' missing — ask the dev to create it on GitHub."
+                : $"Failed ({(code > 0 ? code.ToString() : req.error)}) — check your connection.";
             featureSubmitButton.interactable = true;
         }
     }
 
+    // Appends wave / prestige / time-played so every issue has triage context.
+    static string BuildPlayerContext()
+    {
+        var gm = GameManager.Instance;
+        if (gm == null) return "";
+        int h = (int)(gm.TimePlayed / 3600);
+        int m = (int)((gm.TimePlayed % 3600) / 60);
+        return "\n\n---\n**Player context**\n" +
+               $"- Wave: {gm.Wave}\n" +
+               $"- Prestige: {gm.PrestigeCount}\n" +
+               $"- Time played: {h}h {m}m\n" +
+               $"- Platform: {Application.platform}";
+    }
+
+    // Extracts " #123" from the GitHub API JSON response, or "" on failure.
+    static string ParseIssueNumber(string responseText)
+    {
+        if (string.IsNullOrEmpty(responseText)) return "";
+        try
+        {
+            int idx = responseText.IndexOf("\"number\":", StringComparison.Ordinal);
+            if (idx < 0) return "";
+            int start = idx + 9;
+            while (start < responseText.Length && responseText[start] == ' ') start++;
+            int end = start;
+            while (end < responseText.Length && char.IsDigit(responseText[end])) end++;
+            if (end > start) return " #" + responseText.Substring(start, end - start);
+        }
+        catch { }
+        return "";
+    }
+
 #if UNITY_INCLUDE_TESTS
-    public static string JStrForTest(string s) => JStr(s);
+    public static string JStrForTest(string s)               => JStr(s);
+    public static string ParseIssueNumberForTest(string raw) => ParseIssueNumber(raw);
 #endif
 
     static string JStr(string s) =>
