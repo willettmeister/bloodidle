@@ -19,6 +19,8 @@ public class UIManager : MonoBehaviour
     public Text enemyHPText;
     public Text bossTimerText;
     public GameObject bossTimerRow;
+    public GameObject wavePreviewBanner;
+    public Text wavePreviewText;
 
     [Header("Soldiers")]
     public Text soldierCountText;
@@ -29,6 +31,7 @@ public class UIManager : MonoBehaviour
     public Button buyBerserkerButton;
     public Button formationButton;
     public Text formationButtonText;
+    public Text mixedBonusText;
     public GameObject healSelfPanel;
     public Button healSelfButton;
 
@@ -56,6 +59,11 @@ public class UIManager : MonoBehaviour
     public Button upgradeTalismanButton;
     public Text talismanCostText;
 
+    [Header("Fortifications")]
+    public Text fortInfoText;
+    public Button upgradeFortButton;
+    public Text fortCostText;
+
     [Header("Blood Ritual")]
     public GameObject bloodRitualPanel;
     public Text bloodRitualInfoText;
@@ -76,6 +84,22 @@ public class UIManager : MonoBehaviour
     public Button pClickBonusButton;
     public Text pRitualEffInfoText;
     public Button pRitualEffButton;
+    public Text pWeaponHeadStartInfoText;
+    public Button pWeaponHeadStartButton;
+    public Text pBloodTitheInfoText;
+    public Button pBloodTitheButton;
+    public Text pIronWallInfoText;
+    public Button pIronWallButton;
+
+    [Header("Soul Shard Shop")]
+    public GameObject soulShardShopPanel;
+    public Text soulShardShopPointsText;
+    public Text ssBossTimerInfoText;
+    public Button ssBossTimerButton;
+    public Text ssDoubleChestInfoText;
+    public Button ssDoubleChestButton;
+    public Text ssRollbackInfoText;
+    public Button ssRollbackButton;
 
     [Header("Stats")]
     public GameObject statsPanel;
@@ -161,9 +185,24 @@ public class UIManager : MonoBehaviour
         bloodText.text = gm.BloodPerSec > 0
             ? $"Blood: {GameManager.FormatNumber(gm.Blood)}  +{gm.BloodPerSec:F1}/s{dailyTag}"
             : $"Blood: {GameManager.FormatNumber(gm.Blood)}{dailyTag}";
-        woodText.text = gm.WoodPerSecond > 0
-            ? $"Wood: {GameManager.FormatNumber(gm.Wood)}  +{gm.WoodPerSecond:F1}/s"
-            : $"Wood: {GameManager.FormatNumber(gm.Wood)}";
+
+        if (gm.SoulShardShopUnlocked)
+            woodText.text = $"Wood: {GameManager.FormatNumber(gm.Wood)}  ⬡{GameManager.FormatNumber(gm.SoulShards)}";
+        else
+            woodText.text = gm.WoodPerSecond > 0
+                ? $"Wood: {GameManager.FormatNumber(gm.Wood)}  +{gm.WoodPerSecond:F1}/s"
+                : $"Wood: {GameManager.FormatNumber(gm.Wood)}";
+
+        // Wave preview overlay (covers enemy card when active)
+        if (wavePreviewBanner != null)
+        {
+            wavePreviewBanner.SetActive(gm.WavePreviewActive);
+            if (gm.WavePreviewActive && wavePreviewText != null)
+            {
+                string bossWarn = gm.IsBossWave ? "\n⚠  BOSS INCOMING  ⚠" : "";
+                wavePreviewText.text = $"Wave {gm.Wave} incoming...{bossWarn}";
+            }
+        }
 
         // Enemy sprite
         if (enemyImage != null && enemySprites != null && enemySprites.Length > 0)
@@ -212,7 +251,10 @@ public class UIManager : MonoBehaviour
         bool hasSoldiers = gm.SoldierCount > 0;
         bool atCap       = gm.SoldierCount >= gm.MaxSoldiers;
 
-        string compBonus = gm.IsAllTank ? "  ♦ Regen" : gm.IsAllBerserker ? "  ⚡ Crit" : "";
+        string compBonus = gm.IsAllTank      ? "  ♦ Regen"
+                         : gm.IsAllBerserker ? "  ⚡ Crit"
+                         : gm.IsMixedArmy    ? "  🛡 −15% dmg"
+                         : "";
         soldierCountText.text = hasSoldiers
             ? $"Soldiers: {gm.SoldierCount}/{gm.MaxSoldiers}  [T:{gm.TankCount} B:{gm.BerserkerCount}]{compBonus}"
             : $"No soldiers — buy one!  (max {gm.MaxSoldiers})";
@@ -227,6 +269,13 @@ public class UIManager : MonoBehaviour
 
         if (formationButtonText != null)
             formationButtonText.text = gm.BerserkerFront ? "Formation: Berserker Front" : "Formation: Tank Front";
+
+        if (mixedBonusText != null)
+        {
+            mixedBonusText.gameObject.SetActive(gm.IsMixedArmy);
+            if (gm.IsMixedArmy)
+                mixedBonusText.text = $"Mixed Formation: −{GameManager.MixedArmyDmgReduction * 100:F0}% incoming damage";
+        }
 
         bool canBuySoldier = gm.Blood >= GameManager.SoldierCost && !atCap;
         if (buyTankButton      != null) buyTankButton.interactable      = canBuySoldier;
@@ -272,8 +321,7 @@ public class UIManager : MonoBehaviour
                 upgradeWeaponButton.interactable = gm.WeaponLevel < GameManager.MaxEquipLevel && gm.Wood >= gm.WeaponUpgradeCost;
             if (weaponCostText != null)
                 weaponCostText.text = gm.WeaponLevel < GameManager.MaxEquipLevel
-                    ? $"Upgrade\n({GameManager.FormatNumber(gm.WeaponUpgradeCost)} wood)"
-                    : "MAX";
+                    ? $"Upgrade\n({GameManager.FormatNumber(gm.WeaponUpgradeCost)} wood)" : "MAX";
 
             if (armorInfoText != null)
                 armorInfoText.text = $"Armor  Lv.{gm.ArmorLevel}/{GameManager.MaxEquipLevel}  (+{gm.EquipArmorBonus:F0} HP)";
@@ -281,8 +329,7 @@ public class UIManager : MonoBehaviour
                 upgradeArmorButton.interactable = gm.ArmorLevel < GameManager.MaxEquipLevel && gm.Wood >= gm.ArmorUpgradeCost;
             if (armorCostText != null)
                 armorCostText.text = gm.ArmorLevel < GameManager.MaxEquipLevel
-                    ? $"Upgrade\n({GameManager.FormatNumber(gm.ArmorUpgradeCost)} wood)"
-                    : "MAX";
+                    ? $"Upgrade\n({GameManager.FormatNumber(gm.ArmorUpgradeCost)} wood)" : "MAX";
 
             if (talismanInfoText != null)
                 talismanInfoText.text = $"Talisman  Lv.{gm.TalismanLevel}/{GameManager.MaxEquipLevel}  (+{gm.EquipTalismanBonus * 100:F0}% reward)";
@@ -290,9 +337,22 @@ public class UIManager : MonoBehaviour
                 upgradeTalismanButton.interactable = gm.TalismanLevel < GameManager.MaxEquipLevel && gm.Wood >= gm.TalismanUpgradeCost;
             if (talismanCostText != null)
                 talismanCostText.text = gm.TalismanLevel < GameManager.MaxEquipLevel
-                    ? $"Upgrade\n({GameManager.FormatNumber(gm.TalismanUpgradeCost)} wood)"
-                    : "MAX";
+                    ? $"Upgrade\n({GameManager.FormatNumber(gm.TalismanUpgradeCost)} wood)" : "MAX";
         }
+
+        // Fortifications (always visible)
+        if (fortInfoText != null)
+        {
+            int pct = Mathf.RoundToInt(gm.FortificationDmgReduction * 100);
+            fortInfoText.text = $"Fortifications  Lv.{gm.FortificationLevel}/{GameManager.MaxFortificationLevel}  (−{pct}% enemy HP)";
+        }
+        if (upgradeFortButton != null)
+            upgradeFortButton.interactable = gm.FortificationLevel < GameManager.MaxFortificationLevel
+                                          && gm.Wood >= gm.FortificationCost;
+        if (fortCostText != null)
+            fortCostText.text = gm.FortificationLevel >= GameManager.MaxFortificationLevel
+                ? "MAX"
+                : $"Fortify\n({GameManager.FormatNumber(gm.FortificationCost)} wood)";
 
         // Blood Ritual
         if (bloodRitualPanel != null) bloodRitualPanel.SetActive(gm.WorkersUnlocked);
@@ -326,15 +386,54 @@ public class UIManager : MonoBehaviour
             bool canSpend = gm.PrestigePoints >= GameManager.PrestigeShopCost;
             if (prestigeShopPointsText != null)
                 prestigeShopPointsText.text = $"Prestige Points: {gm.PrestigePoints}";
+
             if (pSoldierCapInfoText != null)
                 pSoldierCapInfoText.text = $"Soldier Cap +10  (Lv.{gm.PSoldierCapLevel})";
-            if (pSoldierCapButton != null)  pSoldierCapButton.interactable  = canSpend;
+            if (pSoldierCapButton != null)   pSoldierCapButton.interactable   = canSpend;
+
             if (pClickBonusInfoText != null)
                 pClickBonusInfoText.text = $"Click Bonus +0.5  (Lv.{gm.PClickBonusLevel})";
-            if (pClickBonusButton != null)  pClickBonusButton.interactable  = canSpend;
+            if (pClickBonusButton != null)   pClickBonusButton.interactable   = canSpend;
+
             if (pRitualEffInfoText != null)
                 pRitualEffInfoText.text = $"Ritual Eff. +0.5/s  (Lv.{gm.PRitualEffLevel})";
-            if (pRitualEffButton != null)   pRitualEffButton.interactable   = canSpend;
+            if (pRitualEffButton != null)    pRitualEffButton.interactable    = canSpend;
+
+            if (pWeaponHeadStartInfoText != null)
+                pWeaponHeadStartInfoText.text = $"Weapon Head Start  (Lv.{gm.PWeaponHeadStartLevel})";
+            if (pWeaponHeadStartButton != null) pWeaponHeadStartButton.interactable = canSpend;
+
+            if (pBloodTitheInfoText != null)
+                pBloodTitheInfoText.text = $"Blood Tithe +0.5/s  (Lv.{gm.PBloodTitheLevel})";
+            if (pBloodTitheButton != null)   pBloodTitheButton.interactable   = canSpend;
+
+            if (pIronWallInfoText != null)
+                pIronWallInfoText.text = $"Iron Wall −{GameManager.IronWallDmgReduction * 100:F0}% dmg  (Lv.{gm.PIronWallLevel})";
+            if (pIronWallButton != null)     pIronWallButton.interactable     = canSpend;
+        }
+
+        // Soul Shard Shop
+        if (soulShardShopPanel != null) soulShardShopPanel.SetActive(gm.SoulShardShopUnlocked);
+        if (gm.SoulShardShopUnlocked)
+        {
+            bool canBuySS = gm.SoulShards >= GameManager.SSUpgradeCost;
+            if (soulShardShopPointsText != null)
+                soulShardShopPointsText.text = $"Soul Shards: {GameManager.FormatNumber(gm.SoulShards)}";
+
+            if (ssBossTimerInfoText != null)
+                ssBossTimerInfoText.text = $"Boss Timer +15s  (Lv.{gm.SSBossTimerLevel}/{GameManager.SSMaxLevel})";
+            if (ssBossTimerButton != null)
+                ssBossTimerButton.interactable = canBuySS && gm.SSBossTimerLevel < GameManager.SSMaxLevel;
+
+            if (ssDoubleChestInfoText != null)
+                ssDoubleChestInfoText.text = $"Double Chest  (Lv.{gm.SSDoubleChestLevel}/{GameManager.SSMaxLevel})";
+            if (ssDoubleChestButton != null)
+                ssDoubleChestButton.interactable = canBuySS && gm.SSDoubleChestLevel < GameManager.SSMaxLevel;
+
+            if (ssRollbackInfoText != null)
+                ssRollbackInfoText.text = $"Rollback Shield  (Lv.{gm.SSRollbackLevel}/{GameManager.SSMaxLevel})";
+            if (ssRollbackButton != null)
+                ssRollbackButton.interactable = canBuySS && gm.SSRollbackLevel < GameManager.SSMaxLevel;
         }
 
         barracksInfoText.text        = $"Barracks  Lv.{gm.BarracksLevel}  —  Max {gm.MaxSoldiers} soldiers";
@@ -368,6 +467,7 @@ public class UIManager : MonoBehaviour
         var sb = new StringBuilder();
         sb.AppendLine($"Enemies Defeated:  {gm.TotalEnemiesKilled}");
         sb.AppendLine($"Blood Earned:      {GameManager.FormatNumber(gm.TotalBloodEarned)}");
+        sb.AppendLine($"Soul Shards:       {GameManager.FormatNumber(gm.SoulShards)}");
         sb.AppendLine($"Time Played:       {h}h {m}m {s}s");
         sb.AppendLine($"Prestige Level:    {gm.PrestigeCount}");
         sb.AppendLine();
