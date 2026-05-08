@@ -324,6 +324,12 @@ public class GameManager : MonoBehaviour
     public void SetSurgeUpgradeLevelForTest(int l)           => SurgeUpgradeLevel = l;
     public void SetHealUpgradeLevelForTest(int l)            => HealUpgradeLevel = l;
     public void SetSSBloodTapLevelForTest(int l)             => SSBloodTapLevel = l;
+    public void TickCombatForTest(float dt)                  => RunCombat(dt);
+    public void SetSurgeActiveForTest(bool active)           { SurgeActive = active; SurgeTimeRemaining = active ? 999f : 0f; }
+    public void SetSSDoubleChestLevelForTest(int l)          => SSDoubleChestLevel = l;
+    public void SetPIronWallLevelForTest(int l)              => PIronWallLevel = l;
+    public void ClearOfflineEarningsForTest()                { OfflineWoodEarned = 0; OfflineBloodEarned = 0; }
+    public void SetOfflineEarningsForTest(double blood, double wood) { OfflineBloodEarned = blood; OfflineWoodEarned = wood; }
 
     public static double CalculateOfflineWood(int workers, double seconds) =>
         workers * WorkerWoodPerSec * Math.Min(seconds, 8.0 * 3600);
