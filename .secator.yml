@@ -1,0 +1,28 @@
+# secator project configuration
+# Docs: https://docs.freelabz.com/configuration
+
+dirs:
+  output: .secator/outputs
+
+tasks:
+  gitleaks:
+    # scan file-by-file in addition to git log; catches secrets in working tree
+    extra_opts: --source .
+  nuclei:
+    # skip noisy technology-fingerprint templates — only care about exposure/secret/misconfig
+    extra_opts: >-
+      -exclude-tags tech,technologies,
+      -exclude-templates technologies
+  trivy:
+    # skip Unity runtime dirs that are not source and contain no manifests
+    extra_opts: >-
+      --skip-dirs Library
+      --skip-dirs Temp
+      --skip-dirs Logs
+      --skip-dirs builds
+
+workflows:
+  code_scan:
+    description: "Source tree + git history scan for this Unity Android project"
+    targets:
+      - .

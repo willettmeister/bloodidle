@@ -1,0 +1,219 @@
+name: Security (secator)
+
+# Runs on every push to main, every PR, and weekly to catch new CVEs.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: '0 3 * * 1'   # Monday 03:00 UTC
+
+permissions:
+  contents: read
+
+# ─────────────────────────────────────────────────────────────────────────────
+# JOB 1 — Code scan
+#   Targets: local source tree + full git history
+#   Tools:   nuclei (secret/exposure templates) + gitleaks (git history secrets)
+#            + trivy (Unity package dependency CVEs)
+# ─────────────────────────────────────────────────────────────────────────────
+jobs:
+  code-scan:
+    name: Code scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout (full history for gitleaks)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install secator
+        run: pip install secator
+
+      - name: Install secator tools (nuclei, gitleaks, trivy)
+        run: secator install tools nuclei gitleaks trivy
+
+      # code_scan workflow combines nuclei (secret/exposure templates) + gitleaks
+      - name: code_scan — source tree + git history secrets
+        run: |
+          mkdir -p results
+          secator w code_scan . \
+            -o json \
+            > results/code-scan.json \
+            2>results/code-scan.err \
+            || true
+          echo "=== stderr ===" && cat results/code-scan.err || true
+
+      # trivy scans the Unity package manifest for known dependency CVEs
+      - name: trivy — Unity package dependency CVEs
+        run: |
+          secator x trivy . \
+            -o json \
+            > results/trivy.json \
+            2>results/trivy.err \
+            || true
+          echo "=== stderr ===" && cat results/trivy.err || true
+
+      - name: Upload code-scan results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: secator-code-scan-${{ github.run_id }}
+          path: results/
+          retention-days: 30
+
+      # Hard-fail the build if gitleaks or nuclei finds a critical/high secret
+      - name: Fail on critical / high findings
+        run: |
+          python3 - <<'EOF'
+          import json, sys, os
+
+          HARD_FAIL_SEVERITIES = {"critical", "high"}
+          findings = []
+
+          for path in ["results/code-scan.json"]:
+              if not os.path.exists(path):
+                  continue
+              with open(path) as f:
+                  for raw in f:
+                      raw = raw.strip()
+                      if not raw:
+                          continue
+                      try:
+                          rec = json.loads(raw)
+                      except json.JSONDecodeError:
+                          continue
+                      sev = (
+                          rec.get("severity") or
+                          rec.get("info", {}).get("severity") or
+                          ""
+                      ).lower()
+                      if sev in HARD_FAIL_SEVERITIES:
+                          name = (
+                              rec.get("info", {}).get("name") or
+                              rec.get("RuleID") or
+                              rec.get("Description") or
+                              "unknown"
+                          )
+                          location = (
+                              rec.get("matched-at") or
+                              rec.get("match") or
+                              rec.get("File") or
+                              ""
+                          )
+                          findings.append(f"  [{sev.upper()}] {name}  {location}")
+
+          if findings:
+              print("Critical/high findings — review artifacts before merging:\n")
+              for f in findings:
+                  print(f)
+              sys.exit(1)
+          else:
+              print("No critical/high findings in code scan.")
+          EOF
+
+# ─────────────────────────────────────────────────────────────────────────────
+# JOB 2 — Endpoint scan
+#   Target:  https://api.github.com/repos/willettmeister/bloodidle/issues
+#            (the only external endpoint the app contacts)
+#   Tools:   httpx (reachability + response headers)
+#            nuclei (security-header, TLS, and misconfig templates only —
+#                    no aggressive/fuzzing templates against a third-party host)
+# ─────────────────────────────────────────────────────────────────────────────
+  endpoint-scan:
+    name: Endpoint scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install secator
+        run: pip install secator
+
+      - name: Install secator tools (httpx, nuclei)
+        run: secator install tools httpx nuclei
+
+      # httpx: probe status, response time, server headers, redirect chain
+      - name: httpx — probe app API endpoint
+        run: |
+          mkdir -p results
+          echo "https://api.github.com/repos/willettmeister/bloodidle/issues" \
+            | secator x httpx \
+              -o json \
+              > results/httpx.json \
+              2>results/httpx.err \
+              || true
+          echo "=== stderr ===" && cat results/httpx.err || true
+
+      # nuclei: passive security-header and TLS checks only.
+      # Tags restricted to 'headers', 'ssl', 'misconfig' to avoid aggressive
+      # probing of GitHub's infrastructure.
+      - name: nuclei — security headers + TLS on API endpoint
+        run: |
+          echo "https://api.github.com/repos/willettmeister/bloodidle/issues" \
+            | secator x nuclei \
+              --tags headers,ssl,misconfig \
+              -o json \
+              > results/nuclei-endpoint.json \
+              2>results/nuclei-endpoint.err \
+              || true
+          echo "=== stderr ===" && cat results/nuclei-endpoint.err || true
+
+      - name: Upload endpoint-scan results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: secator-endpoint-scan-${{ github.run_id }}
+          path: results/
+          retention-days: 30
+
+      # Endpoint findings are informational — warn but don't block the build,
+      # since the target is third-party (GitHub) infrastructure.
+      - name: Summarise endpoint findings
+        if: always()
+        run: |
+          python3 - <<'EOF'
+          import json, os
+
+          for path, label in [
+              ("results/httpx.json",         "httpx"),
+              ("results/nuclei-endpoint.json","nuclei-endpoint"),
+          ]:
+              if not os.path.exists(path):
+                  print(f"{label}: no output file")
+                  continue
+              count = 0
+              with open(path) as f:
+                  for raw in f:
+                      raw = raw.strip()
+                      if not raw:
+                          continue
+                      try:
+                          rec = json.loads(raw)
+                          count += 1
+                          sev  = (
+                              rec.get("info", {}).get("severity") or
+                              rec.get("severity") or "info"
+                          ).lower()
+                          name = (
+                              rec.get("info", {}).get("name") or
+                              rec.get("url") or "result"
+                          )
+                          print(f"  [{label}] [{sev}] {name}")
+                      except json.JSONDecodeError:
+                          pass
+              if count == 0:
+                  print(f"{label}: no findings (clean or no templates matched)")
+          EOF
