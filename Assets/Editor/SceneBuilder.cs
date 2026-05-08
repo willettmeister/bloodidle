@@ -23,9 +23,10 @@ using System.IO;
 // 1870–2085 Blood Ritual + Blood Pact card
 // 2095–2235 Prestige card
 // 2245–2385 Blood Surge card
-// 2395–2810 Prestige Shop card  (6 rows)
-// 2820–3070 Soul Shard Shop card  (new)
-// 3080–3180 Bottom row  — Stats | Suggest
+// 2395–2560 Blood Bank card  (new)
+// 2560–2975 Prestige Shop card  (6 rows)
+// 2985–3235 Soul Shard Shop card
+// 3245–3345 Bottom row  — Stats | Suggest
 // overlay   FeatureRequestOverlay — modal, hidden by default
 public static class SceneBuilder
 {
@@ -110,7 +111,7 @@ public static class SceneBuilder
         contentRT.anchorMax        = new Vector2(1f, 1f);
         contentRT.pivot            = new Vector2(0.5f, 1f);
         contentRT.anchoredPosition = Vector2.zero;
-        contentRT.sizeDelta        = new Vector2(0, 3200);
+        contentRT.sizeDelta        = new Vector2(0, 3365);
 
         var scroll = scrollGO.AddComponent<ScrollRect>();
         scroll.viewport          = viewportGO.GetComponent<RectTransform>();
@@ -388,11 +389,37 @@ public static class SceneBuilder
         bloodSurgePanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
-        // PRESTIGE SHOP CARD  (y 2395–2810) — visible after first prestige
+        // BLOOD BANK CARD  (y 2395–2560) — always visible
+        // ════════════════════════════════════════════════════════════════════
+        var bloodBankPanel = content.CreateChild("BloodBankPanel");
+        bloodBankPanel.AddImage(Color.clear);
+        PF(bloodBankPanel, 2395, 165);
+
+        Panel(bloodBankPanel, "BloodBankCardBg", 0, 165, Surface1, 24);
+
+        var bankTitleGO = Label(bloodBankPanel, "BloodBankTitle", "Blood Bank", 40, Gold, TextAnchor.MiddleLeft);
+        PT(bankTitleGO, 8, 44, -200, 400);
+
+        var bankInfoGO = Label(bloodBankPanel, "BloodBankInfoText",
+            "Blood Bank  0/10,000  (+2%/hr)", 30, Color.white, TextAnchor.MiddleLeft);
+        PT(bankInfoGO, 58, 42, -175, 520);
+
+        var bankAccruedGO = Label(bloodBankPanel, "BloodBankAccruedText",
+            "Interest accrued: none yet", 26, TextSec, TextAnchor.MiddleLeft);
+        PT(bankAccruedGO, 104, 36, -175, 520);
+
+        var depositBtnGO = Btn(bloodBankPanel, "DepositBloodButton", "Deposit\n10%", 30, Brown);
+        PT(depositBtnGO, 52, 100, +260, 210);
+
+        var withdrawBtnGO = Btn(bloodBankPanel, "WithdrawBloodButton", "Withdraw\nAll", 30, Green);
+        PT(withdrawBtnGO, 52, 100, +380, 210);
+
+        // ════════════════════════════════════════════════════════════════════
+        // PRESTIGE SHOP CARD  (y 2560–2975) — visible after first prestige
         // ════════════════════════════════════════════════════════════════════
         var prestigeShopPanel = content.CreateChild("PrestigeShopPanel");
         prestigeShopPanel.AddImage(Color.clear);
-        PF(prestigeShopPanel, 2395, 415);
+        PF(prestigeShopPanel, 2560, 415);
 
         Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 415, HC("150A30"), 24);
 
@@ -449,11 +476,11 @@ public static class SceneBuilder
         prestigeShopPanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
-        // SOUL SHARD SHOP CARD  (y 2820–3070) — visible after first boss kill
+        // SOUL SHARD SHOP CARD  (y 2985–3235) — visible after first boss kill
         // ════════════════════════════════════════════════════════════════════
         var soulShardShopPanel = content.CreateChild("SoulShardShopPanel");
         soulShardShopPanel.AddImage(Color.clear);
-        PF(soulShardShopPanel, 2820, 250);
+        PF(soulShardShopPanel, 2985, 250);
 
         Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 250, HC("0A1A30"), 24);
 
@@ -489,13 +516,13 @@ public static class SceneBuilder
         soulShardShopPanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
-        // BOTTOM ROW  (y 3080–3180) — Stats | Suggest
+        // BOTTOM ROW  (y 3245–3345) — Stats | Suggest
         // ════════════════════════════════════════════════════════════════════
         var statsBtnGO = Btn(content, "StatsButton", "Statistics", 40, Teal);
-        PT(statsBtnGO, 3080, 100, -175, 320);
+        PT(statsBtnGO, 3245, 100, -175, 320);
 
         var suggestBtnGO = Btn(content, "SuggestButton", "Suggest a Feature", 36, HC("1565C0"));
-        PT(suggestBtnGO, 3080, 100, +175, 320);
+        PT(suggestBtnGO, 3245, 100, +175, 320);
 
         // ── Damage number layer ───────────────────────────────────────────────
         var dmgLayerGO = cv.CreateChild("DamageLayer");
@@ -686,6 +713,11 @@ public static class SceneBuilder
         uim.pBloodTitheButton       = pBloodTitheBtnGO.GetComponent<Button>();
         uim.pIronWallInfoText       = pIronWallInfoGO.GetComponent<Text>();
         uim.pIronWallButton         = pIronWallBtnGO.GetComponent<Button>();
+        uim.bloodBankPanel          = bloodBankPanel;
+        uim.bloodBankInfoText       = bankInfoGO.GetComponent<Text>();
+        uim.bloodBankAccruedText    = bankAccruedGO.GetComponent<Text>();
+        uim.depositBloodButton      = depositBtnGO.GetComponent<Button>();
+        uim.withdrawBloodButton     = withdrawBtnGO.GetComponent<Button>();
         uim.soulShardShopPanel      = soulShardShopPanel;
         uim.soulShardShopPointsText = ssShopPtsGO.GetComponent<Text>();
         uim.ssBossTimerInfoText     = ssBossTimerInfoGO.GetComponent<Text>();
@@ -736,6 +768,8 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(ssBossTimerBtnGO.GetComponent<Button>().onClick,        clk.OnBuySSBossTimer);
         UnityEventTools.AddPersistentListener(ssDoubleChestBtnGO.GetComponent<Button>().onClick,      clk.OnBuySSDoubleChest);
         UnityEventTools.AddPersistentListener(ssRollbackBtnGO.GetComponent<Button>().onClick,         clk.OnBuySSRollback);
+        UnityEventTools.AddPersistentListener(depositBtnGO.GetComponent<Button>().onClick,            clk.OnDepositToBank);
+        UnityEventTools.AddPersistentListener(withdrawBtnGO.GetComponent<Button>().onClick,           clk.OnWithdrawFromBank);
         UnityEventTools.AddPersistentListener(statsBtnGO.GetComponent<Button>().onClick,              clk.OnOpenStats);
         UnityEventTools.AddPersistentListener(suggestBtnGO.GetComponent<Button>().onClick,            clk.OnOpenSuggest);
         UnityEventTools.AddPersistentListener(statsCloseGO.GetComponent<Button>().onClick,            uim.HideStatsPanel);

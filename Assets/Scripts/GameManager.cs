@@ -19,6 +19,7 @@ public enum AchievementFlags
 }
 
 public enum EnemyModifier { None, Armored, Enraged, Regen }
+public enum BossAbility    { None, Shield, Berserk, Drain }
 
 public class GameManager : MonoBehaviour
 {
@@ -48,8 +49,9 @@ public class GameManager : MonoBehaviour
         ? (BerserkerCount == 0 && TankCount > 0)
         : (TankCount > 0);
     public float FrontlineMaxHP  => (FrontlineIsTank ? SoldierMaxHP : BerserkerMaxHP) + EquipArmorBonus;
-    public float TotalAttack     => TankCount * (SoldierAttack + EquipAttackBonus)
-                                  + BerserkerCount * (BerserkerAttack + EquipAttackBonus);
+    public float TotalAttack     => (TankCount * (SoldierAttack + EquipAttackBonus)
+                                  + BerserkerCount * (BerserkerAttack + EquipAttackBonus))
+                                  * (1f + PrestigeMilestoneDmgBonus);
     public bool  IsAllTank       => TankCount > 0 && BerserkerCount == 0;
     public bool  IsAllBerserker  => BerserkerCount > 0 && TankCount == 0;
     public bool  IsMixedArmy     => SoldierCount > 0 && !IsAllTank && !IsAllBerserker;
@@ -132,6 +134,31 @@ public class GameManager : MonoBehaviour
     public const int    SSMaxLevel    = 3;
     public const double SSUpgradeCost = 1.0;
 
+    // --- Blood Bank ---
+    public double BloodBankDeposit { get; private set; }
+    public double BloodBankAccrued { get; private set; }
+    public const double BankInterestRatePerHour = 0.02;
+    public const double BankMaxDeposit          = 10_000.0;
+
+    // --- Wave Streak ---
+    public int   WaveStreak       { get; private set; }
+    public float StreakMultiplier => Mathf.Min(1f + WaveStreak * 0.1f, 3f);
+    public const float MaxStreakMultiplier = 3f;
+
+    // --- Boss Ability ---
+    public BossAbility CurrentBossAbility { get; private set; }
+    public bool        BossShieldActive   { get; private set; }
+    float _bossShieldHP;
+    public const float BossShieldFraction = 0.20f;
+    public const float BossDrainPerSec    = 5f;
+    public string BossAbilityDisplay => CurrentBossAbility switch
+    {
+        BossAbility.Shield => "🛡 Shielded",
+        BossAbility.Berserk => "💀 Berserk",
+        BossAbility.Drain   => "🩸 Drain",
+        _                   => "",
+    };
+
     // --- Blood Surge spell ---
     public bool  SurgeActive        { get; private set; }
     public float SurgeTimeRemaining { get; private set; }
@@ -174,6 +201,12 @@ public class GameManager : MonoBehaviour
     float _previewTimer;
     const float WavePreviewDuration = 3f;
 
+    // --- Prestige Milestones ---
+    static readonly int[] k_PrestigeMilestones = { 5, 10, 20, 50 };
+    public int   PrestigeMilestonesReached { get { int c = 0; foreach (var m in k_PrestigeMilestones) if (PrestigeCount >= m) c++; return c; } }
+    public float PrestigeMilestoneDmgBonus => PrestigeMilestonesReached * MilestoneDmgBonusPerLevel;
+    public const float MilestoneDmgBonusPerLevel = 0.05f;
+
     // --- Daily login bonus ---
     public bool DailyBonusAvailable { get; private set; }
     public const float DailyBonusMultiplier = 10f;
@@ -210,6 +243,19 @@ public class GameManager : MonoBehaviour
     AudioSource _audio;
     AudioClip   _clipFarm, _clipKill, _clipBossKill;
 
+    static readonly (AchievementFlags flag, double blood, int pp)[] k_AchievRewards =
+    {
+        (AchievementFlags.FirstKill,     50.0,  0),
+        (AchievementFlags.Wave10,        200.0, 0),
+        (AchievementFlags.Wave25,        500.0, 0),
+        (AchievementFlags.Blood1K,       100.0, 0),
+        (AchievementFlags.Blood10K,      500.0, 0),
+        (AchievementFlags.FirstSoldier,  25.0,  0),
+        (AchievementFlags.FullLegion,    300.0, 0),
+        (AchievementFlags.FirstRitual,   100.0, 0),
+        (AchievementFlags.FirstPrestige, 0.0,   1),
+    };
+
 #if UNITY_INCLUDE_TESTS
     public static void ResetForTest()                        => Instance = null;
     public void SetWoodForTest(double amount)                => Wood = amount;
@@ -233,6 +279,11 @@ public class GameManager : MonoBehaviour
     public void UnlockSoulShardShopForTest()                 => SoulShardShopUnlocked = true;
     public void SetFortLevelForTest(int level)               { FortificationLevel = level; }
     public void SkipWavePreviewForTest()                     { WavePreviewActive = false; SpawnEnemy(Wave); }
+    public void SetWaveStreakForTest(int s)                  => WaveStreak = s;
+    public void SetBossAbilityForTest(BossAbility a)         { CurrentBossAbility = a; BossShieldActive = a == BossAbility.Shield; _bossShieldHP = BossShieldActive ? EnemyMaxHP * BossShieldFraction : 0f; }
+    public void SetBloodBankDepositForTest(double d)         => BloodBankDeposit = d;
+    public void SetBloodBankAccruedForTest(double a)         => BloodBankAccrued = a;
+    public void SetPrestigeCountForTest(int c)               => PrestigeCount = c;
 
     public static double CalculateOfflineWood(int workers, double seconds) =>
         workers * WorkerWoodPerSec * Math.Min(seconds, 8.0 * 3600);
@@ -320,6 +371,12 @@ public class GameManager : MonoBehaviour
             changed = true;
         }
 
+        if (BloodBankDeposit > 0)
+        {
+            BloodBankAccrued += BloodBankDeposit * (BankInterestRatePerHour / 3600.0) * dt;
+            changed = true;
+        }
+
         if (CurrentEnemyModifier == EnemyModifier.Regen && EnemyHP > 0 && EnemyHP < EnemyMaxHP)
         {
             EnemyHP = Mathf.Min(EnemyHP + EnemyMaxHP * EnemyRegenPct * dt, EnemyMaxHP);
@@ -359,7 +416,15 @@ public class GameManager : MonoBehaviour
     {
         float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f);
         if (CurrentEnemyModifier == EnemyModifier.Armored) eff *= EnemyArmoredDmgMult;
-        EnemyHP = Mathf.Max(0f, EnemyHP - eff * dt);
+        if (BossShieldActive)
+        {
+            _bossShieldHP -= eff * dt;
+            if (_bossShieldHP <= 0) { _bossShieldHP = 0; BossShieldActive = false; }
+        }
+        else
+        {
+            EnemyHP = Mathf.Max(0f, EnemyHP - eff * dt);
+        }
 
         if (EnemyHP <= 0f)
         {
@@ -372,6 +437,8 @@ public class GameManager : MonoBehaviour
                 SoulShardShopUnlocked = true;
                 BossTimeRemaining = 0f;
             }
+            reward = Math.Floor(reward * StreakMultiplier);
+            WaveStreak++;
             AddBlood(reward);
 
             TotalEnemiesKilled++;
@@ -393,15 +460,21 @@ public class GameManager : MonoBehaviour
         }
 
         float incomingAtk = EnemyAttack;
+        if (IsBossWave && CurrentBossAbility == BossAbility.Berserk && EnemyHP < EnemyMaxHP * 0.25f)
+            incomingAtk *= 2f;
         if (IsMixedArmy)    incomingAtk *= (1f - MixedArmyDmgReduction);
         if (PIronWallLevel > 0) incomingAtk *= (1f - PIronWallLevel * IronWallDmgReduction);
-        SoldierHP -= incomingAtk * dt;
+        float totalIncoming = incomingAtk;
+        if (IsBossWave && CurrentBossAbility == BossAbility.Drain && EnemyHP > 0)
+            totalIncoming += BossDrainPerSec;
+        SoldierHP -= totalIncoming * dt;
 
         if (SoldierHP <= 0f)
         {
             if (FrontlineIsTank) TankCount--;
             else BerserkerCount--;
             SoldierHP = SoldierCount > 0 ? FrontlineMaxHP : 0f;
+            WaveStreak = 0;
         }
 
         _dmgTimer += dt;
@@ -416,7 +489,7 @@ public class GameManager : MonoBehaviour
             }
             OnDamageDealt?.Invoke(tickDmg, true);
             if (SoldierCount > 0)
-                OnDamageDealt?.Invoke(incomingAtk * DmgTickInterval, false);
+                OnDamageDealt?.Invoke(totalIncoming * DmgTickInterval, false);
         }
 
         return true;
@@ -472,6 +545,9 @@ public class GameManager : MonoBehaviour
             EnemyAttack      = (float)(3   * Math.Pow(1.3, wave - 1) * 2.0);
             BossTimeRemaining = BossTimeLimit + SSBossTimerLevel * 15f;
             CurrentEnemyModifier = EnemyModifier.None;
+            CurrentBossAbility   = (BossAbility)UnityEngine.Random.Range(0, 4);
+            BossShieldActive     = CurrentBossAbility == BossAbility.Shield;
+            _bossShieldHP        = BossShieldActive ? EnemyMaxHP * BossShieldFraction : 0f;
         }
         else
         {
@@ -482,6 +558,9 @@ public class GameManager : MonoBehaviour
             EnemyHP          = EnemyMaxHP;
             EnemyAttack      = (float)(3   * Math.Pow(1.3, wave - 1) * def.AtkMult);
 
+            CurrentBossAbility = BossAbility.None;
+            BossShieldActive   = false;
+            _bossShieldHP      = 0f;
             if (UnityEngine.Random.value < 0.25f)
             {
                 CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 4);
@@ -540,6 +619,13 @@ public class GameManager : MonoBehaviour
     {
         if ((Achievements & flag) != 0) return;
         Achievements |= flag;
+        foreach (var (f, blood, pp) in k_AchievRewards)
+        {
+            if (f != flag) continue;
+            if (blood > 0) AddBlood(blood);
+            if (pp    > 0) PrestigePoints += pp;
+            break;
+        }
         OnAchievementUnlocked?.Invoke(flag);
     }
 
@@ -638,6 +724,26 @@ public class GameManager : MonoBehaviour
         if (!BloodPactUnlocked || Blood < BloodPactBloodCost) return false;
         Blood -= BloodPactBloodCost;
         Wood  += BloodPactWoodGain;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    public bool DepositToBank(double amount)
+    {
+        double toDeposit = Math.Min(Math.Min(amount, Blood), BankMaxDeposit - BloodBankDeposit);
+        if (toDeposit < 0.01) return false;
+        Blood            -= toDeposit;
+        BloodBankDeposit += toDeposit;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    public bool WithdrawFromBank()
+    {
+        if (BloodBankDeposit <= 0 && BloodBankAccrued <= 0) return false;
+        AddBlood(BloodBankDeposit + BloodBankAccrued);
+        BloodBankDeposit = 0;
+        BloodBankAccrued = 0;
         OnStateChanged?.Invoke();
         return true;
     }
@@ -761,9 +867,12 @@ public class GameManager : MonoBehaviour
     public bool Prestige()
     {
         if (Wave < PrestigeWaveRequirement) return false;
+        int milestonesBefore = PrestigeMilestonesReached;
         PrestigeCount++;
         PrestigePoints++;
         TryUnlock(AchievementFlags.FirstPrestige);
+        if (PrestigeMilestonesReached > milestonesBefore)
+            OnMilestoneChest?.Invoke($"⭐ Prestige Milestone! +{PrestigeMilestoneDmgBonus * 100:F0}% attack!");
         Blood               = 0;
         Wood                = 0;
         TankCount           = 0;
@@ -841,6 +950,9 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("SSBossTimerLevel",    SSBossTimerLevel);
         PlayerPrefs.SetInt   ("SSDoubleChestLevel",  SSDoubleChestLevel);
         PlayerPrefs.SetInt   ("SSRollbackLevel",     SSRollbackLevel);
+        PlayerPrefs.SetString("BloodBankDeposit",    BloodBankDeposit.ToString("R", ic));
+        PlayerPrefs.SetString("BloodBankAccrued",    BloodBankAccrued.ToString("R", ic));
+        PlayerPrefs.SetInt   ("WaveStreak",          WaveStreak);
         PlayerPrefs.SetInt   ("TotalEnemiesKilled",  TotalEnemiesKilled);
         PlayerPrefs.SetString("TimePlayed",          TimePlayed.ToString("R", ic));
         PlayerPrefs.SetInt   ("Achievements",        (int)Achievements);
@@ -892,6 +1004,9 @@ public class GameManager : MonoBehaviour
         SSBossTimerLevel    = PlayerPrefs.GetInt   ("SSBossTimerLevel",    0);
         SSDoubleChestLevel  = PlayerPrefs.GetInt   ("SSDoubleChestLevel",  0);
         SSRollbackLevel     = PlayerPrefs.GetInt   ("SSRollbackLevel",     0);
+        BloodBankDeposit    = double.Parse(PlayerPrefs.GetString("BloodBankDeposit", "0"), ic);
+        BloodBankAccrued    = double.Parse(PlayerPrefs.GetString("BloodBankAccrued", "0"), ic);
+        WaveStreak          = PlayerPrefs.GetInt   ("WaveStreak",          0);
         SurgeUnlocked       = TotalBloodEarned >= SurgeUnlockThreshold;
         TotalEnemiesKilled  = PlayerPrefs.GetInt   ("TotalEnemiesKilled",  0);
         TimePlayed          = double.Parse(PlayerPrefs.GetString("TimePlayed", "0"), ic);

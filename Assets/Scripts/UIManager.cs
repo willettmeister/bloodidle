@@ -101,6 +101,16 @@ public class UIManager : MonoBehaviour
     public Text ssRollbackInfoText;
     public Button ssRollbackButton;
 
+    [Header("Blood Bank")]
+    public GameObject bloodBankPanel;
+    public Text bloodBankInfoText;
+    public Text bloodBankAccruedText;
+    public Button depositBloodButton;
+    public Button withdrawBloodButton;
+
+    [Header("Prestige Milestone")]
+    public Text prestigeMilestoneText;
+
     [Header("Stats")]
     public GameObject statsPanel;
     public Text statsText;
@@ -132,17 +142,17 @@ public class UIManager : MonoBehaviour
     [Header("Damage Numbers")]
     public RectTransform damageLayer;
 
-    static readonly (AchievementFlags flag, string title)[] k_AchievDefs =
+    static readonly (AchievementFlags flag, string title, double bloodReward, int ppReward)[] k_AchievDefs =
     {
-        (AchievementFlags.FirstKill,     "First Blood"),
-        (AchievementFlags.Wave10,        "Wave 10 Reached"),
-        (AchievementFlags.Wave25,        "Wave 25 Reached"),
-        (AchievementFlags.Blood1K,       "Blood Hoarder (1K)"),
-        (AchievementFlags.Blood10K,      "Blood Baron (10K)"),
-        (AchievementFlags.FirstSoldier,  "First Recruit"),
-        (AchievementFlags.FullLegion,    "Full Legion"),
-        (AchievementFlags.FirstRitual,   "Blood Ritualist"),
-        (AchievementFlags.FirstPrestige, "Reborn in Blood"),
+        (AchievementFlags.FirstKill,     "First Blood",         50.0,  0),
+        (AchievementFlags.Wave10,        "Wave 10 Reached",     200.0, 0),
+        (AchievementFlags.Wave25,        "Wave 25 Reached",     500.0, 0),
+        (AchievementFlags.Blood1K,       "Blood Hoarder (1K)",  100.0, 0),
+        (AchievementFlags.Blood10K,      "Blood Baron (10K)",   500.0, 0),
+        (AchievementFlags.FirstSoldier,  "First Recruit",       25.0,  0),
+        (AchievementFlags.FullLegion,    "Full Legion",         300.0, 0),
+        (AchievementFlags.FirstRitual,   "Blood Ritualist",     100.0, 0),
+        (AchievementFlags.FirstPrestige, "Reborn in Blood",     0.0,   1),
     };
 
     void Start()
@@ -215,14 +225,32 @@ public class UIManager : MonoBehaviour
 
         waveText.text = $"Wave {gm.Wave}";
         if (waveSubText != null)
+        {
+            string streakTag = gm.WaveStreak > 0 ? $"  🔥×{gm.StreakMultiplier:F1}" : "";
             waveSubText.text = gm.IsBossWave
-                ? "★ BOSS WAVE ★"
-                : $"Boss in {gm.WavesUntilBoss} wave{(gm.WavesUntilBoss == 1 ? "" : "s")}";
+                ? $"★ BOSS WAVE ★{streakTag}"
+                : $"Boss in {gm.WavesUntilBoss} wave{(gm.WavesUntilBoss == 1 ? "" : "s")}{streakTag}";
+        }
 
         if (enemyModifierText != null)
         {
-            enemyModifierText.text = gm.EnemyModifierDisplay;
-            enemyModifierText.gameObject.SetActive(gm.CurrentEnemyModifier != EnemyModifier.None);
+            if (gm.IsBossWave && gm.CurrentBossAbility != BossAbility.None)
+            {
+                string shield = gm.BossShieldActive ? " (shield)" : "";
+                enemyModifierText.text  = gm.BossAbilityDisplay + shield;
+                enemyModifierText.color = new Color(0.55f, 0.8f, 1f);
+                enemyModifierText.gameObject.SetActive(true);
+            }
+            else if (gm.CurrentEnemyModifier != EnemyModifier.None)
+            {
+                enemyModifierText.text  = gm.EnemyModifierDisplay;
+                enemyModifierText.color = new Color(1f, 0.65f, 0.1f);
+                enemyModifierText.gameObject.SetActive(true);
+            }
+            else
+            {
+                enemyModifierText.gameObject.SetActive(false);
+            }
         }
 
         if (gm.IsBossWave)
@@ -372,10 +400,20 @@ public class UIManager : MonoBehaviour
         if (prestigePanel != null) prestigePanel.SetActive(canPrestige);
         if (canPrestige && prestigeInfoText != null)
         {
+            string milestoneTag = gm.PrestigeMilestonesReached > 0
+                ? $"  ⭐+{gm.PrestigeMilestoneDmgBonus * 100:F0}% atk"
+                : "";
             prestigeInfoText.text = gm.PrestigeCount > 0
-                ? $"Prestige Lv.{gm.PrestigeCount}  —  all blood ×{gm.PrestigeMultiplier:F2}"
+                ? $"Prestige Lv.{gm.PrestigeCount}  ×{gm.PrestigeMultiplier:F2} blood{milestoneTag}"
                 : $"Prestige  —  reset for ×{gm.PrestigeMultiplier + 0.5:F2} blood bonus";
             if (prestigeButton != null) prestigeButton.interactable = true;
+        }
+        if (prestigeMilestoneText != null)
+        {
+            bool showMilestone = gm.PrestigeMilestonesReached > 0 && canPrestige;
+            prestigeMilestoneText.gameObject.SetActive(showMilestone);
+            if (showMilestone)
+                prestigeMilestoneText.text = $"Milestone {gm.PrestigeMilestonesReached}/4  —  next at prestige {NextPrestigeMilestone(gm.PrestigeCount)}";
         }
 
         // Prestige Shop
@@ -436,9 +474,32 @@ public class UIManager : MonoBehaviour
                 ssRollbackButton.interactable = canBuySS && gm.SSRollbackLevel < GameManager.SSMaxLevel;
         }
 
+        // Blood Bank
+        if (bloodBankPanel != null)
+        {
+            if (bloodBankInfoText != null)
+                bloodBankInfoText.text = $"Blood Bank  {GameManager.FormatNumber(gm.BloodBankDeposit)}/{GameManager.FormatNumber(GameManager.BankMaxDeposit)}  (+{GameManager.BankInterestRatePerHour * 100:F0}%/hr)";
+            if (bloodBankAccruedText != null)
+                bloodBankAccruedText.text = gm.BloodBankAccrued > 0
+                    ? $"Interest accrued: +{GameManager.FormatNumber(gm.BloodBankAccrued)} blood"
+                    : "Interest accrued: none yet";
+            if (depositBloodButton != null)
+                depositBloodButton.interactable = gm.Blood >= 1.0
+                    && gm.BloodBankDeposit < GameManager.BankMaxDeposit;
+            if (withdrawBloodButton != null)
+                withdrawBloodButton.interactable = gm.BloodBankDeposit > 0 || gm.BloodBankAccrued > 0;
+        }
+
         barracksInfoText.text        = $"Barracks  Lv.{gm.BarracksLevel}  —  Max {gm.MaxSoldiers} soldiers";
         barracksUpgradeCostText.text = $"Upgrade\n({GameManager.FormatNumber(gm.BarracksUpgradeCost)} wood)";
         upgradeBarracksButton.interactable = gm.Wood >= gm.BarracksUpgradeCost;
+    }
+
+    static int NextPrestigeMilestone(int current)
+    {
+        int[] ms = { 5, 10, 20, 50 };
+        foreach (int m in ms) if (current < m) return m;
+        return -1;
     }
 
     // ── Stats Panel ───────────────────────────────────────────────────────────
@@ -467,12 +528,14 @@ public class UIManager : MonoBehaviour
         var sb = new StringBuilder();
         sb.AppendLine($"Enemies Defeated:  {gm.TotalEnemiesKilled}");
         sb.AppendLine($"Blood Earned:      {GameManager.FormatNumber(gm.TotalBloodEarned)}");
+        sb.AppendLine($"Blood Bank:        {GameManager.FormatNumber(gm.BloodBankDeposit)} (+{GameManager.FormatNumber(gm.BloodBankAccrued)})");
+        sb.AppendLine($"Best Streak:       {gm.WaveStreak}  (×{gm.StreakMultiplier:F1})");
         sb.AppendLine($"Soul Shards:       {GameManager.FormatNumber(gm.SoulShards)}");
         sb.AppendLine($"Time Played:       {h}h {m}m {s}s");
-        sb.AppendLine($"Prestige Level:    {gm.PrestigeCount}");
+        sb.AppendLine($"Prestige Level:    {gm.PrestigeCount}  (milestones: {gm.PrestigeMilestonesReached}/4)");
         sb.AppendLine();
         sb.AppendLine("── Achievements ──────────────────");
-        foreach (var (flag, title) in k_AchievDefs)
+        foreach (var (flag, title, _, _) in k_AchievDefs)
             sb.AppendLine($"  {((gm.Achievements & flag) != 0 ? "✓" : "○")}  {title}");
 
         statsText.text = sb.ToString();
@@ -482,10 +545,16 @@ public class UIManager : MonoBehaviour
 
     void ShowAchievementToast(AchievementFlags flag)
     {
-        string title = flag.ToString();
-        foreach (var (f, t) in k_AchievDefs)
-            if (f == flag) { title = t; break; }
-        StartCoroutine(ToastRoutine($"Achievement: {title}"));
+        string title = flag.ToString(), reward = "";
+        foreach (var (f, t, blood, pp) in k_AchievDefs)
+        {
+            if (f != flag) continue;
+            title = t;
+            if (blood > 0) reward = $" (+{GameManager.FormatNumber(blood)} blood)";
+            else if (pp > 0) reward = " (+1 PP)";
+            break;
+        }
+        StartCoroutine(ToastRoutine($"Achievement: {title}{reward}"));
     }
 
     void ShowMilestoneToast(string message) => StartCoroutine(ToastRoutine(message));

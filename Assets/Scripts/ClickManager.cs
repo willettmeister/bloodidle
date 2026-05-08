@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 public class ClickManager : MonoBehaviour
 {
@@ -28,6 +29,8 @@ public class ClickManager : MonoBehaviour
     public void OnBuySSBossTimer()         => GameManager.Instance.BuySSBossTimer();
     public void OnBuySSDoubleChest()       => GameManager.Instance.BuySSDoubleChest();
     public void OnBuySSRollback()          => GameManager.Instance.BuySSRollback();
+    public void OnDepositToBank()          => GameManager.Instance.DepositToBank(Math.Floor(GameManager.Instance.Blood * 0.1));
+    public void OnWithdrawFromBank()       => GameManager.Instance.WithdrawFromBank();
     public void OnOpenStats()              => uiManager.ShowStatsPanel();
     public void OnOpenSuggest()            => uiManager.ShowFeaturePanel();
 }
