@@ -29,6 +29,7 @@ public class UIManager : MonoBehaviour
     public Text soldierHPText;
     public Button buyTankButton;
     public Button buyBerserkerButton;
+    public Button buyPaladinButton;
     public Button formationButton;
     public Text formationButtonText;
     public Text mixedBonusText;
@@ -39,6 +40,10 @@ public class UIManager : MonoBehaviour
     public GameObject bloodSurgePanel;
     public Text bloodSurgeInfoText;
     public Button bloodSurgeButton;
+    public Button upgradeSurgeButton;
+    public Text surgeCostText;
+    public Button upgradeHealSelfButton;
+    public Text healCostText;
 
     [Header("Workers")]
     public GameObject workersPanel;
@@ -100,6 +105,13 @@ public class UIManager : MonoBehaviour
     public Button ssDoubleChestButton;
     public Text ssRollbackInfoText;
     public Button ssRollbackButton;
+    public Text ssBloodTapInfoText;
+    public Button ssBloodTapButton;
+
+    [Header("Settings")]
+    public GameObject settingsPanel;
+    public Text soundToggleText;
+    public Text notifToggleText;
 
     [Header("Blood Bank")]
     public GameObject bloodBankPanel;
@@ -281,17 +293,18 @@ public class UIManager : MonoBehaviour
 
         string compBonus = gm.IsAllTank      ? "  ♦ Regen"
                          : gm.IsAllBerserker ? "  ⚡ Crit"
+                         : gm.IsAllPaladin   ? "  ✚ Heal"
                          : gm.IsMixedArmy    ? "  🛡 −15% dmg"
                          : "";
         soldierCountText.text = hasSoldiers
-            ? $"Soldiers: {gm.SoldierCount}/{gm.MaxSoldiers}  [T:{gm.TankCount} B:{gm.BerserkerCount}]{compBonus}"
+            ? $"Soldiers: {gm.SoldierCount}/{gm.MaxSoldiers}  [T:{gm.TankCount} B:{gm.BerserkerCount} P:{gm.PaladinCount}]{compBonus}"
             : $"No soldiers — buy one!  (max {gm.MaxSoldiers})";
 
         soldierHPRow.SetActive(hasSoldiers);
         if (hasSoldiers)
         {
             soldierHPFill.fillAmount = gm.FrontlineMaxHP > 0 ? gm.SoldierHP / gm.FrontlineMaxHP : 0f;
-            string cls = gm.FrontlineIsTank ? "Tank" : "Berserker";
+            string cls = gm.FrontlineIsTank ? "Tank" : gm.FrontlineIsBerserker ? "Berserker" : "Paladin";
             soldierHPText.text = $"{cls}: {GameManager.FormatHP(gm.SoldierHP)} / {GameManager.FormatHP(gm.FrontlineMaxHP)} HP";
         }
 
@@ -308,6 +321,7 @@ public class UIManager : MonoBehaviour
         bool canBuySoldier = gm.Blood >= GameManager.SoldierCost && !atCap;
         if (buyTankButton      != null) buyTankButton.interactable      = canBuySoldier;
         if (buyBerserkerButton != null) buyBerserkerButton.interactable = canBuySoldier;
+        if (buyPaladinButton   != null) buyPaladinButton.interactable   = canBuySoldier;
 
         healSelfPanel.SetActive(gm.HealSelfUnlocked);
         if (gm.HealSelfUnlocked)
@@ -319,13 +333,32 @@ public class UIManager : MonoBehaviour
         if (bloodSurgePanel != null) bloodSurgePanel.SetActive(gm.SurgeUnlocked);
         if (gm.SurgeUnlocked && bloodSurgeInfoText != null)
         {
+            string flawlessTag = gm.FlawlessActive ? "  ⚡ FLAWLESS!" : "";
             bloodSurgeInfoText.text = gm.SurgeActive
-                ? $"Blood Surge  —  2× attack  {Mathf.CeilToInt(gm.SurgeTimeRemaining)}s remaining"
-                : "Blood Surge  —  2× attack for 10s";
+                ? $"Blood Surge  —  2× attack  {Mathf.CeilToInt(gm.SurgeTimeRemaining)}s remaining{flawlessTag}"
+                : $"Blood Surge  —  2× attack for {gm.SurgeDurationEffective:F0}s{flawlessTag}";
             if (bloodSurgeButton != null)
                 bloodSurgeButton.interactable = !gm.SurgeActive
                     && gm.Blood >= GameManager.SurgeCost
                     && hasSoldiers;
+            if (upgradeSurgeButton != null)
+                upgradeSurgeButton.interactable = gm.SurgeUpgradeLevel < GameManager.MaxSpellUpgradeLevel
+                    && gm.Blood >= gm.SurgeUpgradeCost;
+            if (surgeCostText != null)
+                surgeCostText.text = gm.SurgeUpgradeLevel < GameManager.MaxSpellUpgradeLevel
+                    ? $"Upgrade Surge\n(Lv.{gm.SurgeUpgradeLevel}/{GameManager.MaxSpellUpgradeLevel}  {GameManager.FormatNumber(gm.SurgeUpgradeCost)} blood)"
+                    : "Surge MAX";
+        }
+
+        if (gm.HealSelfUnlocked)
+        {
+            if (upgradeHealSelfButton != null)
+                upgradeHealSelfButton.interactable = gm.HealUpgradeLevel < GameManager.MaxSpellUpgradeLevel
+                    && gm.Blood >= gm.HealUpgradeCost;
+            if (healCostText != null)
+                healCostText.text = gm.HealUpgradeLevel < GameManager.MaxSpellUpgradeLevel
+                    ? $"Upgrade Heal\n(Lv.{gm.HealUpgradeLevel}/{GameManager.MaxSpellUpgradeLevel}  {GameManager.FormatNumber(gm.HealUpgradeCost)} blood)"
+                    : "Heal MAX";
         }
 
         // Workers + Blood Pact
@@ -472,6 +505,11 @@ public class UIManager : MonoBehaviour
                 ssRollbackInfoText.text = $"Rollback Shield  (Lv.{gm.SSRollbackLevel}/{GameManager.SSMaxLevel})";
             if (ssRollbackButton != null)
                 ssRollbackButton.interactable = canBuySS && gm.SSRollbackLevel < GameManager.SSMaxLevel;
+
+            if (ssBloodTapInfoText != null)
+                ssBloodTapInfoText.text = $"Blood Tap +1/s  (Lv.{gm.SSBloodTapLevel}/{GameManager.SSMaxLevel})";
+            if (ssBloodTapButton != null)
+                ssBloodTapButton.interactable = canBuySS && gm.SSBloodTapLevel < GameManager.SSMaxLevel;
         }
 
         // Blood Bank
@@ -514,6 +552,30 @@ public class UIManager : MonoBehaviour
     public void HideStatsPanel()
     {
         if (statsPanel != null) statsPanel.SetActive(false);
+    }
+
+    // ── Settings Panel ────────────────────────────────────────────────────────
+
+    public void ShowSettingsPanel()
+    {
+        if (settingsPanel == null) return;
+        RefreshSettings();
+        settingsPanel.SetActive(true);
+    }
+
+    public void HideSettingsPanel()
+    {
+        if (settingsPanel != null) settingsPanel.SetActive(false);
+    }
+
+    void RefreshSettings()
+    {
+        var gm = GameManager.Instance;
+        if (gm == null) return;
+        if (soundToggleText != null)
+            soundToggleText.text = gm.SoundEnabled ? "Sound: ON" : "Sound: OFF";
+        if (notifToggleText != null)
+            notifToggleText.text = gm.NotificationsEnabled ? "Notifications: ON" : "Notifications: OFF";
     }
 
     void RefreshStats()

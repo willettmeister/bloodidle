@@ -41,20 +41,29 @@ public class GameManager : MonoBehaviour
     // --- Soldiers (two classes) ---
     public int TankCount       { get; private set; }
     public int BerserkerCount  { get; private set; }
-    public int SoldierCount    => TankCount + BerserkerCount;
+    public int PaladinCount    { get; private set; }
+    public int SoldierCount    => TankCount + BerserkerCount + PaladinCount;
     public float SoldierHP     { get; private set; }
 
-    public bool  BerserkerFront  { get; private set; }
-    public bool  FrontlineIsTank => BerserkerFront
+    public bool  BerserkerFront      { get; private set; }
+    public bool  FrontlineIsTank     => BerserkerFront
         ? (BerserkerCount == 0 && TankCount > 0)
         : (TankCount > 0);
-    public float FrontlineMaxHP  => (FrontlineIsTank ? SoldierMaxHP : BerserkerMaxHP) + EquipArmorBonus;
-    public float TotalAttack     => (TankCount * (SoldierAttack + EquipAttackBonus)
-                                  + BerserkerCount * (BerserkerAttack + EquipAttackBonus))
-                                  * (1f + PrestigeMilestoneDmgBonus);
-    public bool  IsAllTank       => TankCount > 0 && BerserkerCount == 0;
-    public bool  IsAllBerserker  => BerserkerCount > 0 && TankCount == 0;
-    public bool  IsMixedArmy     => SoldierCount > 0 && !IsAllTank && !IsAllBerserker;
+    public bool  FrontlineIsBerserker => BerserkerFront
+        ? (BerserkerCount > 0)
+        : (TankCount == 0 && BerserkerCount > 0);
+    public bool  FrontlineIsPaladin  => TankCount == 0 && BerserkerCount == 0 && PaladinCount > 0;
+    public float FrontlineMaxHP      =>
+        (FrontlineIsTank ? SoldierMaxHP : FrontlineIsBerserker ? BerserkerMaxHP : PaladinMaxHP)
+        + EquipArmorBonus;
+    public float TotalAttack         => (TankCount     * (SoldierAttack   + EquipAttackBonus)
+                                       + BerserkerCount * (BerserkerAttack + EquipAttackBonus)
+                                       + PaladinCount   * (PaladinAttack   + EquipAttackBonus))
+                                       * (1f + PrestigeMilestoneDmgBonus);
+    public bool  IsAllTank       => TankCount > 0 && BerserkerCount == 0 && PaladinCount == 0;
+    public bool  IsAllBerserker  => BerserkerCount > 0 && TankCount == 0 && PaladinCount == 0;
+    public bool  IsAllPaladin    => PaladinCount > 0 && TankCount == 0 && BerserkerCount == 0;
+    public bool  IsMixedArmy     => SoldierCount > 0 && !IsAllTank && !IsAllBerserker && !IsAllPaladin;
 
     public int MaxSoldiers { get; private set; } = 10;
     public const float  SoldierMaxHP        = 50f;
@@ -62,6 +71,9 @@ public class GameManager : MonoBehaviour
     public const float  SoldierAttack       = 5f;
     public const float  BerserkerMaxHP      = 25f;
     public const float  BerserkerAttack     = 12f;
+    public const float  PaladinMaxHP        = 20f;
+    public const float  PaladinAttack       = 3f;
+    public const float  PaladinHealRate     = 1f;
     public const float  TankRegenRate       = 2f;
     public const float  BerserkerCritChance = 0.2f;
     public const float  BerserkerCritMult   = 2f;
@@ -98,7 +110,7 @@ public class GameManager : MonoBehaviour
     public int    BloodRitualCount { get; private set; }
     public double BloodRitualCost  { get; private set; } = BloodRitualBaseCost;
     public double BloodPerSec      => BloodRitualCount * (BloodRitualBloodPerSec + PRitualEffLevel * 0.5) * PrestigeMultiplier
-                                    + BloodTithePerSec;
+                                    + BloodTithePerSec + BloodTapPerSec;
     public const double BloodRitualBaseCost       = 30.0;
     public const double BloodRitualBloodPerSec    = 1.0;
     public const double BloodRitualCostMultiplier = 2.0;
@@ -133,6 +145,8 @@ public class GameManager : MonoBehaviour
     public int    SSRollbackLevel       { get; private set; }
     public const int    SSMaxLevel    = 3;
     public const double SSUpgradeCost = 1.0;
+    public int    SSBloodTapLevel { get; private set; }
+    public double BloodTapPerSec  => SSBloodTapLevel * 1.0 * PrestigeMultiplier;
 
     // --- Blood Bank ---
     public double BloodBankDeposit { get; private set; }
@@ -158,6 +172,17 @@ public class GameManager : MonoBehaviour
         BossAbility.Drain   => "🩸 Drain",
         _                   => "",
     };
+
+    // --- Spell Upgrades ---
+    public int    SurgeUpgradeLevel  { get; private set; }
+    public int    HealUpgradeLevel   { get; private set; }
+    public const int    MaxSpellUpgradeLevel  = 3;
+    public const double SurgeUpgradeBaseCost  = 60.0;
+    public const double HealUpgradeBaseCost   = 40.0;
+    public double SurgeUpgradeCost   => Math.Floor(SurgeUpgradeBaseCost * Math.Pow(2, SurgeUpgradeLevel));
+    public double HealUpgradeCost    => Math.Floor(HealUpgradeBaseCost  * Math.Pow(2, HealUpgradeLevel));
+    public float  SurgeDurationEffective  => SurgeDuration  + SurgeUpgradeLevel * 5f;
+    public float  HealSelfAmountEffective => HealSelfAmount + HealUpgradeLevel  * 10f;
 
     // --- Blood Surge spell ---
     public bool  SurgeActive        { get; private set; }
@@ -200,6 +225,16 @@ public class GameManager : MonoBehaviour
     public bool WavePreviewActive { get; private set; }
     float _previewTimer;
     const float WavePreviewDuration = 3f;
+
+    // --- Flawless wave ---
+    public const float FlawlessThreshold = 10f;
+    public bool FlawlessActive => _flawlessTimer <= FlawlessThreshold && EnemyHP > 0 && !WavePreviewActive;
+    float _flawlessTimer;
+
+    // --- Settings ---
+    public bool SoundEnabled         { get; private set; } = true;
+    public bool NotificationsEnabled { get; private set; } = true;
+    bool _resetPending;
 
     // --- Prestige Milestones ---
     static readonly int[] k_PrestigeMilestones = { 5, 10, 20, 50 };
@@ -284,6 +319,11 @@ public class GameManager : MonoBehaviour
     public void SetBloodBankDepositForTest(double d)         => BloodBankDeposit = d;
     public void SetBloodBankAccruedForTest(double a)         => BloodBankAccrued = a;
     public void SetPrestigeCountForTest(int c)               => PrestigeCount = c;
+    public void SetPaladinCountForTest(int count)            => PaladinCount = count;
+    public void SetFlawlessTimerForTest(float t)             => _flawlessTimer = t;
+    public void SetSurgeUpgradeLevelForTest(int l)           => SurgeUpgradeLevel = l;
+    public void SetHealUpgradeLevelForTest(int l)            => HealUpgradeLevel = l;
+    public void SetSSBloodTapLevelForTest(int l)             => SSBloodTapLevel = l;
 
     public static double CalculateOfflineWood(int workers, double seconds) =>
         workers * WorkerWoodPerSec * Math.Min(seconds, 8.0 * 3600);
@@ -356,6 +396,24 @@ public class GameManager : MonoBehaviour
         if (IsAllTank && SoldierCount > 0 && SoldierHP < FrontlineMaxHP)
         {
             SoldierHP = Mathf.Min(SoldierHP + TankRegenRate * dt, FrontlineMaxHP);
+            changed = true;
+        }
+
+        if (PaladinCount > 0 && SoldierCount > 0 && SoldierHP < FrontlineMaxHP)
+        {
+            SoldierHP = Mathf.Min(SoldierHP + PaladinCount * PaladinHealRate * dt, FrontlineMaxHP);
+            changed = true;
+        }
+
+        if (SSBloodTapLevel > 0)
+        {
+            AddBlood(BloodTapPerSec * dt);
+            changed = true;
+        }
+
+        if (EnemyHP > 0 && !WavePreviewActive)
+        {
+            _flawlessTimer += dt;
             changed = true;
         }
 
@@ -437,9 +495,11 @@ public class GameManager : MonoBehaviour
                 SoulShardShopUnlocked = true;
                 BossTimeRemaining = 0f;
             }
-            reward = Math.Floor(reward * StreakMultiplier);
+            bool isFlawless = _flawlessTimer > 0f && _flawlessTimer <= FlawlessThreshold;
+            reward = Math.Floor(reward * StreakMultiplier * (isFlawless ? 2.0 : 1.0));
             WaveStreak++;
             AddBlood(reward);
+            if (isFlawless) OnMilestoneChest?.Invoke("⚡ FLAWLESS! ×2 blood!");
 
             TotalEnemiesKilled++;
             TryUnlock(AchievementFlags.FirstKill);
@@ -471,8 +531,9 @@ public class GameManager : MonoBehaviour
 
         if (SoldierHP <= 0f)
         {
-            if (FrontlineIsTank) TankCount--;
-            else BerserkerCount--;
+            if (FrontlineIsTank)           TankCount--;
+            else if (FrontlineIsBerserker) BerserkerCount--;
+            else                           PaladinCount--;
             SoldierHP = SoldierCount > 0 ? FrontlineMaxHP : 0f;
             WaveStreak = 0;
         }
@@ -482,7 +543,7 @@ public class GameManager : MonoBehaviour
         {
             _dmgTimer = 0f;
             float tickDmg = eff * DmgTickInterval;
-            if (IsAllBerserker && UnityEngine.Random.value < BerserkerCritChance)
+            if (BerserkerCount > 0 && TankCount == 0 && UnityEngine.Random.value < BerserkerCritChance)
             {
                 tickDmg *= BerserkerCritMult;
                 EnemyHP = Mathf.Max(0f, EnemyHP - tickDmg);
@@ -533,6 +594,7 @@ public class GameManager : MonoBehaviour
 
     void SpawnEnemy(int wave)
     {
+        _flawlessTimer = 0f;
         bool isBoss = wave == NextBossWave;
         float fortReduction = 1f - FortificationDmgReduction;
         if (isBoss)
@@ -631,7 +693,7 @@ public class GameManager : MonoBehaviour
 
     void PlaySound(AudioClip clip)
     {
-        if (clip != null && _audio != null) _audio.PlayOneShot(clip, 0.7f);
+        if (SoundEnabled && clip != null && _audio != null) _audio.PlayOneShot(clip, 0.7f);
     }
 
     public bool BuySoldier() => BuyTank();
@@ -704,7 +766,7 @@ public class GameManager : MonoBehaviour
         if (!HealSelfUnlocked || Blood < HealSelfCost || SoldierCount == 0 || SoldierHP >= FrontlineMaxHP)
             return false;
         Blood -= HealSelfCost;
-        SoldierHP = Mathf.Min(SoldierHP + HealSelfAmount, FrontlineMaxHP);
+        SoldierHP = Mathf.Min(SoldierHP + HealSelfAmountEffective, FrontlineMaxHP);
         OnStateChanged?.Invoke();
         return true;
     }
@@ -714,7 +776,7 @@ public class GameManager : MonoBehaviour
         if (!SurgeUnlocked || Blood < SurgeCost || SurgeActive || SoldierCount == 0) return false;
         Blood -= SurgeCost;
         SurgeActive = true;
-        SurgeTimeRemaining = SurgeDuration;
+        SurgeTimeRemaining = SurgeDurationEffective;
         OnStateChanged?.Invoke();
         return true;
     }
@@ -864,6 +926,83 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuyPaladin()
+    {
+        if (Blood < SoldierCost || SoldierCount >= MaxSoldiers) return false;
+        Blood -= SoldierCost;
+        PaladinCount++;
+        if (SoldierCount == 1) { SoldierHP = FrontlineMaxHP; TryUnlock(AchievementFlags.FirstSoldier); }
+        if (SoldierCount >= MaxSoldiers) TryUnlock(AchievementFlags.FullLegion);
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    public bool UpgradeSurge()
+    {
+        if (!SurgeUnlocked || SurgeUpgradeLevel >= MaxSpellUpgradeLevel || Blood < SurgeUpgradeCost) return false;
+        Blood -= SurgeUpgradeCost;
+        SurgeUpgradeLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    public bool UpgradeHealSelf()
+    {
+        if (!HealSelfUnlocked || HealUpgradeLevel >= MaxSpellUpgradeLevel || Blood < HealUpgradeCost) return false;
+        Blood -= HealUpgradeCost;
+        HealUpgradeLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    public bool BuySSBloodTap()
+    {
+        if (SoulShards < SSUpgradeCost || SSBloodTapLevel >= SSMaxLevel) return false;
+        SoulShards -= SSUpgradeCost;
+        SSBloodTapLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    public void ToggleSound()
+    {
+        SoundEnabled = !SoundEnabled;
+        OnStateChanged?.Invoke();
+    }
+
+    public void ToggleNotifications()
+    {
+        NotificationsEnabled = !NotificationsEnabled;
+        OnStateChanged?.Invoke();
+    }
+
+    public void ResetAllData()
+    {
+        PlayerPrefs.DeleteAll();
+        PlayerPrefs.Save();
+        Blood = 0; TotalBloodEarned = 0; Wood = 0;
+        TankCount = 0; BerserkerCount = 0; PaladinCount = 0; SoldierHP = 0f;
+        WorkerCount = 0; BloodRitualCount = 0; BloodRitualCost = BloodRitualBaseCost;
+        BarracksLevel = 1; MaxSoldiers = 10; BarracksUpgradeCost = 20.0;
+        WorkersUnlocked = false; HealSelfUnlocked = false; SurgeUnlocked = false;
+        PrestigeCount = 0; PrestigePoints = 0;
+        PSoldierCapLevel = 0; PClickBonusLevel = 0; PRitualEffLevel = 0;
+        PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0;
+        WeaponLevel = 0; ArmorLevel = 0; TalismanLevel = 0;
+        BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
+        SoulShards = 0; SoulShardShopUnlocked = false;
+        SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0;
+        BloodBankDeposit = 0; BloodBankAccrued = 0; WaveStreak = 0;
+        SurgeUpgradeLevel = 0; HealUpgradeLevel = 0;
+        TotalEnemiesKilled = 0; TimePlayed = 0; Achievements = AchievementFlags.None;
+        SoundEnabled = true; NotificationsEnabled = true;
+        DailyBonusAvailable = false; OfflineWoodEarned = 0; OfflineBloodEarned = 0;
+        WavePreviewActive = false; _flawlessTimer = 0f;
+        Wave = 1; NextBossWave = UnityEngine.Random.Range(6, 13);
+        SpawnEnemy(1);
+        OnStateChanged?.Invoke();
+    }
+
     public bool Prestige()
     {
         if (Wave < PrestigeWaveRequirement) return false;
@@ -877,6 +1016,7 @@ public class GameManager : MonoBehaviour
         Wood                = 0;
         TankCount           = 0;
         BerserkerCount      = 0;
+        PaladinCount        = 0;
         SoldierHP           = 0f;
         WorkerCount         = 0;
         BloodRitualCount    = 0;
@@ -921,6 +1061,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("Wave",                Wave);
         PlayerPrefs.SetInt   ("TankCount",           TankCount);
         PlayerPrefs.SetInt   ("BerserkerCount",      BerserkerCount);
+        PlayerPrefs.SetInt   ("PaladinCount",        PaladinCount);
         PlayerPrefs.SetFloat ("SoldierHP",           SoldierHP);
         PlayerPrefs.SetInt   ("WorkerCount",         WorkerCount);
         PlayerPrefs.SetInt   ("BloodRitualCount",    BloodRitualCount);
@@ -950,6 +1091,11 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("SSBossTimerLevel",    SSBossTimerLevel);
         PlayerPrefs.SetInt   ("SSDoubleChestLevel",  SSDoubleChestLevel);
         PlayerPrefs.SetInt   ("SSRollbackLevel",     SSRollbackLevel);
+        PlayerPrefs.SetInt   ("SSBloodTapLevel",     SSBloodTapLevel);
+        PlayerPrefs.SetInt   ("SurgeUpgradeLevel",   SurgeUpgradeLevel);
+        PlayerPrefs.SetInt   ("HealUpgradeLevel",    HealUpgradeLevel);
+        PlayerPrefs.SetInt   ("SoundEnabled",        SoundEnabled        ? 1 : 0);
+        PlayerPrefs.SetInt   ("NotificationsEnabled",NotificationsEnabled ? 1 : 0);
         PlayerPrefs.SetString("BloodBankDeposit",    BloodBankDeposit.ToString("R", ic));
         PlayerPrefs.SetString("BloodBankAccrued",    BloodBankAccrued.ToString("R", ic));
         PlayerPrefs.SetInt   ("WaveStreak",          WaveStreak);
@@ -975,6 +1121,7 @@ public class GameManager : MonoBehaviour
         Wave                = PlayerPrefs.GetInt   ("Wave",                1);
         TankCount           = PlayerPrefs.GetInt("TankCount", PlayerPrefs.GetInt("SoldierCount", 0));
         BerserkerCount      = PlayerPrefs.GetInt("BerserkerCount", 0);
+        PaladinCount        = PlayerPrefs.GetInt   ("PaladinCount",        0);
         SoldierHP           = PlayerPrefs.GetFloat ("SoldierHP",           0f);
         WorkerCount         = PlayerPrefs.GetInt   ("WorkerCount",         0);
         BloodRitualCount    = PlayerPrefs.GetInt   ("BloodRitualCount",    0);
@@ -1004,6 +1151,11 @@ public class GameManager : MonoBehaviour
         SSBossTimerLevel    = PlayerPrefs.GetInt   ("SSBossTimerLevel",    0);
         SSDoubleChestLevel  = PlayerPrefs.GetInt   ("SSDoubleChestLevel",  0);
         SSRollbackLevel     = PlayerPrefs.GetInt   ("SSRollbackLevel",     0);
+        SSBloodTapLevel     = PlayerPrefs.GetInt   ("SSBloodTapLevel",     0);
+        SurgeUpgradeLevel   = PlayerPrefs.GetInt   ("SurgeUpgradeLevel",   0);
+        HealUpgradeLevel    = PlayerPrefs.GetInt   ("HealUpgradeLevel",    0);
+        SoundEnabled        = PlayerPrefs.GetInt   ("SoundEnabled",        1) == 1;
+        NotificationsEnabled = PlayerPrefs.GetInt  ("NotificationsEnabled",1) == 1;
         BloodBankDeposit    = double.Parse(PlayerPrefs.GetString("BloodBankDeposit", "0"), ic);
         BloodBankAccrued    = double.Parse(PlayerPrefs.GetString("BloodBankAccrued", "0"), ic);
         WaveStreak          = PlayerPrefs.GetInt   ("WaveStreak",          0);

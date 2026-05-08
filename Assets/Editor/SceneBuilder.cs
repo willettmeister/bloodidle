@@ -11,23 +11,23 @@ using System.IO;
 // Canvas reference: 1080 × 1920 portrait.
 //
 // Section map (y in px from top):
-//   0–110   Header      — Blood | Wave | Wood(+Shards)
-// 120–455   Enemy card  [EnemyModifierText y=393, WavePreviewBanner overlay]
-// 465–715   Army card   [Formation toggle y=618, MixedBonusText y=665]
-// 725–935   Farm Blood
-// 945–1080  Action row  — Buy Tank | Buy Berserker | Heal Self
-// 1090–1255 Workers card
-// 1265–1430 Barracks card
-// 1440–1605 Fortifications card  (new)
-// 1615–1860 Equipment card
-// 1870–2085 Blood Ritual + Blood Pact card
-// 2095–2235 Prestige card
-// 2245–2385 Blood Surge card
-// 2395–2560 Blood Bank card  (new)
-// 2560–2975 Prestige Shop card  (6 rows)
-// 2985–3235 Soul Shard Shop card
-// 3245–3345 Bottom row  — Stats | Suggest
-// overlay   FeatureRequestOverlay — modal, hidden by default
+//    0–110   Header      — Blood | Wave | Wood(+Shards)
+//  120–455   Enemy card  [EnemyModifierText y=393, WavePreviewBanner overlay]
+//  465–775   Army card   [Formation y=618, MixedBonus y=660, UpgradeHeal y=697]
+//  785–995   Farm Blood
+// 1005–1140  Action row  — Tank | Berserker | Paladin | Heal Self
+// 1150–1315  Workers card
+// 1325–1490  Barracks card
+// 1500–1665  Fortifications card
+// 1675–1920  Equipment card
+// 1930–2145  Blood Ritual + Blood Pact card
+// 2155–2295  Prestige card
+// 2305–2505  Blood Surge card  (UpgradeSurge row at bottom)
+// 2515–2680  Blood Bank card
+// 2690–3105  Prestige Shop card  (6 rows)
+// 3115–3425  Soul Shard Shop card  (4 rows incl. Blood Tap)
+// 3435–3535  Bottom row  — Stats | Settings | Suggest
+// overlay    StatsPanel, SettingsPanel, FeatureRequestOverlay — modals
 public static class SceneBuilder
 {
     const string OutSprites = "Assets/Resources/Sprites/";
@@ -111,7 +111,7 @@ public static class SceneBuilder
         contentRT.anchorMax        = new Vector2(1f, 1f);
         contentRT.pivot            = new Vector2(0.5f, 1f);
         contentRT.anchoredPosition = Vector2.zero;
-        contentRT.sizeDelta        = new Vector2(0, 3365);
+        contentRT.sizeDelta        = new Vector2(0, 3545);
 
         var scroll = scrollGO.AddComponent<ScrollRect>();
         scroll.viewport          = viewportGO.GetComponent<RectTransform>();
@@ -185,7 +185,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         // ARMY CARD  (y 465–715)
         // ════════════════════════════════════════════════════════════════════
-        Panel(content, "ArmyCardBg", 465, 250, Surface1, 24);
+        Panel(content, "ArmyCardBg", 465, 310, Surface1, 24);
 
         var soldierCountGO = Label(content, "SoldierCountText",
             "No soldiers — buy one!  (max 10)", 34, TextSec);
@@ -208,30 +208,37 @@ public static class SceneBuilder
 
         var mixedBonusGO = Label(content, "MixedBonusText",
             "Mixed Formation: −15% incoming damage", 26, new Color(0.6f, 0.9f, 0.6f), TextAnchor.MiddleCenter);
-        PF(mixedBonusGO, 663, 34, 50);
+        PF(mixedBonusGO, 660, 34, 50);
         mixedBonusGO.SetActive(false);
+
+        var upgradeHealBtnGO = Btn(content, "UpgradeHealSelfButton", "Upgrade Heal\n(40 blood)", 28, Purple);
+        PF(upgradeHealBtnGO, 697, 64, 40);
 
         // ════════════════════════════════════════════════════════════════════
         // FARM BLOOD  (y 725–935)
         // ════════════════════════════════════════════════════════════════════
         var farmBtnGO = Btn(content, "FarmBloodButton", "FARM BLOOD", 90, Crimson);
-        PT(farmBtnGO, 725, 210, 0, 680);
+        PT(farmBtnGO, 785, 210, 0, 680);
 
         // ════════════════════════════════════════════════════════════════════
-        // ACTION ROW  (y 945–1080) — Buy Tank | Buy Berserker | Heal Self
+        // ACTION ROW  (y 1005–1140) — Tank | Berserker | Paladin | Heal Self
         // ════════════════════════════════════════════════════════════════════
         var buyTankGO = Btn(content, "BuyTankButton",
-            "Tank\n50HP  5atk\n10 blood", 32, Blue);
-        PT(buyTankGO, 945, 130, -345, 320);
+            "Tank\n50HP  5atk\n10 blood", 28, Blue);
+        PT(buyTankGO, 1005, 130, -393, 230);
 
         var buyBerserkerGO = Btn(content, "BuyBerserkerButton",
-            "Berserker\n25HP  12atk\n10 blood", 28, DeepOrange);
-        PT(buyBerserkerGO, 945, 130, -10, 320);
+            "Berserker\n25HP  12atk\n10 blood", 24, DeepOrange);
+        PT(buyBerserkerGO, 1005, 130, -131, 230);
+
+        var buyPaladinGO = Btn(content, "BuyPaladinButton",
+            "Paladin\n20HP  3atk\nHealer\n10 blood", 24, HC("00695C"));
+        PT(buyPaladinGO, 1005, 130, +131, 230);
 
         var healPanelGO = content.CreateChild("HealSelfPanel");
-        healPanelGO.AddImage(Color.clear); PT(healPanelGO, 945, 130, +315, 310);
+        healPanelGO.AddImage(Color.clear); PT(healPanelGO, 1005, 130, +393, 230);
 
-        var healBtnGO = Btn(healPanelGO, "HealSelfButton", "Heal Self  +20 HP\n25 blood", 36, Purple);
+        var healBtnGO = Btn(healPanelGO, "HealSelfButton", "Heal Self  +20 HP\n25 blood", 30, Purple);
         healBtnGO.Stretch(); healPanelGO.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
@@ -239,7 +246,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var workersPanel = content.CreateChild("WorkersPanel");
         workersPanel.AddImage(Color.clear);
-        PF(workersPanel, 1090, 165);
+        PF(workersPanel, 1150, 165);
 
         Panel(workersPanel, "WorkersCardBg", 0, 165, Surface1, 24);
 
@@ -255,35 +262,35 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         // BARRACKS CARD  (y 1265–1430)
         // ════════════════════════════════════════════════════════════════════
-        Panel(content, "BarracksCardBg", 1265, 165, Surface1, 24);
+        Panel(content, "BarracksCardBg", 1325, 165, Surface1, 24);
 
         var barracksInfoGO = Label(content, "BarracksInfoText",
             "Barracks  Lv.1  —  Max 10 soldiers",
             34, Color.white, TextAnchor.MiddleLeft);
-        PT(barracksInfoGO, 1288, 52, -175, 540);
+        PT(barracksInfoGO, 1348, 52, -175, 540);
 
         var upgradeBarracksGO = Btn(content, "UpgradeBarracksButton", "Upgrade\n(20 wood)", 34, Brown);
-        PT(upgradeBarracksGO, 1278, 110, +232, 370);
+        PT(upgradeBarracksGO, 1338, 110, +232, 370);
 
         // ════════════════════════════════════════════════════════════════════
         // FORTIFICATIONS CARD  (y 1440–1605) — always visible
         // ════════════════════════════════════════════════════════════════════
-        Panel(content, "FortificationsCardBg", 1440, 165, Surface1, 24);
+        Panel(content, "FortificationsCardBg", 1500, 165, Surface1, 24);
 
         var fortInfoGO = Label(content, "FortificationsInfoText",
             "Fortifications  Lv.0/10  (−0% enemy HP)",
             34, Color.white, TextAnchor.MiddleLeft);
-        PT(fortInfoGO, 1463, 52, -175, 540);
+        PT(fortInfoGO, 1523, 52, -175, 540);
 
         var upgradeFortGO = Btn(content, "UpgradeFortificationButton", "Fortify\n(50 wood)", 34, Brown);
-        PT(upgradeFortGO, 1453, 110, +232, 370);
+        PT(upgradeFortGO, 1513, 110, +232, 370);
 
         // ════════════════════════════════════════════════════════════════════
         // EQUIPMENT CARD  (y 1615–1860) — same unlock as workers
         // ════════════════════════════════════════════════════════════════════
         var equipmentPanel = content.CreateChild("EquipmentPanel");
         equipmentPanel.AddImage(Color.clear);
-        PF(equipmentPanel, 1615, 245);
+        PF(equipmentPanel, 1675, 245);
 
         Panel(equipmentPanel, "EquipmentCardBg", 0, 245, Surface1, 24);
 
@@ -321,7 +328,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var bloodRitualPanel = content.CreateChild("BloodRitualPanel");
         bloodRitualPanel.AddImage(Color.clear);
-        PF(bloodRitualPanel, 1870, 215);
+        PF(bloodRitualPanel, 1930, 215);
 
         Panel(bloodRitualPanel, "BloodRitualCardBg", 0, 215, Surface1, 24);
 
@@ -353,7 +360,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var prestigePanel = content.CreateChild("PrestigePanel");
         prestigePanel.AddImage(Color.clear);
-        PF(prestigePanel, 2095, 140);
+        PF(prestigePanel, 2155, 140);
 
         Panel(prestigePanel, "PrestigeCardBg", 0, 140, HC("1A0A00"), 24);
 
@@ -373,9 +380,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var bloodSurgePanel = content.CreateChild("BloodSurgePanel");
         bloodSurgePanel.AddImage(Color.clear);
-        PF(bloodSurgePanel, 2245, 140);
+        PF(bloodSurgePanel, 2305, 200);
 
-        Panel(bloodSurgePanel, "BloodSurgeCardBg", 0, 140, Surface1, 24);
+        Panel(bloodSurgePanel, "BloodSurgeCardBg", 0, 200, Surface1, 24);
 
         var bloodSurgeInfoGO = Label(bloodSurgePanel, "BloodSurgeInfoText",
             "Blood Surge  —  2× attack for 10s",
@@ -386,6 +393,10 @@ public static class SceneBuilder
             "Surge!\n(50 blood)", 34, Crimson);
         PT(surgeBtnGO, 10, 110, +232, 370);
 
+        var upgradeSurgeBtnGO = Btn(bloodSurgePanel, "UpgradeSurgeButton",
+            "Upgrade Surge\n(60 blood)", 28, HC("8E2424"));
+        PF(upgradeSurgeBtnGO, 128, 64, 40);
+
         bloodSurgePanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
@@ -393,7 +404,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var bloodBankPanel = content.CreateChild("BloodBankPanel");
         bloodBankPanel.AddImage(Color.clear);
-        PF(bloodBankPanel, 2395, 165);
+        PF(bloodBankPanel, 2515, 165);
 
         Panel(bloodBankPanel, "BloodBankCardBg", 0, 165, Surface1, 24);
 
@@ -419,7 +430,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var prestigeShopPanel = content.CreateChild("PrestigeShopPanel");
         prestigeShopPanel.AddImage(Color.clear);
-        PF(prestigeShopPanel, 2560, 415);
+        PF(prestigeShopPanel, 2690, 415);
 
         Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 415, HC("150A30"), 24);
 
@@ -480,9 +491,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var soulShardShopPanel = content.CreateChild("SoulShardShopPanel");
         soulShardShopPanel.AddImage(Color.clear);
-        PF(soulShardShopPanel, 2985, 250);
+        PF(soulShardShopPanel, 3115, 310);
 
-        Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 250, HC("0A1A30"), 24);
+        Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 310, HC("0A1A30"), 24);
 
         var ssShopTitleGO = Label(soulShardShopPanel, "SoulShardShopTitle",
             "Soul Shard Shop", 40, new Color(0.7f, 0.85f, 1f), TextAnchor.MiddleLeft);
@@ -513,16 +524,26 @@ public static class SceneBuilder
         var ssRollbackBtnGO = Btn(soulShardShopPanel, "SSRollbackButton", "Buy (1 ⬡)", 30, HC("2E7D32"));
         PT(ssRollbackBtnGO, 174, 54, +245, 260);
 
+        // Row 4 — Blood Tap
+        var ssBloodTapInfoGO = Label(soulShardShopPanel, "SSBloodTapInfoText",
+            "Blood Tap +1/s  (Lv.0/3)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(ssBloodTapInfoGO, 236, 48, -175, 500);
+        var ssBloodTapBtnGO = Btn(soulShardShopPanel, "SSBloodTapButton", "Buy (1 ⬡)", 30, HC("D32F2F"));
+        PT(ssBloodTapBtnGO, 234, 54, +245, 260);
+
         soulShardShopPanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
-        // BOTTOM ROW  (y 3245–3345) — Stats | Suggest
+        // BOTTOM ROW  (y 3435–3535) — Stats | Settings | Suggest
         // ════════════════════════════════════════════════════════════════════
-        var statsBtnGO = Btn(content, "StatsButton", "Statistics", 40, Teal);
-        PT(statsBtnGO, 3245, 100, -175, 320);
+        var statsBtnGO = Btn(content, "StatsButton", "Statistics", 36, Teal);
+        PT(statsBtnGO, 3435, 100, -345, 310);
 
-        var suggestBtnGO = Btn(content, "SuggestButton", "Suggest a Feature", 36, HC("1565C0"));
-        PT(suggestBtnGO, 3245, 100, +175, 320);
+        var settingsBtnGO = Btn(content, "SettingsButton", "Settings", 36, HC("2A2A4A"));
+        PT(settingsBtnGO, 3435, 100, 0, 300);
+
+        var suggestBtnGO = Btn(content, "SuggestButton", "Suggest", 36, HC("1565C0"));
+        PT(suggestBtnGO, 3435, 100, +345, 300);
 
         // ── Damage number layer ───────────────────────────────────────────────
         var dmgLayerGO = cv.CreateChild("DamageLayer");
@@ -597,6 +618,39 @@ public static class SceneBuilder
 
         offlineOverlay.SetActive(false);
 
+        // ── Settings overlay (modal on canvas) ────────────────────────────────
+        var settingsOverlay = cv.CreateChild("SettingsPanel");
+        settingsOverlay.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.88f);
+        settingsOverlay.Stretch();
+
+        var settingsCard   = settingsOverlay.CreateChild("Card");
+        RImg(settingsCard, Surface1);
+        var settingsCardRT = settingsCard.GetComponent<RectTransform>();
+        settingsCardRT.anchorMin        = new Vector2(0.5f, 0.5f);
+        settingsCardRT.anchorMax        = new Vector2(0.5f, 0.5f);
+        settingsCardRT.anchoredPosition = Vector2.zero;
+        settingsCardRT.sizeDelta        = new Vector2(800, 580);
+
+        var settingsTitleGO = Label(settingsCard, "SettingsTitle", "Settings", 52, Gold);
+        PT(settingsTitleGO, 22, 62, 0, 760);
+
+        var settingsDivGO = settingsCard.CreateChild("SettingsDiv");
+        settingsDivGO.AddImage(HC("2D2D4A")); PT(settingsDivGO, 88, 2, 0, 760);
+
+        var soundToggleGO = Btn(settingsCard, "SoundToggleButton", "Sound: ON", 36, HC("1A3A1A"));
+        PT(soundToggleGO, 104, 80, 0, 680);
+
+        var notifToggleGO = Btn(settingsCard, "NotifToggleButton", "Notifications: ON", 36, HC("1A1A3A"));
+        PT(notifToggleGO, 196, 80, 0, 680);
+
+        var resetDataGO = Btn(settingsCard, "ResetDataButton", "Reset All Data", 36, Crimson);
+        PT(resetDataGO, 294, 80, 0, 680);
+
+        var settingsCloseGO = Btn(settingsCard, "SettingsCloseButton", "Close", 42, HC("252440"));
+        PT(settingsCloseGO, 484, 70, 0, 400);
+
+        settingsOverlay.SetActive(false);
+
         // ════════════════════════════════════════════════════════════════════
         // FEATURE REQUEST OVERLAY
         // ════════════════════════════════════════════════════════════════════
@@ -666,6 +720,7 @@ public static class SceneBuilder
         uim.soldierHPText           = soldierHPTextGO.GetComponent<Text>();
         uim.buyTankButton           = buyTankGO.GetComponent<Button>();
         uim.buyBerserkerButton      = buyBerserkerGO.GetComponent<Button>();
+        uim.buyPaladinButton        = buyPaladinGO.GetComponent<Button>();
         uim.formationButton         = formationBtnGO.GetComponent<Button>();
         uim.formationButtonText     = formationBtnGO.GetComponentInChildren<Text>();
         uim.mixedBonusText          = mixedBonusGO.GetComponent<Text>();
@@ -699,6 +754,10 @@ public static class SceneBuilder
         uim.bloodSurgePanel         = bloodSurgePanel;
         uim.bloodSurgeInfoText      = bloodSurgeInfoGO.GetComponent<Text>();
         uim.bloodSurgeButton        = surgeBtnGO.GetComponent<Button>();
+        uim.upgradeSurgeButton      = upgradeSurgeBtnGO.GetComponent<Button>();
+        uim.surgeCostText           = upgradeSurgeBtnGO.GetComponentInChildren<Text>();
+        uim.upgradeHealSelfButton   = upgradeHealBtnGO.GetComponent<Button>();
+        uim.healCostText            = upgradeHealBtnGO.GetComponentInChildren<Text>();
         uim.prestigeShopPanel       = prestigeShopPanel;
         uim.prestigeShopPointsText  = shopPtsGO.GetComponent<Text>();
         uim.pSoldierCapInfoText     = pSoldierCapInfoGO.GetComponent<Text>();
@@ -726,6 +785,11 @@ public static class SceneBuilder
         uim.ssDoubleChestButton     = ssDoubleChestBtnGO.GetComponent<Button>();
         uim.ssRollbackInfoText      = ssRollbackInfoGO.GetComponent<Text>();
         uim.ssRollbackButton        = ssRollbackBtnGO.GetComponent<Button>();
+        uim.ssBloodTapInfoText      = ssBloodTapInfoGO.GetComponent<Text>();
+        uim.ssBloodTapButton        = ssBloodTapBtnGO.GetComponent<Button>();
+        uim.settingsPanel           = settingsOverlay;
+        uim.soundToggleText         = soundToggleGO.GetComponentInChildren<Text>();
+        uim.notifToggleText         = notifToggleGO.GetComponentInChildren<Text>();
         uim.barracksInfoText        = barracksInfoGO.GetComponent<Text>();
         uim.upgradeBarracksButton   = upgradeBarracksGO.GetComponent<Button>();
         uim.barracksUpgradeCostText = upgradeBarracksGO.GetComponentInChildren<Text>();
@@ -747,6 +811,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(farmBtnGO.GetComponent<Button>().onClick,               clk.OnFarmBlood);
         UnityEventTools.AddPersistentListener(buyTankGO.GetComponent<Button>().onClick,               clk.OnBuyTank);
         UnityEventTools.AddPersistentListener(buyBerserkerGO.GetComponent<Button>().onClick,          clk.OnBuyBerserker);
+        UnityEventTools.AddPersistentListener(buyPaladinGO.GetComponent<Button>().onClick,            clk.OnBuyPaladin);
         UnityEventTools.AddPersistentListener(healBtnGO.GetComponent<Button>().onClick,               clk.OnHealSelf);
         UnityEventTools.AddPersistentListener(surgeBtnGO.GetComponent<Button>().onClick,              clk.OnUseSurge);
         UnityEventTools.AddPersistentListener(bloodPactGO.GetComponent<Button>().onClick,             clk.OnUseBloodPact);
@@ -768,11 +833,19 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(ssBossTimerBtnGO.GetComponent<Button>().onClick,        clk.OnBuySSBossTimer);
         UnityEventTools.AddPersistentListener(ssDoubleChestBtnGO.GetComponent<Button>().onClick,      clk.OnBuySSDoubleChest);
         UnityEventTools.AddPersistentListener(ssRollbackBtnGO.GetComponent<Button>().onClick,         clk.OnBuySSRollback);
+        UnityEventTools.AddPersistentListener(ssBloodTapBtnGO.GetComponent<Button>().onClick,        clk.OnBuySSBloodTap);
+        UnityEventTools.AddPersistentListener(upgradeSurgeBtnGO.GetComponent<Button>().onClick,      clk.OnUpgradeSurge);
+        UnityEventTools.AddPersistentListener(upgradeHealBtnGO.GetComponent<Button>().onClick,       clk.OnUpgradeHealSelf);
         UnityEventTools.AddPersistentListener(depositBtnGO.GetComponent<Button>().onClick,            clk.OnDepositToBank);
         UnityEventTools.AddPersistentListener(withdrawBtnGO.GetComponent<Button>().onClick,           clk.OnWithdrawFromBank);
         UnityEventTools.AddPersistentListener(statsBtnGO.GetComponent<Button>().onClick,              clk.OnOpenStats);
+        UnityEventTools.AddPersistentListener(settingsBtnGO.GetComponent<Button>().onClick,           clk.OnOpenSettings);
         UnityEventTools.AddPersistentListener(suggestBtnGO.GetComponent<Button>().onClick,            clk.OnOpenSuggest);
         UnityEventTools.AddPersistentListener(statsCloseGO.GetComponent<Button>().onClick,            uim.HideStatsPanel);
+        UnityEventTools.AddPersistentListener(settingsCloseGO.GetComponent<Button>().onClick,         uim.HideSettingsPanel);
+        UnityEventTools.AddPersistentListener(soundToggleGO.GetComponent<Button>().onClick,           clk.OnToggleSound);
+        UnityEventTools.AddPersistentListener(notifToggleGO.GetComponent<Button>().onClick,           clk.OnToggleNotifications);
+        UnityEventTools.AddPersistentListener(resetDataGO.GetComponent<Button>().onClick,             clk.OnResetData);
         UnityEventTools.AddPersistentListener(offlineDismissGO.GetComponent<Button>().onClick,        uim.DismissOfflinePanel);
         UnityEventTools.AddPersistentListener(featureSubmitGO.GetComponent<Button>().onClick,         uim.SubmitFeature);
         UnityEventTools.AddPersistentListener(featureCancelGO.GetComponent<Button>().onClick,         uim.HideFeaturePanel);

@@ -29,8 +29,16 @@ public class ClickManager : MonoBehaviour
     public void OnBuySSBossTimer()         => GameManager.Instance.BuySSBossTimer();
     public void OnBuySSDoubleChest()       => GameManager.Instance.BuySSDoubleChest();
     public void OnBuySSRollback()          => GameManager.Instance.BuySSRollback();
+    public void OnBuySSBloodTap()          => GameManager.Instance.BuySSBloodTap();
     public void OnDepositToBank()          => GameManager.Instance.DepositToBank(Math.Floor(GameManager.Instance.Blood * 0.1));
     public void OnWithdrawFromBank()       => GameManager.Instance.WithdrawFromBank();
+    public void OnBuyPaladin()             => GameManager.Instance.BuyPaladin();
+    public void OnUpgradeSurge()           => GameManager.Instance.UpgradeSurge();
+    public void OnUpgradeHealSelf()        => GameManager.Instance.UpgradeHealSelf();
     public void OnOpenStats()              => uiManager.ShowStatsPanel();
+    public void OnOpenSettings()           => uiManager.ShowSettingsPanel();
     public void OnOpenSuggest()            => uiManager.ShowFeaturePanel();
+    public void OnToggleSound()            => GameManager.Instance.ToggleSound();
+    public void OnToggleNotifications()    => GameManager.Instance.ToggleNotifications();
+    public void OnResetData()              => GameManager.Instance.ResetAllData();
 }
