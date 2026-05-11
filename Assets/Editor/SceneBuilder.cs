@@ -111,7 +111,7 @@ public static class SceneBuilder
         contentRT.anchorMax        = new Vector2(1f, 1f);
         contentRT.pivot            = new Vector2(0.5f, 1f);
         contentRT.anchoredPosition = Vector2.zero;
-        contentRT.sizeDelta        = new Vector2(0, 3545);
+        contentRT.sizeDelta        = new Vector2(0, 3785);
 
         var scroll = scrollGO.AddComponent<ScrollRect>();
         scroll.viewport          = viewportGO.GetComponent<RectTransform>();
@@ -185,7 +185,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         // ARMY CARD  (y 465–715)
         // ════════════════════════════════════════════════════════════════════
-        Panel(content, "ArmyCardBg", 465, 310, Surface1, 24);
+        Panel(content, "ArmyCardBg", 465, 380, Surface1, 24);
 
         var soldierCountGO = Label(content, "SoldierCountText",
             "No soldiers — buy one!  (max 10)", 34, TextSec);
@@ -214,29 +214,49 @@ public static class SceneBuilder
         var upgradeHealBtnGO = Btn(content, "UpgradeHealSelfButton", "Upgrade Heal\n(40 blood)", 28, Purple);
         PF(upgradeHealBtnGO, 697, 64, 40);
 
+        var corruptionTextGO = Label(content, "CorruptionText", "", 28, new Color(0.8f, 0.2f, 0.2f), TextAnchor.MiddleLeft);
+        PF(corruptionTextGO, 765, 30, 50);
+        corruptionTextGO.SetActive(false);
+
+        var purifyBtnGO = Btn(content, "PurifyButton", "Purify\n(3 shards)", 28, HC("4A0A0A"));
+        PT(purifyBtnGO, 797, 38, +232, 280);
+        purifyBtnGO.SetActive(false);
+
+        // Daily challenge row (visible when DailyChallengeAvailable or Active)
+        var dailyChallengeRowGO = content.CreateChild("DailyChallengeRow");
+        dailyChallengeRowGO.AddImage(HC("0A1A00")); PF(dailyChallengeRowGO, 855, 60, 20);
+
+        var dailyChallengeInfoGO = Label(dailyChallengeRowGO, "DailyChallengeInfoText",
+            "Daily Challenge: 5× HP enemy  —  ×5 blood!", 30, Gold, TextAnchor.MiddleLeft);
+        PT(dailyChallengeInfoGO, 4, 52, -100, 640);
+
+        var dailyChallengeBtnGO = Btn(dailyChallengeRowGO, "DailyChallengeButton", "Start!", 32, Amber);
+        PT(dailyChallengeBtnGO, 4, 52, +400, 140);
+        dailyChallengeRowGO.SetActive(false);
+
         // ════════════════════════════════════════════════════════════════════
-        // FARM BLOOD  (y 725–935)
+        // FARM BLOOD  (y 925–1135)
         // ════════════════════════════════════════════════════════════════════
         var farmBtnGO = Btn(content, "FarmBloodButton", "FARM BLOOD", 90, Crimson);
-        PT(farmBtnGO, 785, 210, 0, 680);
+        PT(farmBtnGO, 925, 210, 0, 680);
 
         // ════════════════════════════════════════════════════════════════════
         // ACTION ROW  (y 1005–1140) — Tank | Berserker | Paladin | Heal Self
         // ════════════════════════════════════════════════════════════════════
         var buyTankGO = Btn(content, "BuyTankButton",
             "Tank\n50HP  5atk\n10 blood", 28, Blue);
-        PT(buyTankGO, 1005, 130, -393, 230);
+        PT(buyTankGO, 1145, 130, -393, 230);
 
         var buyBerserkerGO = Btn(content, "BuyBerserkerButton",
             "Berserker\n25HP  12atk\n10 blood", 24, DeepOrange);
-        PT(buyBerserkerGO, 1005, 130, -131, 230);
+        PT(buyBerserkerGO, 1145, 130, -131, 230);
 
         var buyPaladinGO = Btn(content, "BuyPaladinButton",
             "Paladin\n20HP  3atk\nHealer\n10 blood", 24, HC("00695C"));
-        PT(buyPaladinGO, 1005, 130, +131, 230);
+        PT(buyPaladinGO, 1145, 130, +131, 230);
 
         var healPanelGO = content.CreateChild("HealSelfPanel");
-        healPanelGO.AddImage(Color.clear); PT(healPanelGO, 1005, 130, +393, 230);
+        healPanelGO.AddImage(Color.clear); PT(healPanelGO, 1145, 130, +393, 230);
 
         var healBtnGO = Btn(healPanelGO, "HealSelfButton", "Heal Self  +20 HP\n25 blood", 30, Purple);
         healBtnGO.Stretch(); healPanelGO.SetActive(false);
@@ -246,7 +266,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var workersPanel = content.CreateChild("WorkersPanel");
         workersPanel.AddImage(Color.clear);
-        PF(workersPanel, 1150, 165);
+        PF(workersPanel, 1290, 165);
 
         Panel(workersPanel, "WorkersCardBg", 0, 165, Surface1, 24);
 
@@ -262,35 +282,35 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         // BARRACKS CARD  (y 1265–1430)
         // ════════════════════════════════════════════════════════════════════
-        Panel(content, "BarracksCardBg", 1325, 165, Surface1, 24);
+        Panel(content, "BarracksCardBg", 1465, 165, Surface1, 24);
 
         var barracksInfoGO = Label(content, "BarracksInfoText",
             "Barracks  Lv.1  —  Max 10 soldiers",
             34, Color.white, TextAnchor.MiddleLeft);
-        PT(barracksInfoGO, 1348, 52, -175, 540);
+        PT(barracksInfoGO, 1488, 52, -175, 540);
 
         var upgradeBarracksGO = Btn(content, "UpgradeBarracksButton", "Upgrade\n(20 wood)", 34, Brown);
-        PT(upgradeBarracksGO, 1338, 110, +232, 370);
+        PT(upgradeBarracksGO, 1478, 110, +232, 370);
 
         // ════════════════════════════════════════════════════════════════════
         // FORTIFICATIONS CARD  (y 1440–1605) — always visible
         // ════════════════════════════════════════════════════════════════════
-        Panel(content, "FortificationsCardBg", 1500, 165, Surface1, 24);
+        Panel(content, "FortificationsCardBg", 1640, 165, Surface1, 24);
 
         var fortInfoGO = Label(content, "FortificationsInfoText",
             "Fortifications  Lv.0/10  (−0% enemy HP)",
             34, Color.white, TextAnchor.MiddleLeft);
-        PT(fortInfoGO, 1523, 52, -175, 540);
+        PT(fortInfoGO, 1663, 52, -175, 540);
 
         var upgradeFortGO = Btn(content, "UpgradeFortificationButton", "Fortify\n(50 wood)", 34, Brown);
-        PT(upgradeFortGO, 1513, 110, +232, 370);
+        PT(upgradeFortGO, 1653, 110, +232, 370);
 
         // ════════════════════════════════════════════════════════════════════
         // EQUIPMENT CARD  (y 1615–1860) — same unlock as workers
         // ════════════════════════════════════════════════════════════════════
         var equipmentPanel = content.CreateChild("EquipmentPanel");
         equipmentPanel.AddImage(Color.clear);
-        PF(equipmentPanel, 1675, 245);
+        PF(equipmentPanel, 1815, 245);
 
         Panel(equipmentPanel, "EquipmentCardBg", 0, 245, Surface1, 24);
 
@@ -328,7 +348,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var bloodRitualPanel = content.CreateChild("BloodRitualPanel");
         bloodRitualPanel.AddImage(Color.clear);
-        PF(bloodRitualPanel, 1930, 215);
+        PF(bloodRitualPanel, 2070, 215);
 
         Panel(bloodRitualPanel, "BloodRitualCardBg", 0, 215, Surface1, 24);
 
@@ -360,7 +380,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var prestigePanel = content.CreateChild("PrestigePanel");
         prestigePanel.AddImage(Color.clear);
-        PF(prestigePanel, 2155, 140);
+        PF(prestigePanel, 2295, 140);
 
         Panel(prestigePanel, "PrestigeCardBg", 0, 140, HC("1A0A00"), 24);
 
@@ -380,9 +400,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var bloodSurgePanel = content.CreateChild("BloodSurgePanel");
         bloodSurgePanel.AddImage(Color.clear);
-        PF(bloodSurgePanel, 2305, 200);
+        PF(bloodSurgePanel, 2445, 310);
 
-        Panel(bloodSurgePanel, "BloodSurgeCardBg", 0, 200, Surface1, 24);
+        Panel(bloodSurgePanel, "BloodSurgeCardBg", 0, 310, Surface1, 24);
 
         var bloodSurgeInfoGO = Label(bloodSurgePanel, "BloodSurgeInfoText",
             "Blood Surge  —  2× attack for 10s",
@@ -397,6 +417,19 @@ public static class SceneBuilder
             "Upgrade Surge\n(60 blood)", 28, HC("8E2424"));
         PF(upgradeSurgeBtnGO, 128, 64, 40);
 
+        // Soul Sacrifice (unlocked after first prestige)
+        var surgeDivGO = bloodSurgePanel.CreateChild("SurgeDiv");
+        surgeDivGO.AddImage(HC("2D2D4A")); PT(surgeDivGO, 202, 2, 0, 640);
+
+        var soulSacInfoGO = Label(bloodSurgePanel, "SoulSacrificeInfoText",
+            "Soul Sacrifice  —  lose 1 soldier → ×10 blood",
+            30, new Color(0.9f, 0.5f, 0.1f), TextAnchor.MiddleLeft);
+        PT(soulSacInfoGO, 212, 48, -140, 620);
+
+        var soulSacBtnGO = Btn(bloodSurgePanel, "SoulSacrificeButton",
+            "Sacrifice!", 32, HC("4A1A00"));
+        PT(soulSacBtnGO, 268, 28, 0, 680);
+
         bloodSurgePanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
@@ -404,7 +437,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var bloodBankPanel = content.CreateChild("BloodBankPanel");
         bloodBankPanel.AddImage(Color.clear);
-        PF(bloodBankPanel, 2515, 165);
+        PF(bloodBankPanel, 2765, 165);
 
         Panel(bloodBankPanel, "BloodBankCardBg", 0, 165, Surface1, 24);
 
@@ -430,7 +463,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var prestigeShopPanel = content.CreateChild("PrestigeShopPanel");
         prestigeShopPanel.AddImage(Color.clear);
-        PF(prestigeShopPanel, 2690, 415);
+        PF(prestigeShopPanel, 2940, 415);
 
         Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 415, HC("150A30"), 24);
 
@@ -491,7 +524,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var soulShardShopPanel = content.CreateChild("SoulShardShopPanel");
         soulShardShopPanel.AddImage(Color.clear);
-        PF(soulShardShopPanel, 3115, 310);
+        PF(soulShardShopPanel, 3365, 310);
 
         Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 310, HC("0A1A30"), 24);
 
@@ -537,13 +570,13 @@ public static class SceneBuilder
         // BOTTOM ROW  (y 3435–3535) — Stats | Settings | Suggest
         // ════════════════════════════════════════════════════════════════════
         var statsBtnGO = Btn(content, "StatsButton", "Statistics", 36, Teal);
-        PT(statsBtnGO, 3435, 100, -345, 310);
+        PT(statsBtnGO, 3685, 100, -345, 310);
 
         var settingsBtnGO = Btn(content, "SettingsButton", "Settings", 36, HC("2A2A4A"));
-        PT(settingsBtnGO, 3435, 100, 0, 300);
+        PT(settingsBtnGO, 3685, 100, 0, 300);
 
         var suggestBtnGO = Btn(content, "SuggestButton", "Suggest", 36, HC("1565C0"));
-        PT(suggestBtnGO, 3435, 100, +345, 300);
+        PT(suggestBtnGO, 3685, 100, +345, 300);
 
         // ── Damage number layer ───────────────────────────────────────────────
         var dmgLayerGO = cv.CreateChild("DamageLayer");
@@ -650,6 +683,42 @@ public static class SceneBuilder
         PT(settingsCloseGO, 484, 70, 0, 400);
 
         settingsOverlay.SetActive(false);
+
+        // ════════════════════════════════════════════════════════════════════
+        // TALENT SELECTION OVERLAY
+        // ════════════════════════════════════════════════════════════════════
+        var talentOverlay = cv.CreateChild("TalentSelectionPanel");
+        talentOverlay.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.92f);
+        talentOverlay.Stretch();
+
+        var talentCard   = talentOverlay.CreateChild("Card");
+        RImg(talentCard, HC("1A0A28"));
+        var talentCardRT = talentCard.GetComponent<RectTransform>();
+        talentCardRT.anchorMin        = new Vector2(0.5f, 0.5f);
+        talentCardRT.anchorMax        = new Vector2(0.5f, 0.5f);
+        talentCardRT.anchoredPosition = Vector2.zero;
+        talentCardRT.sizeDelta        = new Vector2(900, 700);
+
+        var talentHeaderGO = Label(talentCard, "TalentHeaderText",
+            "Choose a Prestige Talent", 46, Gold, TextAnchor.MiddleCenter);
+        PT(talentHeaderGO, 20, 72, 0, 860);
+
+        var talentDivGO = talentCard.CreateChild("TalentDiv");
+        talentDivGO.AddImage(HC("4A2A6A")); PT(talentDivGO, 96, 2, 0, 860);
+
+        var talent0BtnGO = Btn(talentCard, "TalentButton0", "...", 30, HC("2A1A40"));
+        PT(talent0BtnGO, 106, 130, 0, 840);
+
+        var talent1BtnGO = Btn(talentCard, "TalentButton1", "...", 30, HC("2A1A40"));
+        PT(talent1BtnGO, 246, 130, 0, 840);
+
+        var talent2BtnGO = Btn(talentCard, "TalentButton2", "...", 30, HC("2A1A40"));
+        PT(talent2BtnGO, 386, 130, 0, 840);
+
+        var talentCancelGO = Btn(talentCard, "TalentCancelButton", "Cancel Prestige", 36, HC("252440"));
+        PT(talentCancelGO, 540, 70, 0, 500);
+
+        talentOverlay.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
         // FEATURE REQUEST OVERLAY
@@ -805,6 +874,22 @@ public static class SceneBuilder
         uim.featureDescField        = descField;
         uim.featureStatusText       = statusTextGO.GetComponent<Text>();
         uim.featureSubmitButton     = featureSubmitGO.GetComponent<Button>();
+        uim.talentSelectionPanel    = talentOverlay;
+        uim.talentHeaderText        = talentHeaderGO.GetComponent<Text>();
+        uim.talentButton0           = talent0BtnGO.GetComponent<Button>();
+        uim.talentButton1           = talent1BtnGO.GetComponent<Button>();
+        uim.talentButton2           = talent2BtnGO.GetComponent<Button>();
+        uim.talentButtonText0       = talent0BtnGO.GetComponentInChildren<Text>();
+        uim.talentButtonText1       = talent1BtnGO.GetComponentInChildren<Text>();
+        uim.talentButtonText2       = talent2BtnGO.GetComponentInChildren<Text>();
+        uim.dailyChallengeRow       = dailyChallengeRowGO;
+        uim.dailyChallengeButton    = dailyChallengeBtnGO.GetComponent<Button>();
+        uim.dailyChallengeInfoText  = dailyChallengeInfoGO.GetComponent<Text>();
+        uim.corruptionText          = corruptionTextGO.GetComponent<Text>();
+        uim.purifyButton            = purifyBtnGO.GetComponent<Button>();
+        uim.purifyButtonText        = purifyBtnGO.GetComponentInChildren<Text>();
+        uim.soulSacrificeButton     = soulSacBtnGO.GetComponent<Button>();
+        uim.soulSacrificeInfoText   = soulSacInfoGO.GetComponent<Text>();
         clk.uiManager               = uim;
 
         // Wire buttons
@@ -849,6 +934,13 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(offlineDismissGO.GetComponent<Button>().onClick,        uim.DismissOfflinePanel);
         UnityEventTools.AddPersistentListener(featureSubmitGO.GetComponent<Button>().onClick,         uim.SubmitFeature);
         UnityEventTools.AddPersistentListener(featureCancelGO.GetComponent<Button>().onClick,         uim.HideFeaturePanel);
+        UnityEventTools.AddPersistentListener(talent0BtnGO.GetComponent<Button>().onClick,            clk.OnConfirmTalent0);
+        UnityEventTools.AddPersistentListener(talent1BtnGO.GetComponent<Button>().onClick,            clk.OnConfirmTalent1);
+        UnityEventTools.AddPersistentListener(talent2BtnGO.GetComponent<Button>().onClick,            clk.OnConfirmTalent2);
+        UnityEventTools.AddPersistentListener(talentCancelGO.GetComponent<Button>().onClick,          clk.OnCancelPrestige);
+        UnityEventTools.AddPersistentListener(dailyChallengeBtnGO.GetComponent<Button>().onClick,     clk.OnStartDailyChallenge);
+        UnityEventTools.AddPersistentListener(purifyBtnGO.GetComponent<Button>().onClick,             clk.OnPurify);
+        UnityEventTools.AddPersistentListener(soulSacBtnGO.GetComponent<Button>().onClick,            clk.OnUseSoulSacrifice);
 
         const string scenePath = "Assets/Scenes/MainScene.unity";
         EditorSceneManager.SaveScene(scene, scenePath);

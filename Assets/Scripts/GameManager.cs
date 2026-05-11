@@ -21,6 +21,18 @@ public enum AchievementFlags
 public enum EnemyModifier { None, Armored, Enraged, Regen }
 public enum BossAbility    { None, Shield, Berserk, Drain }
 
+[Flags]
+public enum TalentFlags
+{
+    None         = 0,
+    BloodFrenzy  = 1 << 0,  // +25% kill blood rewards
+    Undying      = 1 << 1,  // frontline revives once per wave at 1 HP
+    ShardHunter  = 1 << 2,  // bosses drop 2 soul shards instead of 1
+    IronSkin     = 1 << 3,  // +15 flat max HP to frontline soldier
+    BloodRush    = 1 << 4,  // boss kill immediately activates Blood Surge
+    Glutton      = 1 << 5,  // Blood Rituals produce 25% more blood/s
+}
+
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
@@ -54,8 +66,11 @@ public class GameManager : MonoBehaviour
         : (TankCount == 0 && BerserkerCount > 0);
     public bool  FrontlineIsPaladin  => TankCount == 0 && BerserkerCount == 0 && PaladinCount > 0;
     public float FrontlineMaxHP      =>
-        (FrontlineIsTank ? SoldierMaxHP : FrontlineIsBerserker ? BerserkerMaxHP : PaladinMaxHP)
-        + EquipArmorBonus;
+        Mathf.Max(10f,
+            (FrontlineIsTank ? SoldierMaxHP : FrontlineIsBerserker ? BerserkerMaxHP : PaladinMaxHP)
+            + EquipArmorBonus
+            + (HasTalent(TalentFlags.IronSkin) ? TalentIronSkinHP : 0f)
+            - CorruptionLevel * CorruptionHPPenalty);
     public float TotalAttack         => (TankCount     * (SoldierAttack   + EquipAttackBonus)
                                        + BerserkerCount * (BerserkerAttack + EquipAttackBonus)
                                        + PaladinCount   * (PaladinAttack   + EquipAttackBonus))
@@ -110,6 +125,7 @@ public class GameManager : MonoBehaviour
     public int    BloodRitualCount { get; private set; }
     public double BloodRitualCost  { get; private set; } = BloodRitualBaseCost;
     public double BloodPerSec      => BloodRitualCount * (BloodRitualBloodPerSec + PRitualEffLevel * 0.5) * PrestigeMultiplier
+                                    * (HasTalent(TalentFlags.Glutton) ? TalentGluttonMult : 1f)
                                     + BloodTithePerSec + BloodTapPerSec;
     public const double BloodRitualBaseCost       = 30.0;
     public const double BloodRitualBloodPerSec    = 1.0;
@@ -158,6 +174,34 @@ public class GameManager : MonoBehaviour
     public int   WaveStreak       { get; private set; }
     public float StreakMultiplier => Mathf.Min(1f + WaveStreak * 0.1f, 3f);
     public const float MaxStreakMultiplier = 3f;
+
+    // --- Prestige Talent Tree ---
+    public TalentFlags   Talents              { get; private set; }
+    public bool          PendingPrestige      { get; private set; }
+    public TalentFlags[] PendingTalentChoices { get; private set; } = System.Array.Empty<TalentFlags>();
+    public bool HasTalent(TalentFlags t)      => (Talents & t) != 0;
+    public const float  TalentIronSkinHP      = 15f;
+    public const double TalentBloodFrenzyBonus = 0.25;
+    public const float  TalentGluttonMult     = 1.25f;
+
+    // --- Soul Sacrifice ---
+    public bool SoulSacrificeUnlocked  => PrestigeCount >= 1;
+    public const double SoulSacrificeBloodMult = 10.0;
+
+    // --- Daily Challenge ---
+    public bool  DailyChallengeAvailable { get; private set; }
+    public bool  DailyChallengeActive    { get; private set; }
+    public float ChallengeTimeRemaining  { get; private set; }
+    public const float  ChallengeDuration  = 60f;
+    public const float  ChallengeHPMult   = 5f;
+    public const float  ChallengeAtkMult  = 2f;
+    public const double ChallengeBloodMult = 5.0;
+
+    // --- Blood Corruption ---
+    public int  CorruptionLevel { get; private set; }
+    public const int    MaxCorruptionLevel  = 5;
+    public const float  CorruptionHPPenalty = 5f;
+    public const double PurifyCost          = 3.0;
 
     // --- Boss Ability ---
     public BossAbility CurrentBossAbility { get; private set; }
@@ -230,6 +274,7 @@ public class GameManager : MonoBehaviour
     public const float FlawlessThreshold = 10f;
     public bool FlawlessActive => _flawlessTimer <= FlawlessThreshold && EnemyHP > 0 && !WavePreviewActive;
     float _flawlessTimer;
+    bool  _undyingUsedThisWave;
 
     // --- Settings ---
     public bool SoundEnabled         { get; private set; } = true;
@@ -328,8 +373,15 @@ public class GameManager : MonoBehaviour
     public void SetSurgeActiveForTest(bool active)           { SurgeActive = active; SurgeTimeRemaining = active ? 999f : 0f; }
     public void SetSSDoubleChestLevelForTest(int l)          => SSDoubleChestLevel = l;
     public void SetPIronWallLevelForTest(int l)              => PIronWallLevel = l;
-    public void ClearOfflineEarningsForTest()                { OfflineWoodEarned = 0; OfflineBloodEarned = 0; }
-    public void SetOfflineEarningsForTest(double blood, double wood) { OfflineBloodEarned = blood; OfflineWoodEarned = wood; }
+    public void ClearOfflineEarningsForTest()                            { OfflineWoodEarned = 0; OfflineBloodEarned = 0; }
+    public void SetOfflineEarningsForTest(double blood, double wood)     { OfflineBloodEarned = blood; OfflineWoodEarned = wood; }
+    public void SetTalentsForTest(TalentFlags t)                         => Talents = t;
+    public void SetCorruptionLevelForTest(int l)                         => CorruptionLevel = l;
+    public void SetDailyChallengeAvailableForTest(bool v)                => DailyChallengeAvailable = v;
+    public void SetDailyChallengeActiveForTest(bool v)                   { DailyChallengeActive = v; if (v) ChallengeTimeRemaining = ChallengeDuration; }
+    public void SetUndyingUsedForTest(bool v)                            => _undyingUsedThisWave = v;
+    public TalentFlags[] GetTalentOptionsForTest()                       => GetTalentOptions();
+    public void SetPendingPrestigeForTest(bool v)                        { PendingPrestige = v; if (v) PendingTalentChoices = GetTalentOptions(); }
 
     public static double CalculateOfflineWood(int workers, double seconds) =>
         workers * WorkerWoodPerSec * Math.Min(seconds, 8.0 * 3600);
@@ -461,7 +513,18 @@ public class GameManager : MonoBehaviour
         if (SoldierCount > 0 && EnemyHP > 0)
             changed |= RunCombat(dt);
 
-        if (IsBossWave && SoldierCount > 0 && EnemyHP > 0)
+        if (DailyChallengeActive && SoldierCount > 0 && EnemyHP > 0)
+        {
+            ChallengeTimeRemaining -= dt;
+            if (ChallengeTimeRemaining <= 0f)
+            {
+                DailyChallengeActive = false;
+                ChallengeTimeRemaining = 0f;
+            }
+            changed = true;
+        }
+
+        if (IsBossWave && !DailyChallengeActive && SoldierCount > 0 && EnemyHP > 0)
         {
             BossTimeRemaining -= dt;
             if (BossTimeRemaining <= 0f)
@@ -492,20 +555,34 @@ public class GameManager : MonoBehaviour
 
         if (EnemyHP <= 0f)
         {
-            bool wasBoss = IsBossWave;
+            bool wasBoss      = IsBossWave;
+            bool wasChallenge = DailyChallengeActive;
             double reward = Math.Floor(25 * Math.Pow(1.4, Wave - 1) * PrestigeMultiplier * (1.0 + EquipTalismanBonus));
             if (wasBoss)
             {
                 reward *= 3;
-                SoulShards += 1;
+                SoulShards += HasTalent(TalentFlags.ShardHunter) ? 2 : 1;
                 SoulShardShopUnlocked = true;
                 BossTimeRemaining = 0f;
             }
+            if (wasChallenge)
+            {
+                reward = Math.Floor(reward * ChallengeBloodMult);
+                DailyChallengeActive   = false;
+                ChallengeTimeRemaining = 0f;
+            }
+            if (HasTalent(TalentFlags.BloodFrenzy))
+                reward = Math.Floor(reward * (1.0 + TalentBloodFrenzyBonus));
             bool isFlawless = _flawlessTimer > 0f && _flawlessTimer <= FlawlessThreshold;
             reward = Math.Floor(reward * StreakMultiplier * (isFlawless ? 2.0 : 1.0));
             WaveStreak++;
             AddBlood(reward);
             if (isFlawless) OnMilestoneChest?.Invoke("⚡ FLAWLESS! ×2 blood!");
+            if ((wasBoss || wasChallenge) && HasTalent(TalentFlags.BloodRush) && !SurgeActive)
+            {
+                SurgeActive        = true;
+                SurgeTimeRemaining = SurgeDurationEffective;
+            }
 
             TotalEnemiesKilled++;
             TryUnlock(AchievementFlags.FirstKill);
@@ -525,23 +602,32 @@ public class GameManager : MonoBehaviour
             return true;
         }
 
-        float incomingAtk = EnemyAttack;
-        if (IsBossWave && CurrentBossAbility == BossAbility.Berserk && EnemyHP < EnemyMaxHP * 0.25f)
+        float incomingAtk   = EnemyAttack;
+        bool  isSpecialFoe  = IsBossWave || DailyChallengeActive;
+        if (isSpecialFoe && CurrentBossAbility == BossAbility.Berserk && EnemyHP < EnemyMaxHP * 0.25f)
             incomingAtk *= 2f;
-        if (IsMixedArmy)    incomingAtk *= (1f - MixedArmyDmgReduction);
+        if (IsMixedArmy)        incomingAtk *= (1f - MixedArmyDmgReduction);
         if (PIronWallLevel > 0) incomingAtk *= (1f - PIronWallLevel * IronWallDmgReduction);
         float totalIncoming = incomingAtk;
-        if (IsBossWave && CurrentBossAbility == BossAbility.Drain && EnemyHP > 0)
+        if (isSpecialFoe && CurrentBossAbility == BossAbility.Drain && EnemyHP > 0)
             totalIncoming += BossDrainPerSec;
         SoldierHP -= totalIncoming * dt;
 
         if (SoldierHP <= 0f)
         {
-            if (FrontlineIsTank)           TankCount--;
-            else if (FrontlineIsBerserker) BerserkerCount--;
-            else                           PaladinCount--;
-            SoldierHP = SoldierCount > 0 ? FrontlineMaxHP : 0f;
-            WaveStreak = 0;
+            if (HasTalent(TalentFlags.Undying) && !_undyingUsedThisWave)
+            {
+                SoldierHP            = 1f;
+                _undyingUsedThisWave = true;
+            }
+            else
+            {
+                if (FrontlineIsTank)           TankCount--;
+                else if (FrontlineIsBerserker) BerserkerCount--;
+                else                           PaladinCount--;
+                SoldierHP  = SoldierCount > 0 ? FrontlineMaxHP : 0f;
+                WaveStreak = 0;
+            }
         }
 
         _dmgTimer += dt;
@@ -552,7 +638,7 @@ public class GameManager : MonoBehaviour
             if (BerserkerCount > 0 && TankCount == 0 && UnityEngine.Random.value < BerserkerCritChance)
             {
                 tickDmg *= BerserkerCritMult;
-                EnemyHP = Mathf.Max(0f, EnemyHP - tickDmg);
+                EnemyHP  = Mathf.Max(0f, EnemyHP - tickDmg);
             }
             OnDamageDealt?.Invoke(tickDmg, true);
             if (SoldierCount > 0)
@@ -600,7 +686,8 @@ public class GameManager : MonoBehaviour
 
     void SpawnEnemy(int wave)
     {
-        _flawlessTimer = 0f;
+        _flawlessTimer       = 0f;
+        _undyingUsedThisWave = false;
         bool isBoss = wave == NextBossWave;
         float fortReduction = 1f - FortificationDmgReduction;
         if (isBoss)
@@ -970,6 +1057,87 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public void RequestPrestige()
+    {
+        if (Wave < PrestigeWaveRequirement || PendingPrestige) return;
+        PendingTalentChoices = GetTalentOptions();
+        PendingPrestige      = true;
+        OnStateChanged?.Invoke();
+    }
+
+    public bool ConfirmPrestige(int choiceIdx)
+    {
+        if (!PendingPrestige) return false;
+        if (choiceIdx >= 0 && choiceIdx < PendingTalentChoices.Length)
+            Talents |= PendingTalentChoices[choiceIdx];
+        PendingPrestige      = false;
+        PendingTalentChoices = System.Array.Empty<TalentFlags>();
+        return Prestige();
+    }
+
+    public void CancelPrestige()
+    {
+        PendingPrestige      = false;
+        PendingTalentChoices = System.Array.Empty<TalentFlags>();
+        OnStateChanged?.Invoke();
+    }
+
+    TalentFlags[] GetTalentOptions()
+    {
+        var all = new TalentFlags[]
+        {
+            TalentFlags.BloodFrenzy, TalentFlags.Undying, TalentFlags.ShardHunter,
+            TalentFlags.IronSkin,    TalentFlags.BloodRush, TalentFlags.Glutton,
+        };
+        var available = System.Array.FindAll(all, t => !HasTalent(t));
+        for (int i = available.Length - 1; i > 0; i--)
+        {
+            int j = UnityEngine.Random.Range(0, i + 1);
+            (available[i], available[j]) = (available[j], available[i]);
+        }
+        int count  = Math.Min(3, available.Length);
+        var result = new TalentFlags[count];
+        System.Array.Copy(available, result, count);
+        return result;
+    }
+
+    public bool UseSoulSacrifice()
+    {
+        if (!SoulSacrificeUnlocked || SoldierCount == 0) return false;
+        double reward = Math.Floor(25 * Math.Pow(1.4, Wave - 1) * PrestigeMultiplier * SoulSacrificeBloodMult);
+        if (FrontlineIsTank)           TankCount--;
+        else if (FrontlineIsBerserker) BerserkerCount--;
+        else                           PaladinCount--;
+        SoldierHP = SoldierCount > 0 ? FrontlineMaxHP : 0f;
+        AddBlood(reward);
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    public bool StartDailyChallenge()
+    {
+        if (!DailyChallengeAvailable || DailyChallengeActive || EnemyHP <= 0 || WavePreviewActive) return false;
+        DailyChallengeAvailable = false;
+        DailyChallengeActive    = true;
+        ChallengeTimeRemaining  = ChallengeDuration;
+        EnemyMaxHP *= ChallengeHPMult;
+        EnemyHP     = EnemyMaxHP;
+        EnemyAttack *= ChallengeAtkMult;
+        PlayerPrefs.SetString("LastChallengeDate", DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+        PlayerPrefs.Save();
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    public bool Purify()
+    {
+        if (CorruptionLevel <= 0 || SoulShards < PurifyCost) return false;
+        SoulShards -= PurifyCost;
+        CorruptionLevel--;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public void ToggleSound()
     {
         SoundEnabled = !SoundEnabled;
@@ -1003,7 +1171,9 @@ public class GameManager : MonoBehaviour
         TotalEnemiesKilled = 0; TimePlayed = 0; Achievements = AchievementFlags.None;
         SoundEnabled = true; NotificationsEnabled = true;
         DailyBonusAvailable = false; OfflineWoodEarned = 0; OfflineBloodEarned = 0;
-        WavePreviewActive = false; _flawlessTimer = 0f;
+        Talents = TalentFlags.None; PendingPrestige = false; PendingTalentChoices = System.Array.Empty<TalentFlags>();
+        CorruptionLevel = 0; DailyChallengeActive = false; DailyChallengeAvailable = false; ChallengeTimeRemaining = 0f;
+        WavePreviewActive = false; _flawlessTimer = 0f; _undyingUsedThisWave = false;
         Wave = 1; NextBossWave = UnityEngine.Random.Range(6, 13);
         SpawnEnemy(1);
         OnStateChanged?.Invoke();
@@ -1015,6 +1185,10 @@ public class GameManager : MonoBehaviour
         int milestonesBefore = PrestigeMilestonesReached;
         PrestigeCount++;
         PrestigePoints++;
+        if (CorruptionLevel < MaxCorruptionLevel) CorruptionLevel++;
+        DailyChallengeActive   = false;
+        ChallengeTimeRemaining = 0f;
+        _undyingUsedThisWave   = false;
         TryUnlock(AchievementFlags.FirstPrestige);
         if (PrestigeMilestonesReached > milestonesBefore)
             OnMilestoneChest?.Invoke($"⭐ Prestige Milestone! +{PrestigeMilestoneDmgBonus * 100:F0}% attack!");
@@ -1114,6 +1288,8 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetFloat ("EnemyAttack",         EnemyAttack);
         PlayerPrefs.SetInt   ("EnemySpriteIndex",    EnemySpriteIndex);
         PlayerPrefs.SetInt   ("NextBossWave",        NextBossWave);
+        PlayerPrefs.SetInt   ("Talents",             (int)Talents);
+        PlayerPrefs.SetInt   ("CorruptionLevel",     CorruptionLevel);
         PlayerPrefs.SetString("SaveTime",            DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture));
         PlayerPrefs.Save();
     }
@@ -1178,9 +1354,14 @@ public class GameManager : MonoBehaviour
         NextBossWave        = savedNext > 0 ? savedNext : Wave + UnityEngine.Random.Range(5, 11);
         BossTimeRemaining   = IsBossWave ? (BossTimeLimit + SSBossTimerLevel * 15f) : 0f;
 
-        string savedDate = PlayerPrefs.GetString("LastLoginDate", "");
-        string today     = DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-        DailyBonusAvailable = savedDate != today;
+        Talents         = (TalentFlags)PlayerPrefs.GetInt("Talents",         0);
+        CorruptionLevel =              PlayerPrefs.GetInt("CorruptionLevel", 0);
+
+        string today = DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        string savedDate      = PlayerPrefs.GetString("LastLoginDate",    "");
+        string lastChallenge  = PlayerPrefs.GetString("LastChallengeDate","");
+        DailyBonusAvailable     = savedDate     != today;
+        DailyChallengeAvailable = lastChallenge != today;
 
         if (BloodPerSec > 0 && PlayerPrefs.HasKey("SaveTime"))
         {

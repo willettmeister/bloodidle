@@ -19,7 +19,14 @@ public class ClickManager : MonoBehaviour
     public void OnUpgradeArmor()           => GameManager.Instance.UpgradeArmor();
     public void OnUpgradeTalisman()        => GameManager.Instance.UpgradeTalisman();
     public void OnToggleFormation()        => GameManager.Instance.ToggleFormation();
-    public void OnPrestige()               => GameManager.Instance.Prestige();
+    public void OnPrestige()               => GameManager.Instance.RequestPrestige();
+    public void OnConfirmTalent0()         => GameManager.Instance.ConfirmPrestige(0);
+    public void OnConfirmTalent1()         => GameManager.Instance.ConfirmPrestige(1);
+    public void OnConfirmTalent2()         => GameManager.Instance.ConfirmPrestige(2);
+    public void OnCancelPrestige()         => GameManager.Instance.CancelPrestige();
+    public void OnUseSoulSacrifice()       => GameManager.Instance.UseSoulSacrifice();
+    public void OnStartDailyChallenge()    => GameManager.Instance.StartDailyChallenge();
+    public void OnPurify()                 => GameManager.Instance.Purify();
     public void OnBuyPSoldierCap()         => GameManager.Instance.BuyPSoldierCap();
     public void OnBuyPClickBonus()         => GameManager.Instance.BuyPClickBonus();
     public void OnBuyPRitualEff()          => GameManager.Instance.BuyPRitualEff();

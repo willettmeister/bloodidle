@@ -153,6 +153,26 @@ public class UIManager : MonoBehaviour
     public GameObject offlinePanel;
     public Text offlineText;
 
+    [Header("Talent Selection")]
+    public GameObject talentSelectionPanel;
+    public Button talentButton0, talentButton1, talentButton2;
+    public Text   talentButtonText0, talentButtonText1, talentButtonText2;
+    public Text   talentHeaderText;
+
+    [Header("Daily Challenge")]
+    public GameObject dailyChallengeRow;
+    public Button     dailyChallengeButton;
+    public Text       dailyChallengeInfoText;
+
+    [Header("Corruption")]
+    public Text   corruptionText;
+    public Button purifyButton;
+    public Text   purifyButtonText;
+
+    [Header("Soul Sacrifice")]
+    public Button soulSacrificeButton;
+    public Text   soulSacrificeInfoText;
+
     [Header("Damage Numbers")]
     public RectTransform damageLayer;
 
@@ -533,6 +553,94 @@ public class UIManager : MonoBehaviour
         barracksInfoText.text        = $"Barracks  Lv.{gm.BarracksLevel}  —  Max {gm.MaxSoldiers} soldiers";
         barracksUpgradeCostText.text = $"Upgrade\n({GameManager.FormatNumber(gm.BarracksUpgradeCost)} wood)";
         upgradeBarracksButton.interactable = gm.Wood >= gm.BarracksUpgradeCost;
+
+        // Corruption
+        if (corruptionText != null)
+        {
+            corruptionText.gameObject.SetActive(gm.CorruptionLevel > 0);
+            if (gm.CorruptionLevel > 0)
+            {
+                int penaltyHP = Mathf.RoundToInt(gm.CorruptionLevel * GameManager.CorruptionHPPenalty);
+                corruptionText.text = $"☠ Corruption Lv.{gm.CorruptionLevel}  —  −{penaltyHP} max HP";
+            }
+        }
+        if (purifyButton != null)
+        {
+            purifyButton.gameObject.SetActive(gm.CorruptionLevel > 0 && gm.SoulShardShopUnlocked);
+            purifyButton.interactable = gm.SoulShards >= GameManager.PurifyCost;
+            if (purifyButtonText != null)
+                purifyButtonText.text = $"Purify\n({GameManager.PurifyCost:F0} shards)";
+        }
+
+        // Daily Challenge
+        if (dailyChallengeRow != null)
+        {
+            bool showChallenge = gm.SoldierCount > 0 && !gm.WavePreviewActive;
+            dailyChallengeRow.SetActive(showChallenge);
+            if (showChallenge)
+            {
+                if (gm.DailyChallengeActive)
+                {
+                    int secs = Mathf.CeilToInt(gm.ChallengeTimeRemaining);
+                    if (dailyChallengeInfoText != null)
+                        dailyChallengeInfoText.text = $"⚔ CHALLENGE  ×{GameManager.ChallengeBloodMult:F0} reward  —  {secs}s left";
+                    if (dailyChallengeButton != null) dailyChallengeButton.interactable = false;
+                }
+                else if (gm.DailyChallengeAvailable)
+                {
+                    if (dailyChallengeInfoText != null)
+                        dailyChallengeInfoText.text = $"Daily Challenge: {GameManager.ChallengeHPMult:F0}× HP enemy  —  ×{GameManager.ChallengeBloodMult:F0} blood!";
+                    if (dailyChallengeButton != null) dailyChallengeButton.interactable = true;
+                }
+                else
+                {
+                    if (dailyChallengeInfoText != null)
+                        dailyChallengeInfoText.text = "Daily Challenge: completed — come back tomorrow";
+                    if (dailyChallengeButton != null) dailyChallengeButton.interactable = false;
+                }
+            }
+        }
+
+        // Soul Sacrifice
+        if (soulSacrificeButton != null)
+        {
+            soulSacrificeButton.gameObject.SetActive(gm.SoulSacrificeUnlocked);
+            if (gm.SoulSacrificeUnlocked)
+            {
+                soulSacrificeButton.interactable = gm.SoldierCount > 0;
+                if (soulSacrificeInfoText != null)
+                    soulSacrificeInfoText.text = $"Soul Sacrifice  —  lose 1 soldier → ×{GameManager.SoulSacrificeBloodMult:F0} blood";
+            }
+        }
+
+        // Prestige Talent Selection overlay
+        if (talentSelectionPanel != null)
+        {
+            talentSelectionPanel.SetActive(gm.PendingPrestige);
+            if (gm.PendingPrestige)
+            {
+                if (talentHeaderText != null)
+                    talentHeaderText.text = $"Choose a Prestige Talent\n(Prestige {gm.PrestigeCount + 1})";
+                var opts  = gm.PendingTalentChoices;
+                var btns  = new[] { talentButton0,     talentButton1,     talentButton2     };
+                var texts = new[] { talentButtonText0, talentButtonText1, talentButtonText2 };
+                for (int i = 0; i < 3; i++)
+                {
+                    bool hasOpt = i < opts.Length;
+                    if (btns[i]  != null) btns[i].gameObject.SetActive(hasOpt);
+                    if (texts[i] != null && hasOpt)
+                        texts[i].text = TalentDescription(opts[i]);
+                }
+            }
+        }
+
+        // Talent summary in prestige panel
+        if (canPrestige && prestigeInfoText != null && gm.Talents != TalentFlags.None)
+        {
+            string talentLine = TalentSummaryLine(gm.Talents);
+            if (!prestigeInfoText.text.Contains(talentLine))
+                prestigeInfoText.text += $"\n{talentLine}";
+        }
     }
 
     static int NextPrestigeMilestone(int current)
@@ -568,6 +676,36 @@ public class UIManager : MonoBehaviour
     public void HideSettingsPanel()
     {
         if (settingsPanel != null) settingsPanel.SetActive(false);
+    }
+
+    // ── Talent Selection Panel ────────────────────────────────────────────────
+
+    public void HideTalentPanel()
+    {
+        GameManager.Instance?.CancelPrestige();
+    }
+
+    public static string TalentDescription(TalentFlags t) => t switch
+    {
+        TalentFlags.BloodFrenzy  => "Blood Frenzy\n+25% kill blood rewards",
+        TalentFlags.Undying      => "Undying\nFrontline revives once per wave at 1 HP",
+        TalentFlags.ShardHunter  => "Shard Hunter\nBosses drop 2 soul shards instead of 1",
+        TalentFlags.IronSkin     => "Iron Skin\n+15 max HP to frontline soldier",
+        TalentFlags.BloodRush    => "Blood Rush\nBoss/challenge kill activates Blood Surge",
+        TalentFlags.Glutton      => "Glutton\nBlood Rituals produce 25% more blood/s",
+        _                        => "",
+    };
+
+    public static string TalentSummaryLine(TalentFlags talents)
+    {
+        var names = new System.Collections.Generic.List<string>();
+        if ((talents & TalentFlags.BloodFrenzy)  != 0) names.Add("Frenzy");
+        if ((talents & TalentFlags.Undying)       != 0) names.Add("Undying");
+        if ((talents & TalentFlags.ShardHunter)   != 0) names.Add("Shard");
+        if ((talents & TalentFlags.IronSkin)       != 0) names.Add("IronSkin");
+        if ((talents & TalentFlags.BloodRush)      != 0) names.Add("BloodRush");
+        if ((talents & TalentFlags.Glutton)        != 0) names.Add("Glutton");
+        return names.Count > 0 ? "Talents: " + string.Join(" | ", names) : "";
     }
 
     void RefreshSettings()
