@@ -178,7 +178,7 @@ public class GameManager : MonoBehaviour
     // --- Prestige Talent Tree ---
     public TalentFlags   Talents              { get; private set; }
     public bool          PendingPrestige      { get; private set; }
-    public TalentFlags[] PendingTalentChoices { get; private set; } = System.Array.Empty<TalentFlags>();
+    public TalentFlags[] PendingTalentChoices { get; private set; } = new TalentFlags[0];
     public bool HasTalent(TalentFlags t)      => (Talents & t) != 0;
     public const float  TalentIronSkinHP      = 15f;
     public const double TalentBloodFrenzyBonus = 0.25;
@@ -1071,14 +1071,14 @@ public class GameManager : MonoBehaviour
         if (choiceIdx >= 0 && choiceIdx < PendingTalentChoices.Length)
             Talents |= PendingTalentChoices[choiceIdx];
         PendingPrestige      = false;
-        PendingTalentChoices = System.Array.Empty<TalentFlags>();
+        PendingTalentChoices = new TalentFlags[0];
         return Prestige();
     }
 
     public void CancelPrestige()
     {
         PendingPrestige      = false;
-        PendingTalentChoices = System.Array.Empty<TalentFlags>();
+        PendingTalentChoices = new TalentFlags[0];
         OnStateChanged?.Invoke();
     }
 
@@ -1089,15 +1089,23 @@ public class GameManager : MonoBehaviour
             TalentFlags.BloodFrenzy, TalentFlags.Undying, TalentFlags.ShardHunter,
             TalentFlags.IronSkin,    TalentFlags.BloodRush, TalentFlags.Glutton,
         };
-        var available = System.Array.FindAll(all, t => !HasTalent(t));
+        int availCount = 0;
+        for (int k = 0; k < all.Length; k++)
+            if (!HasTalent(all[k])) availCount++;
+        var available = new TalentFlags[availCount];
+        int idx = 0;
+        for (int k = 0; k < all.Length; k++)
+            if (!HasTalent(all[k])) available[idx++] = all[k];
         for (int i = available.Length - 1; i > 0; i--)
         {
             int j = UnityEngine.Random.Range(0, i + 1);
-            (available[i], available[j]) = (available[j], available[i]);
+            TalentFlags tmp = available[i];
+            available[i]    = available[j];
+            available[j]    = tmp;
         }
         int count  = Math.Min(3, available.Length);
         var result = new TalentFlags[count];
-        System.Array.Copy(available, result, count);
+        for (int i = 0; i < count; i++) result[i] = available[i];
         return result;
     }
 
@@ -1171,7 +1179,7 @@ public class GameManager : MonoBehaviour
         TotalEnemiesKilled = 0; TimePlayed = 0; Achievements = AchievementFlags.None;
         SoundEnabled = true; NotificationsEnabled = true;
         DailyBonusAvailable = false; OfflineWoodEarned = 0; OfflineBloodEarned = 0;
-        Talents = TalentFlags.None; PendingPrestige = false; PendingTalentChoices = System.Array.Empty<TalentFlags>();
+        Talents = TalentFlags.None; PendingPrestige = false; PendingTalentChoices = new TalentFlags[0];
         CorruptionLevel = 0; DailyChallengeActive = false; DailyChallengeAvailable = false; ChallengeTimeRemaining = 0f;
         WavePreviewActive = false; _flawlessTimer = 0f; _undyingUsedThisWave = false;
         Wave = 1; NextBossWave = UnityEngine.Random.Range(6, 13);
