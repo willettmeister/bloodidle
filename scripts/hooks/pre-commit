@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Pre-commit hook: regenerate Mermaid SVGs whenever docs/*.md files are staged.
+# Installed via: bash scripts/install-hooks.sh
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+
+# Collect staged docs .md files (excluding the diagrams dir itself)
+staged_docs=$(git diff --cached --name-only | grep -E '^docs/[^/]+\.md$' || true)
+
+[[ -z "$staged_docs" ]] && exit 0
+
+echo "[pre-commit] Docs changed — regenerating diagrams..."
+
+cd "$REPO_ROOT"
+bash scripts/gen-diagrams.sh $staged_docs
+
+# Stage any updated or newly created SVGs
+git add docs/diagrams/*.svg 2>/dev/null || true
+
+echo "[pre-commit] Diagrams staged."
