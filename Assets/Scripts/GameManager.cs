@@ -18,7 +18,7 @@ public enum AchievementFlags
     FirstPrestige = 1 << 8,
 }
 
-public enum EnemyModifier { None, Armored, Enraged, Regen }
+public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed }
 public enum BossAbility    { None, Shield, Berserk, Drain }
 
 [Flags]
@@ -259,11 +259,14 @@ public class GameManager : MonoBehaviour
         EnemyModifier.Armored => "⚔ Armored",
         EnemyModifier.Enraged => "💢 Enraged",
         EnemyModifier.Regen   => "♻ Regen",
+        EnemyModifier.Cursed  => "☠ Cursed",
         _                     => "",
     };
-    public const float EnemyArmoredDmgMult = 0.5f;
-    public const float EnemyEnragedAtkMult = 1.5f;
-    public const float EnemyRegenPct       = 0.02f;
+    public const float EnemyArmoredDmgMult  = 0.5f;
+    public const float EnemyEnragedAtkMult  = 1.5f;
+    public const float EnemyRegenPct        = 0.02f;
+    public const float EnemyCursedDotRate   = 2f;
+    public const float EnemyCursedRewardMult = 1.5f;
 
     // --- Wave preview ---
     public bool WavePreviewActive { get; private set; }
@@ -535,6 +538,9 @@ public class GameManager : MonoBehaviour
 
     bool RunCombat(float dt)
     {
+        if (CurrentEnemyModifier == EnemyModifier.Cursed && SoldierCount > 0)
+            SoldierHP = Mathf.Max(0f, SoldierHP - EnemyCursedDotRate * dt);
+
         float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f);
         if (CurrentEnemyModifier == EnemyModifier.Armored) eff *= EnemyArmoredDmgMult;
         if (BossShieldActive)
@@ -552,6 +558,8 @@ public class GameManager : MonoBehaviour
             bool wasBoss      = IsBossWave;
             bool wasChallenge = DailyChallengeActive;
             double reward = Math.Floor(25 * Math.Pow(1.4, Wave - 1) * PrestigeMultiplier * (1.0 + EquipTalismanBonus));
+            if (CurrentEnemyModifier == EnemyModifier.Cursed)
+                reward = Math.Floor(reward * EnemyCursedRewardMult);
             if (wasBoss)
             {
                 reward *= 3;
@@ -711,7 +719,7 @@ public class GameManager : MonoBehaviour
             _bossShieldHP      = 0f;
             if (UnityEngine.Random.value < 0.25f)
             {
-                CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 4);
+                CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 5);
                 if (CurrentEnemyModifier == EnemyModifier.Enraged)
                     EnemyAttack *= EnemyEnragedAtkMult;
             }
