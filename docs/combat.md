@@ -115,4 +115,3 @@ If the challenge timer runs out before the enemy dies, `DailyChallengeActive` tu
 ## Undying Talent
 
 When frontline HP hits 0, if the Undying talent is active and hasn't been used this wave, the soldier is revived to 1 HP instead of dying. Resets on each new wave.
-Test hook trigger
