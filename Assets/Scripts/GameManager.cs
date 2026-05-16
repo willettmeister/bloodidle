@@ -137,6 +137,9 @@ public class GameManager : MonoBehaviour
     public const double BloodPactWoodGain  = 100.0;
 
     // --- Prestige ---
+    public int TotalEnemiesKilled { get; private set; }
+    public int TotalSoldiersLost  { get; private set; }
+
     public int    PrestigeCount      { get; private set; }
     public double PrestigeMultiplier => 1.0 + 0.5 * PrestigeCount;
     public const int PrestigeWaveRequirement = 20;
@@ -171,9 +174,10 @@ public class GameManager : MonoBehaviour
     public const double BankMaxDeposit          = 10_000.0;
 
     // --- Wave Streak ---
-    public int   WaveStreak       { get; private set; }
-    public float StreakMultiplier => Mathf.Min(1f + WaveStreak * 0.1f, 3f);
+    public int   WaveStreak          { get; private set; }
+    public float StreakMultiplier    => Mathf.Min(1f + WaveStreak * 0.1f, 3f);
     public const float MaxStreakMultiplier = 3f;
+    public float KillStreakBonusMult => 1f + Mathf.Min(WaveStreak, 5) * 0.05f;
 
     // --- Prestige Talent Tree ---
     public TalentFlags   Talents              { get; private set; }
@@ -315,6 +319,11 @@ public class GameManager : MonoBehaviour
     public const double HealSelfUnlockThreshold = 250.0;
     public const double HealSelfCost   = 25.0;
     public const float  HealSelfAmount = 20f;
+    public const double BloodShieldCost            = 30.0;
+    public const float  BloodShieldAmount          = 30f;
+    public const double BloodShieldUnlockThreshold = 150.0;
+    public float  BloodShieldHP       { get; private set; }
+    public bool   BloodShieldUnlocked { get; private set; }
 
     public event Action OnStateChanged;
     public event Action<float, bool> OnDamageDealt;
@@ -576,7 +585,8 @@ public class GameManager : MonoBehaviour
             if (HasTalent(TalentFlags.BloodFrenzy))
                 reward = Math.Floor(reward * (1.0 + TalentBloodFrenzyBonus));
             bool isFlawless = _flawlessTimer > 0f && _flawlessTimer <= FlawlessThreshold;
-            reward = Math.Floor(reward * StreakMultiplier * (isFlawless ? 2.0 : 1.0));
+            reward = Math.Floor(reward * StreakMultiplier * KillStreakBonusMult * (isFlawless ? 2.0 : 1.0));
+            TotalEnemiesKilled++;
             WaveStreak++;
             AddBlood(reward);
             if (isFlawless) OnMilestoneChest?.Invoke("⚡ FLAWLESS! ×2 blood!");
@@ -612,7 +622,14 @@ public class GameManager : MonoBehaviour
         float totalIncoming = incomingAtk;
         if (isSpecialFoe && CurrentBossAbility == BossAbility.Drain && EnemyHP > 0)
             totalIncoming += BossDrainPerSec;
-        SoldierHP -= totalIncoming * dt;
+        float dmg = totalIncoming * dt;
+        if (BloodShieldHP > 0f)
+        {
+            float absorbed = Mathf.Min(BloodShieldHP, dmg);
+            BloodShieldHP -= absorbed;
+            dmg           -= absorbed;
+        }
+        SoldierHP -= dmg;
 
         if (SoldierHP <= 0f)
         {
@@ -626,6 +643,7 @@ public class GameManager : MonoBehaviour
                 if (FrontlineIsTank)           TankCount--;
                 else if (FrontlineIsBerserker) BerserkerCount--;
                 else                           PaladinCount--;
+                TotalSoldiersLost++;
                 SoldierHP  = SoldierCount > 0 ? FrontlineMaxHP : 0f;
                 WaveStreak = 0;
             }
@@ -764,6 +782,7 @@ public class GameManager : MonoBehaviour
         Blood += amount;
         TotalBloodEarned += amount;
         if (!WorkersUnlocked  && TotalBloodEarned >= WorkersUnlockThreshold)  WorkersUnlocked  = true;
+        if (!BloodShieldUnlocked && TotalBloodEarned >= BloodShieldUnlockThreshold) BloodShieldUnlocked = true;
         if (!HealSelfUnlocked && TotalBloodEarned >= HealSelfUnlockThreshold) HealSelfUnlocked = true;
         if (!SurgeUnlocked    && TotalBloodEarned >= SurgeUnlockThreshold)    SurgeUnlocked    = true;
         if (TotalBloodEarned >= 1_000)  TryUnlock(AchievementFlags.Blood1K);
@@ -848,6 +867,15 @@ public class GameManager : MonoBehaviour
         FortificationLevel++;
         FortificationCost = Math.Floor(FortificationCost * FortCostMultiplier);
         OnStateChanged?.Invoke();
+        return true;
+    }
+
+    public bool UseBloodShield()
+    {
+        if (!BloodShieldUnlocked || Blood < BloodShieldCost || SoldierCount == 0) return false;
+        Blood -= BloodShieldCost;
+        BloodShieldHP = BloodShieldAmount;
+        FireStateChanged();
         return true;
     }
 
@@ -1164,6 +1192,7 @@ public class GameManager : MonoBehaviour
         WorkerCount = 0; BloodRitualCount = 0; BloodRitualCost = BloodRitualBaseCost;
         BarracksLevel = 1; MaxSoldiers = 10; BarracksUpgradeCost = 20.0;
         WorkersUnlocked = false; HealSelfUnlocked = false; SurgeUnlocked = false;
+        BloodShieldUnlocked = false; BloodShieldHP = 0f;
         PrestigeCount = 0; PrestigePoints = 0;
         PSoldierCapLevel = 0; PClickBonusLevel = 0; PRitualEffLevel = 0;
         PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0;
@@ -1256,6 +1285,10 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetString("BarracksUpgradeCost", BarracksUpgradeCost.ToString("R", ic));
         PlayerPrefs.SetString("TotalBloodEarned",    TotalBloodEarned.ToString("R", ic));
         PlayerPrefs.SetInt   ("WorkersUnlocked",     WorkersUnlocked  ? 1 : 0);
+        PlayerPrefs.SetInt   ("BloodShieldUnlocked", BloodShieldUnlocked ? 1 : 0);
+        PlayerPrefs.SetFloat ("BloodShieldHP",       BloodShieldHP);
+        PlayerPrefs.SetInt   ("TotalEnemiesKilled",  TotalEnemiesKilled);
+        PlayerPrefs.SetInt   ("TotalSoldiersLost",   TotalSoldiersLost);
         PlayerPrefs.SetInt   ("HealSelfUnlocked",    HealSelfUnlocked ? 1 : 0);
         PlayerPrefs.SetInt   ("PrestigeCount",       PrestigeCount);
         PlayerPrefs.SetInt   ("PrestigePoints",      PrestigePoints);
@@ -1318,6 +1351,10 @@ public class GameManager : MonoBehaviour
         BarracksUpgradeCost = double.Parse(PlayerPrefs.GetString("BarracksUpgradeCost", "20"), ic);
         TotalBloodEarned    = double.Parse(PlayerPrefs.GetString("TotalBloodEarned",    "0"),  ic);
         WorkersUnlocked     = PlayerPrefs.GetInt   ("WorkersUnlocked",     0) == 1;
+        BloodShieldUnlocked = PlayerPrefs.GetInt   ("BloodShieldUnlocked", 0) == 1;
+        BloodShieldHP       = PlayerPrefs.GetFloat ("BloodShieldHP",       0f);
+        TotalEnemiesKilled  = PlayerPrefs.GetInt   ("TotalEnemiesKilled",  0);
+        TotalSoldiersLost   = PlayerPrefs.GetInt   ("TotalSoldiersLost",   0);
         HealSelfUnlocked    = PlayerPrefs.GetInt   ("HealSelfUnlocked",    0) == 1;
         PrestigeCount       = PlayerPrefs.GetInt   ("PrestigeCount",       0);
         PrestigePoints      = PlayerPrefs.GetInt   ("PrestigePoints",      0);
