@@ -74,7 +74,7 @@ public class GameManager : MonoBehaviour
     public float TotalAttack         => (TankCount     * (SoldierAttack   + EquipAttackBonus)
                                        + BerserkerCount * (BerserkerAttack + EquipAttackBonus)
                                        + PaladinCount   * (PaladinAttack   + EquipAttackBonus))
-                                       * (1f + PrestigeMilestoneDmgBonus);
+                                       * (1f + PrestigeMilestoneDmgBonus) * MoraleBonusMult;
     public bool  IsAllTank       => TankCount > 0 && BerserkerCount == 0 && PaladinCount == 0;
     public bool  IsAllBerserker  => BerserkerCount > 0 && TankCount == 0 && PaladinCount == 0;
     public bool  IsAllPaladin    => PaladinCount > 0 && TankCount == 0 && BerserkerCount == 0;
@@ -178,6 +178,7 @@ public class GameManager : MonoBehaviour
     public float StreakMultiplier    => Mathf.Min(1f + WaveStreak * 0.1f, 3f);
     public const float MaxStreakMultiplier = 3f;
     public float KillStreakBonusMult => 1f + Mathf.Min(WaveStreak, 5) * 0.05f;
+    public float MoraleBonusMult     => WaveStreak >= 3 ? 1.15f : 1f;
 
     // --- Prestige Talent Tree ---
     public TalentFlags   Talents              { get; private set; }
