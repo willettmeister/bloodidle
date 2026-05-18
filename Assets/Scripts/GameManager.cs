@@ -89,6 +89,7 @@ public class GameManager : MonoBehaviour
     public const float  PaladinMaxHP        = 20f;
     public const float  PaladinAttack       = 3f;
     public const float  PaladinHealRate     = 1f;
+    public const float  PaladinHolyBonus   = 1.25f;
     public const float  TankRegenRate        = 2f;
     public const float  BetweenWaveRegenRate = 5f;
     public const float  BerserkerCritChance = 0.2f;
@@ -567,6 +568,7 @@ public class GameManager : MonoBehaviour
 
         float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f);
         if (CurrentEnemyModifier == EnemyModifier.Armored) eff *= EnemyArmoredDmgMult;
+        if (CurrentEnemyModifier == EnemyModifier.Cursed && PaladinCount > 0) eff *= PaladinHolyBonus;
         if (BossShieldActive)
         {
             _bossShieldHP -= eff * dt;
