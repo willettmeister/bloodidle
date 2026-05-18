@@ -89,7 +89,8 @@ public class GameManager : MonoBehaviour
     public const float  PaladinMaxHP        = 20f;
     public const float  PaladinAttack       = 3f;
     public const float  PaladinHealRate     = 1f;
-    public const float  TankRegenRate       = 2f;
+    public const float  TankRegenRate        = 2f;
+    public const float  BetweenWaveRegenRate = 5f;
     public const float  BerserkerCritChance = 0.2f;
     public const float  BerserkerCritMult   = 2f;
     public const float  MixedArmyDmgReduction = 0.15f;
@@ -468,6 +469,12 @@ public class GameManager : MonoBehaviour
         if (PaladinCount > 0 && SoldierCount > 0 && SoldierHP < FrontlineMaxHP)
         {
             SoldierHP = Mathf.Min(SoldierHP + PaladinCount * PaladinHealRate * dt, FrontlineMaxHP);
+            changed = true;
+        }
+
+        if (WavePreviewActive && SoldierCount > 0 && SoldierHP < FrontlineMaxHP)
+        {
+            SoldierHP = Mathf.Min(SoldierHP + BetweenWaveRegenRate * dt, FrontlineMaxHP);
             changed = true;
         }
 
