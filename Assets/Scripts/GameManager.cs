@@ -325,6 +325,7 @@ public class GameManager : MonoBehaviour
     public const double BloodShieldUnlockThreshold = 150.0;
     public float  BloodShieldHP       { get; private set; }
     public bool   BloodShieldUnlocked { get; private set; }
+    public bool   AutoBuySoldiers     { get; private set; }
 
     public event Action OnStateChanged;
     public event Action<float, bool> OnDamageDealt;
@@ -491,6 +492,12 @@ public class GameManager : MonoBehaviour
         if (BloodPerSec > 0)
         {
             AddBlood(BloodPerSec * dt);
+            changed = true;
+        }
+
+        if (AutoBuySoldiers && SoldierCount < MaxSoldiers && Blood >= SoldierCost)
+        {
+            BuyTank();
             changed = true;
         }
 
@@ -807,6 +814,7 @@ public class GameManager : MonoBehaviour
     void PlaySound(object clip) { } // stub — audio module unavailable in this assembly
 
     public bool BuySoldier() => BuyTank();
+    public void ToggleAutoBuySoldiers() { AutoBuySoldiers = !AutoBuySoldiers; FireStateChanged(); }
 
     public bool BuyTank()
     {
@@ -1286,6 +1294,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetString("BarracksUpgradeCost", BarracksUpgradeCost.ToString("R", ic));
         PlayerPrefs.SetString("TotalBloodEarned",    TotalBloodEarned.ToString("R", ic));
         PlayerPrefs.SetInt   ("WorkersUnlocked",     WorkersUnlocked  ? 1 : 0);
+        PlayerPrefs.SetInt   ("AutoBuySoldiers",     AutoBuySoldiers ? 1 : 0);
         PlayerPrefs.SetInt   ("BloodShieldUnlocked", BloodShieldUnlocked ? 1 : 0);
         PlayerPrefs.SetFloat ("BloodShieldHP",       BloodShieldHP);
         PlayerPrefs.SetInt   ("TotalEnemiesKilled",  TotalEnemiesKilled);
@@ -1352,6 +1361,7 @@ public class GameManager : MonoBehaviour
         BarracksUpgradeCost = double.Parse(PlayerPrefs.GetString("BarracksUpgradeCost", "20"), ic);
         TotalBloodEarned    = double.Parse(PlayerPrefs.GetString("TotalBloodEarned",    "0"),  ic);
         WorkersUnlocked     = PlayerPrefs.GetInt   ("WorkersUnlocked",     0) == 1;
+        AutoBuySoldiers     = PlayerPrefs.GetInt   ("AutoBuySoldiers",     0) == 1;
         BloodShieldUnlocked = PlayerPrefs.GetInt   ("BloodShieldUnlocked", 0) == 1;
         BloodShieldHP       = PlayerPrefs.GetFloat ("BloodShieldHP",       0f);
         TotalEnemiesKilled  = PlayerPrefs.GetInt   ("TotalEnemiesKilled",  0);
