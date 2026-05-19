@@ -20,6 +20,9 @@ public enum AchievementFlags
     Blood100K     = 1 << 10,
     Untouchable   = 1 << 11,
     Prestige3     = 1 << 12,
+    Wave100       = 1 << 13,
+    BloodMillion  = 1 << 14,
+    BossSlayer    = 1 << 15,
 }
 
 public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed }
@@ -212,6 +215,7 @@ public class GameManager : MonoBehaviour
     // --- Prestige ---
     public int TotalEnemiesKilled { get; private set; }
     public int TotalSoldiersLost  { get; private set; }
+    public int TotalBossesKilled  { get; private set; }
 
     public int    PrestigeCount      { get; private set; }
     public double PrestigeMultiplier => 1.0 + 0.5 * PrestigeCount;
@@ -500,6 +504,9 @@ public class GameManager : MonoBehaviour
         (AchievementFlags.Blood100K,     1000.0, 0),
         (AchievementFlags.Untouchable,   500.0,  0),
         (AchievementFlags.Prestige3,     0.0,    1),
+        (AchievementFlags.Wave100,       2000.0, 0),
+        (AchievementFlags.BloodMillion,  2000.0, 0),
+        (AchievementFlags.BossSlayer,    0.0,    1),
     };
 
 #if UNITY_INCLUDE_TESTS
@@ -780,6 +787,7 @@ public class GameManager : MonoBehaviour
             bool isFlawless = _flawlessTimer > 0f && _flawlessTimer <= FlawlessThreshold;
             reward = Math.Floor(reward * StreakMultiplier * KillStreakBonusMult * (isFlawless ? 2.0 : 1.0));
             TotalEnemiesKilled++;
+            if (wasBoss) TotalBossesKilled++;
             WaveStreak++;
             if (wasBoss)          BloodEchoCount = BloodEchoWaves;
             else if (BloodEchoCount > 0) BloodEchoCount--;
@@ -800,10 +808,12 @@ public class GameManager : MonoBehaviour
             Wave++;
             if (Wave > BestWave)   BestWave   = Wave;
             if (WaveStreak > BestStreak) BestStreak = WaveStreak;
-            if (Wave >= 10) TryUnlock(AchievementFlags.Wave10);
-            if (Wave >= 25) TryUnlock(AchievementFlags.Wave25);
-            if (Wave >= 50) TryUnlock(AchievementFlags.Wave50);
+            if (Wave >= 10)  TryUnlock(AchievementFlags.Wave10);
+            if (Wave >= 25)  TryUnlock(AchievementFlags.Wave25);
+            if (Wave >= 50)  TryUnlock(AchievementFlags.Wave50);
+            if (Wave >= 100) TryUnlock(AchievementFlags.Wave100);
             if (WaveStreak >= 10) TryUnlock(AchievementFlags.Untouchable);
+            if (TotalBossesKilled >= 25) TryUnlock(AchievementFlags.BossSlayer);
 
             if (wasBoss) NextBossWave = Wave + UnityEngine.Random.Range(5, 11);
             WavePreviewActive = true;
@@ -1015,9 +1025,10 @@ public class GameManager : MonoBehaviour
         if (!BloodShieldUnlocked && TotalBloodEarned >= BloodShieldUnlockThreshold) BloodShieldUnlocked = true;
         if (!HealSelfUnlocked && TotalBloodEarned >= HealSelfUnlockThreshold) HealSelfUnlocked = true;
         if (!SurgeUnlocked    && TotalBloodEarned >= SurgeUnlockThreshold)    SurgeUnlocked    = true;
-        if (TotalBloodEarned >= 1_000)   TryUnlock(AchievementFlags.Blood1K);
-        if (TotalBloodEarned >= 10_000)  TryUnlock(AchievementFlags.Blood10K);
-        if (TotalBloodEarned >= 100_000) TryUnlock(AchievementFlags.Blood100K);
+        if (TotalBloodEarned >= 1_000)       TryUnlock(AchievementFlags.Blood1K);
+        if (TotalBloodEarned >= 10_000)      TryUnlock(AchievementFlags.Blood10K);
+        if (TotalBloodEarned >= 100_000)     TryUnlock(AchievementFlags.Blood100K);
+        if (TotalBloodEarned >= 1_000_000)   TryUnlock(AchievementFlags.BloodMillion);
     }
 
     void TryUnlock(AchievementFlags flag)
@@ -1611,6 +1622,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetFloat ("BloodShieldHP",       BloodShieldHP);
         PlayerPrefs.SetInt   ("TotalEnemiesKilled",  TotalEnemiesKilled);
         PlayerPrefs.SetInt   ("TotalSoldiersLost",   TotalSoldiersLost);
+        PlayerPrefs.SetInt   ("TotalBossesKilled",   TotalBossesKilled);
         PlayerPrefs.SetInt   ("HealSelfUnlocked",    HealSelfUnlocked ? 1 : 0);
         PlayerPrefs.SetInt   ("PrestigeCount",       PrestigeCount);
         PlayerPrefs.SetInt   ("PrestigePoints",      PrestigePoints);
@@ -1684,6 +1696,7 @@ public class GameManager : MonoBehaviour
         BloodShieldHP       = PlayerPrefs.GetFloat ("BloodShieldHP",       0f);
         TotalEnemiesKilled  = PlayerPrefs.GetInt   ("TotalEnemiesKilled",  0);
         TotalSoldiersLost   = PlayerPrefs.GetInt   ("TotalSoldiersLost",   0);
+        TotalBossesKilled   = PlayerPrefs.GetInt   ("TotalBossesKilled",   0);
         HealSelfUnlocked    = PlayerPrefs.GetInt   ("HealSelfUnlocked",    0) == 1;
         PrestigeCount       = PlayerPrefs.GetInt   ("PrestigeCount",       0);
         PrestigePoints      = PlayerPrefs.GetInt   ("PrestigePoints",      0);

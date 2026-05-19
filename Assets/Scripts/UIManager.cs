@@ -205,10 +205,13 @@ public class UIManager : MonoBehaviour
         (AchievementFlags.FullLegion,    "Full Legion",         300.0, 0),
         (AchievementFlags.FirstRitual,   "Blood Ritualist",     100.0, 0),
         (AchievementFlags.FirstPrestige, "Reborn in Blood",     0.0,   1),
-        (AchievementFlags.Wave50,        "Wave 50 Reached",     1000.0, 0),
-        (AchievementFlags.Blood100K,     "Blood Empire (100K)", 1000.0, 0),
-        (AchievementFlags.Untouchable,   "Untouchable (×10)",   500.0,  0),
-        (AchievementFlags.Prestige3,     "Reborn Thrice",       0.0,    1),
+        (AchievementFlags.Wave50,        "Wave 50 Reached",       1000.0, 0),
+        (AchievementFlags.Blood100K,     "Blood Empire (100K)",   1000.0, 0),
+        (AchievementFlags.Untouchable,   "Untouchable (×10)",     500.0,  0),
+        (AchievementFlags.Prestige3,     "Reborn Thrice",         0.0,    1),
+        (AchievementFlags.Wave100,       "Centurion (Wave 100)",  2000.0, 0),
+        (AchievementFlags.BloodMillion,  "Blood Millionaire",     2000.0, 0),
+        (AchievementFlags.BossSlayer,    "Boss Slayer (×25)",     0.0,    1),
     };
 
     void Start()
@@ -828,6 +831,7 @@ public class UIManager : MonoBehaviour
 
         var sb = new StringBuilder();
         sb.AppendLine($"Enemies Defeated:  {gm.TotalEnemiesKilled}");
+        sb.AppendLine($"Bosses Killed:     {gm.TotalBossesKilled}");
         sb.AppendLine($"Soldiers Lost:     {gm.TotalSoldiersLost}");
         sb.AppendLine($"Blood Earned:      {GameManager.FormatNumber(gm.TotalBloodEarned)}");
         sb.AppendLine($"Blood Bank:        {GameManager.FormatNumber(gm.BloodBankDeposit)} (+{GameManager.FormatNumber(gm.BloodBankAccrued)})");
