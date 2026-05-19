@@ -119,6 +119,8 @@ public class UIManager : MonoBehaviour
     public Button ssRollbackButton;
     public Text ssBloodTapInfoText;
     public Button ssBloodTapButton;
+    public Text ssShardHungerInfoText;
+    public Button ssShardHungerButton;
 
     [Header("Settings")]
     public GameObject settingsPanel;
@@ -634,6 +636,11 @@ public class UIManager : MonoBehaviour
                 ssBloodTapInfoText.text = $"Blood Tap +1/s  (Lv.{gm.SSBloodTapLevel}/{GameManager.SSMaxLevel})";
             if (ssBloodTapButton != null)
                 ssBloodTapButton.interactable = canBuySS && gm.SSBloodTapLevel < GameManager.SSMaxLevel;
+
+            if (ssShardHungerInfoText != null)
+                ssShardHungerInfoText.text = $"Shard Hunger +20% boss blood  (Lv.{gm.SSShardHungerLevel}/{GameManager.SSMaxLevel})";
+            if (ssShardHungerButton != null)
+                ssShardHungerButton.interactable = canBuySS && gm.SSShardHungerLevel < GameManager.SSMaxLevel;
         }
 
         // Blood Bank

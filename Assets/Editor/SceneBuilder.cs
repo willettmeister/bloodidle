@@ -25,8 +25,8 @@ using System.IO;
 // 2520–2940  Blood Surge card  (UpgradeSurge row at bottom)
 // 2950–3115  Blood Bank card
 // 3125–3610  Prestige Shop card  (7 rows)
-// 3620–3930  Soul Shard Shop card  (4 rows incl. Blood Tap)
-// 3940–4040  Bottom row  — Stats | Settings | Suggest
+// 3620–4000  Soul Shard Shop card  (5 rows incl. Shard Hunger)
+// 4010–4110  Bottom row  — Stats | Settings | Suggest
 // overlay    StatsPanel, SettingsPanel, FeatureRequestOverlay — modals
 public static class SceneBuilder
 {
@@ -133,7 +133,7 @@ public static class SceneBuilder
         contentRT.anchorMax        = new Vector2(1f, 1f);
         contentRT.pivot            = new Vector2(0.5f, 1f);
         contentRT.anchoredPosition = Vector2.zero;
-        contentRT.sizeDelta        = new Vector2(0, 4180);
+        contentRT.sizeDelta        = new Vector2(0, 4250);
 
         var scroll = scrollGO.AddComponent<ScrollRect>();
         scroll.viewport          = viewportGO.GetComponent<RectTransform>();
@@ -589,9 +589,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var soulShardShopPanel = content.CreateChild("SoulShardShopPanel");
         soulShardShopPanel.AddImage(Color.clear);
-        PF(soulShardShopPanel, 3760, 310);
+        PF(soulShardShopPanel, 3760, 380);
 
-        Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 310, HC("0A1A30"), 24);
+        Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 380, HC("0A1A30"), 24);
 
         var ssShopTitleGO = Label(soulShardShopPanel, "SoulShardShopTitle",
             "Soul Shard Shop", 40, new Color(0.7f, 0.85f, 1f), TextAnchor.MiddleLeft);
@@ -629,19 +629,26 @@ public static class SceneBuilder
         var ssBloodTapBtnGO = Btn(soulShardShopPanel, "SSBloodTapButton", "Buy (1 ⬡)", 30, HC("D32F2F"));
         PT(ssBloodTapBtnGO, 234, 54, +245, 260);
 
+        // Row 5 — Shard Hunger
+        var ssShardHungerInfoGO = Label(soulShardShopPanel, "SSShardHungerInfoText",
+            "Shard Hunger +20% boss blood  (Lv.0/3)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(ssShardHungerInfoGO, 294, 48, -175, 500);
+        var ssShardHungerBtnGO = Btn(soulShardShopPanel, "SSShardHungerButton", "Buy (1 ⬡)", 30, HC("6A1B9A"));
+        PT(ssShardHungerBtnGO, 292, 54, +245, 260);
+
         soulShardShopPanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
         // BOTTOM ROW  (y 3435–3535) — Stats | Settings | Suggest
         // ════════════════════════════════════════════════════════════════════
         var statsBtnGO = Btn(content, "StatsButton", "Statistics", 36, Teal);
-        PT(statsBtnGO, 3970, 100, -345, 310);
+        PT(statsBtnGO, 4040, 100, -345, 310);
 
         var settingsBtnGO = Btn(content, "SettingsButton", "Settings", 36, HC("2A2A4A"));
-        PT(settingsBtnGO, 3970, 100, 0, 300);
+        PT(settingsBtnGO, 4040, 100, 0, 300);
 
         var suggestBtnGO = Btn(content, "SuggestButton", "Suggest", 36, HC("1565C0"));
-        PT(suggestBtnGO, 3970, 100, +345, 300);
+        PT(suggestBtnGO, 4040, 100, +345, 300);
 
         // ── Damage number layer ───────────────────────────────────────────────
         var dmgLayerGO = cv.CreateChild("DamageLayer");
@@ -977,6 +984,8 @@ public static class SceneBuilder
         uim.ssRollbackButton        = ssRollbackBtnGO.GetComponent<Button>();
         uim.ssBloodTapInfoText      = ssBloodTapInfoGO.GetComponent<Text>();
         uim.ssBloodTapButton        = ssBloodTapBtnGO.GetComponent<Button>();
+        uim.ssShardHungerInfoText   = ssShardHungerInfoGO.GetComponent<Text>();
+        uim.ssShardHungerButton     = ssShardHungerBtnGO.GetComponent<Button>();
         uim.settingsPanel           = settingsOverlay;
         uim.soundToggleText         = soundToggleGO.GetComponentInChildren<Text>();
         uim.notifToggleText         = notifToggleGO.GetComponentInChildren<Text>();
@@ -1050,6 +1059,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(ssDoubleChestBtnGO.GetComponent<Button>().onClick,      clk.OnBuySSDoubleChest);
         UnityEventTools.AddPersistentListener(ssRollbackBtnGO.GetComponent<Button>().onClick,         clk.OnBuySSRollback);
         UnityEventTools.AddPersistentListener(ssBloodTapBtnGO.GetComponent<Button>().onClick,        clk.OnBuySSBloodTap);
+        UnityEventTools.AddPersistentListener(ssShardHungerBtnGO.GetComponent<Button>().onClick,    clk.OnBuySSShardHunger);
         UnityEventTools.AddPersistentListener(upgradeSurgeBtnGO.GetComponent<Button>().onClick,      clk.OnUpgradeSurge);
         UnityEventTools.AddPersistentListener(upgradeHealBtnGO.GetComponent<Button>().onClick,       clk.OnUpgradeHealSelf);
         UnityEventTools.AddPersistentListener(depositBtnGO.GetComponent<Button>().onClick,            clk.OnDepositToBank);

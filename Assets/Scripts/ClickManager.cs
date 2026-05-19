@@ -41,6 +41,7 @@ public class ClickManager : MonoBehaviour
     public void OnBuySSDoubleChest()       => GameManager.Instance.BuySSDoubleChest();
     public void OnBuySSRollback()          => GameManager.Instance.BuySSRollback();
     public void OnBuySSBloodTap()          => GameManager.Instance.BuySSBloodTap();
+    public void OnBuySSShardHunger()       => GameManager.Instance.BuySSShardHunger();
     public void OnDepositToBank()          => GameManager.Instance.DepositToBank(Math.Floor(GameManager.Instance.Blood * 0.1));
     public void OnWithdrawFromBank()       => GameManager.Instance.WithdrawFromBank();
     public void OnBuyPaladin()             => GameManager.Instance.BuyPaladin();

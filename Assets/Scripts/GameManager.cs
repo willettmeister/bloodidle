@@ -245,8 +245,10 @@ public class GameManager : MonoBehaviour
     public int    SSRollbackLevel       { get; private set; }
     public const int    SSMaxLevel    = 3;
     public const double SSUpgradeCost = 1.0;
-    public int    SSBloodTapLevel { get; private set; }
-    public double BloodTapPerSec  => SSBloodTapLevel * 1.0 * PrestigeMultiplier;
+    public int    SSBloodTapLevel       { get; private set; }
+    public double BloodTapPerSec        => SSBloodTapLevel * 1.0 * PrestigeMultiplier;
+    public int    SSShardHungerLevel    { get; private set; }
+    public const double SSShardHungerBonus = 0.20;
 
     // --- Blood Bank ---
     public double BloodBankDeposit { get; private set; }
@@ -768,6 +770,7 @@ public class GameManager : MonoBehaviour
             if (wasBoss)
             {
                 reward *= 3;
+                if (SSShardHungerLevel > 0) reward = Math.Floor(reward * (1.0 + SSShardHungerLevel * SSShardHungerBonus));
                 if (VeteranAttackBonus < VeteranAttackCap) VeteranAttackBonus++;
                 SoulShards += HasTalent(TalentFlags.ShardHunter) ? 2 : 1;
                 SoulShardShopUnlocked = true;
@@ -1415,6 +1418,15 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuySSShardHunger()
+    {
+        if (SoulShards < SSUpgradeCost || SSShardHungerLevel >= SSMaxLevel) return false;
+        SoulShards -= SSUpgradeCost;
+        SSShardHungerLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public void RequestPrestige()
     {
         if (Wave < PrestigeWaveRequirement || PendingPrestige) return;
@@ -1533,7 +1545,7 @@ public class GameManager : MonoBehaviour
         WeaponLevel = 0; ArmorLevel = 0; TalismanLevel = 0;
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
-        SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0;
+        SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0;
         BloodBankDeposit = 0; BloodBankAccrued = 0; WaveStreak = 0;
         SurgeUpgradeLevel = 0; HealUpgradeLevel = 0;
         TotalEnemiesKilled = 0; TimePlayed = 0; Achievements = AchievementFlags.None;
@@ -1651,6 +1663,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("SSDoubleChestLevel",  SSDoubleChestLevel);
         PlayerPrefs.SetInt   ("SSRollbackLevel",     SSRollbackLevel);
         PlayerPrefs.SetInt   ("SSBloodTapLevel",     SSBloodTapLevel);
+        PlayerPrefs.SetInt   ("SSShardHungerLevel",  SSShardHungerLevel);
         PlayerPrefs.SetInt   ("SurgeUpgradeLevel",   SurgeUpgradeLevel);
         PlayerPrefs.SetInt   ("HealUpgradeLevel",    HealUpgradeLevel);
         PlayerPrefs.SetInt   ("SoundEnabled",        SoundEnabled        ? 1 : 0);
@@ -1725,6 +1738,7 @@ public class GameManager : MonoBehaviour
         SSDoubleChestLevel  = PlayerPrefs.GetInt   ("SSDoubleChestLevel",  0);
         SSRollbackLevel     = PlayerPrefs.GetInt   ("SSRollbackLevel",     0);
         SSBloodTapLevel     = PlayerPrefs.GetInt   ("SSBloodTapLevel",     0);
+        SSShardHungerLevel  = PlayerPrefs.GetInt   ("SSShardHungerLevel",  0);
         SurgeUpgradeLevel   = PlayerPrefs.GetInt   ("SurgeUpgradeLevel",   0);
         HealUpgradeLevel    = PlayerPrefs.GetInt   ("HealUpgradeLevel",    0);
         SoundEnabled        = PlayerPrefs.GetInt   ("SoundEnabled",        1) == 1;
