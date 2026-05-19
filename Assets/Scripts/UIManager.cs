@@ -333,7 +333,9 @@ public class UIManager : MonoBehaviour
             else if (gm.CurrentEnemyModifier != EnemyModifier.None)
             {
                 enemyModifierText.text  = gm.EnemyModifierDisplay;
-                enemyModifierText.color = new Color(1f, 0.65f, 0.1f);
+                enemyModifierText.color = gm.CurrentEnemyModifier == EnemyModifier.Spectral
+                    ? new Color(0.2f, 0.9f, 0.9f)
+                    : new Color(1f, 0.65f, 0.1f);
                 enemyModifierText.gameObject.SetActive(true);
             }
             else

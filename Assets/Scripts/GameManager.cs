@@ -25,7 +25,7 @@ public enum AchievementFlags
     BossSlayer    = 1 << 15,
 }
 
-public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed }
+public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral }
 public enum BossAbility    { None, Shield, Berserk, Drain }
 
 [Flags]
@@ -73,7 +73,8 @@ public class GameManager : MonoBehaviour
         get
         {
             double r = Math.Floor(25 * Math.Pow(1.4, Wave - 1) * PrestigeMultiplier * (1.0 + EquipTalismanBonus));
-            if (CurrentEnemyModifier == EnemyModifier.Cursed) r = Math.Floor(r * EnemyCursedRewardMult);
+            if (CurrentEnemyModifier == EnemyModifier.Cursed)   r = Math.Floor(r * EnemyCursedRewardMult);
+            if (CurrentEnemyModifier == EnemyModifier.Spectral) r = Math.Floor(r * EnemySpectralRewardMult);
             if (IsBloodyWave)  r = Math.Floor(r * BloodMoonMult);
             if (_isBountyEnemy) r = Math.Floor(r * EffectiveBountyMult);
             if (_isEliteEnemy)  r = Math.Floor(r * EliteRewardMult);
@@ -381,19 +382,23 @@ public class GameManager : MonoBehaviour
     public EnemyModifier CurrentEnemyModifier { get; private set; }
     public string EnemyModifierDisplay => CurrentEnemyModifier switch
     {
-        EnemyModifier.Armored => "⚔ Armored",
-        EnemyModifier.Enraged => "💢 Enraged",
-        EnemyModifier.Regen   => "♻ Regen",
-        EnemyModifier.Cursed  => "☠ Cursed",
+        EnemyModifier.Armored  => "⚔ Armored",
+        EnemyModifier.Enraged  => "💢 Enraged",
+        EnemyModifier.Regen    => "♻ Regen",
+        EnemyModifier.Cursed   => "☠ Cursed",
+        EnemyModifier.Spectral => "👻 Spectral",
         _                     => "",
     };
-    public const float EnemyArmoredDmgMult  = 0.5f;
-    public const float EnemyEnragedAtkMult  = 1.5f;
-    public const float EnemyRegenPct        = 0.02f;
-    public const float RegenLeechRate       = 0.5f;
-    public const float EnemyCursedDotRate    = 2f;
-    public const float EnemyCursedRewardMult = 1.5f;
-    public const float EnragedDeathBlowMult  = 0.5f;
+    public const float EnemyArmoredDmgMult    = 0.5f;
+    public const float EnemyEnragedAtkMult    = 1.5f;
+    public const float EnemyRegenPct          = 0.02f;
+    public const float RegenLeechRate         = 0.5f;
+    public const float EnemyCursedDotRate     = 2f;
+    public const float EnemyCursedRewardMult  = 1.5f;
+    public const float EnragedDeathBlowMult   = 0.5f;
+    public const float EnemySpectralHPMult    = 0.7f;
+    public const float EnemySpectralAtkMult   = 1.5f;
+    public const float EnemySpectralRewardMult = 1.25f;
 
     // --- Wave preview ---
     public bool WavePreviewActive { get; private set; }
@@ -764,6 +769,8 @@ public class GameManager : MonoBehaviour
             double reward = Math.Floor(25 * Math.Pow(1.4, Wave - 1) * PrestigeMultiplier * (1.0 + EquipTalismanBonus));
             if (CurrentEnemyModifier == EnemyModifier.Cursed)
                 reward = Math.Floor(reward * EnemyCursedRewardMult);
+            if (CurrentEnemyModifier == EnemyModifier.Spectral)
+                reward = Math.Floor(reward * EnemySpectralRewardMult);
             if (IsBloodyWave) reward = Math.Floor(reward * BloodMoonMult);
             if (_isBountyEnemy) reward = Math.Floor(reward * EffectiveBountyMult);
             if (_isEliteEnemy)  reward = Math.Floor(reward * EliteRewardMult);
@@ -979,9 +986,15 @@ public class GameManager : MonoBehaviour
             _bossShieldHP      = 0f;
             if (UnityEngine.Random.value < 0.25f)
             {
-                CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 5);
+                CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 6);
                 if (CurrentEnemyModifier == EnemyModifier.Enraged)
                     EnemyAttack *= EnemyEnragedAtkMult;
+                else if (CurrentEnemyModifier == EnemyModifier.Spectral)
+                {
+                    EnemyMaxHP  *= EnemySpectralHPMult;
+                    EnemyHP      = EnemyMaxHP;
+                    EnemyAttack *= EnemySpectralAtkMult;
+                }
             }
             else
             {
