@@ -773,7 +773,8 @@ public class UIManager : MonoBehaviour
         sb.AppendLine($"Enemies Defeated:  {gm.TotalEnemiesKilled}");
         sb.AppendLine($"Blood Earned:      {GameManager.FormatNumber(gm.TotalBloodEarned)}");
         sb.AppendLine($"Blood Bank:        {GameManager.FormatNumber(gm.BloodBankDeposit)} (+{GameManager.FormatNumber(gm.BloodBankAccrued)})");
-        sb.AppendLine($"Best Streak:       {gm.WaveStreak}  (×{gm.StreakMultiplier:F1})");
+        sb.AppendLine($"Best Wave:         {gm.BestWave}");
+        sb.AppendLine($"Best Streak:       {gm.BestStreak}  (current: {gm.WaveStreak})");
         sb.AppendLine($"Soul Shards:       {GameManager.FormatNumber(gm.SoulShards)}");
         sb.AppendLine($"Time Played:       {h}h {m}m {s}s");
         sb.AppendLine($"Prestige Level:    {gm.PrestigeCount}  (milestones: {gm.PrestigeMilestonesReached}/4)");

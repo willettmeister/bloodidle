@@ -208,6 +208,8 @@ public class GameManager : MonoBehaviour
 
     // --- Wave Streak ---
     public int   WaveStreak          { get; private set; }
+    public int   BestWave            { get; private set; }
+    public int   BestStreak          { get; private set; }
     public float StreakMultiplier    => Mathf.Min(1f + WaveStreak * 0.1f, 3f);
     public const float MaxStreakMultiplier = 3f;
     public float KillStreakBonusMult => 1f + Mathf.Min(WaveStreak, 5) * 0.05f;
@@ -477,6 +479,8 @@ public class GameManager : MonoBehaviour
     public void SetFortLevelForTest(int level)               { FortificationLevel = level; }
     public void SkipWavePreviewForTest()                     { WavePreviewActive = false; SpawnEnemy(Wave); }
     public void SetWaveStreakForTest(int s)                  => WaveStreak = s;
+    public void SetBestWaveForTest(int w)                    => BestWave = w;
+    public void SetBestStreakForTest(int s)                  => BestStreak = s;
     public void SetBossAbilityForTest(BossAbility a)         { CurrentBossAbility = a; BossShieldActive = a == BossAbility.Shield; _bossShieldHP = BossShieldActive ? EnemyMaxHP * BossShieldFraction : 0f; }
     public void SetBloodBankDepositForTest(double d)         => BloodBankDeposit = d;
     public void SetBloodBankAccruedForTest(double a)         => BloodBankAccrued = a;
@@ -739,6 +743,8 @@ public class GameManager : MonoBehaviour
 
             bool isMilestone = (Wave % 5 == 0);
             Wave++;
+            if (Wave > BestWave)   BestWave   = Wave;
+            if (WaveStreak > BestStreak) BestStreak = WaveStreak;
             if (Wave >= 10) TryUnlock(AchievementFlags.Wave10);
             if (Wave >= 25) TryUnlock(AchievementFlags.Wave25);
 
@@ -787,6 +793,7 @@ public class GameManager : MonoBehaviour
                 TotalSoldiersLost++;
                 if (SoldierCount > 0 && _adrenalineStacks < AdrenalineMaxStack) { _adrenalineStacks++; _adrenalineTimer = AdrenalineDuration; }
                 SoldierHP  = SoldierCount > 0 ? FrontlineMaxHP : 0f;
+                if (WaveStreak > BestStreak) BestStreak = WaveStreak;
                 WaveStreak = 0;
             }
         }
@@ -971,6 +978,7 @@ public class GameManager : MonoBehaviour
         Blood -= TruceCost;
         WaveStreak = 0;
         Wave++;
+        if (Wave > BestWave) BestWave = Wave;
         if (Wave >= 10) TryUnlock(AchievementFlags.Wave10);
         if (Wave >= 25) TryUnlock(AchievementFlags.Wave25);
         WavePreviewActive = true;
@@ -1556,6 +1564,8 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetString("BloodBankDeposit",    BloodBankDeposit.ToString("R", ic));
         PlayerPrefs.SetString("BloodBankAccrued",    BloodBankAccrued.ToString("R", ic));
         PlayerPrefs.SetInt   ("WaveStreak",          WaveStreak);
+        PlayerPrefs.SetInt   ("BestWave",            BestWave);
+        PlayerPrefs.SetInt   ("BestStreak",          BestStreak);
         PlayerPrefs.SetInt   ("TotalEnemiesKilled",  TotalEnemiesKilled);
         PlayerPrefs.SetString("TimePlayed",          TimePlayed.ToString("R", ic));
         PlayerPrefs.SetInt   ("Achievements",        (int)Achievements);
@@ -1625,6 +1635,8 @@ public class GameManager : MonoBehaviour
         BloodBankDeposit    = double.Parse(PlayerPrefs.GetString("BloodBankDeposit", "0"), ic);
         BloodBankAccrued    = double.Parse(PlayerPrefs.GetString("BloodBankAccrued", "0"), ic);
         WaveStreak          = PlayerPrefs.GetInt   ("WaveStreak",          0);
+        BestWave            = PlayerPrefs.GetInt   ("BestWave",            0);
+        BestStreak          = PlayerPrefs.GetInt   ("BestStreak",          0);
         SurgeUnlocked       = TotalBloodEarned >= SurgeUnlockThreshold;
         TotalEnemiesKilled  = PlayerPrefs.GetInt   ("TotalEnemiesKilled",  0);
         TimePlayed          = double.Parse(PlayerPrefs.GetString("TimePlayed", "0"), ic);
@@ -1673,6 +1685,8 @@ public class GameManager : MonoBehaviour
                 Wood += OfflineWoodEarned;
             }
         }
+
+        if (BestWave < Wave) BestWave = Wave;
     }
 
     public void ClearOfflineEarnings()
