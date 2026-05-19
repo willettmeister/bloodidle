@@ -276,6 +276,7 @@ public class GameManager : MonoBehaviour
     public const float EnemyArmoredDmgMult  = 0.5f;
     public const float EnemyEnragedAtkMult  = 1.5f;
     public const float EnemyRegenPct        = 0.02f;
+    public const float RegenLeechRate       = 0.5f;
     public const float EnemyCursedDotRate    = 2f;
     public const float EnemyCursedRewardMult = 1.5f;
     public const float EnragedDeathBlowMult  = 0.5f;
@@ -523,6 +524,7 @@ public class GameManager : MonoBehaviour
         if (CurrentEnemyModifier == EnemyModifier.Regen && EnemyHP > 0 && EnemyHP < EnemyMaxHP)
         {
             EnemyHP = Mathf.Min(EnemyHP + EnemyMaxHP * EnemyRegenPct * dt, EnemyMaxHP);
+            if (SoldierCount > 0) SoldierHP = Mathf.Max(0f, SoldierHP - RegenLeechRate * dt);
             changed = true;
         }
 
