@@ -572,7 +572,7 @@ public class GameManager : MonoBehaviour
             SoldierHP = Mathf.Max(0f, SoldierHP - EnemyCursedDotRate * dt);
 
         float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f);
-        if (CurrentEnemyModifier == EnemyModifier.Armored) eff *= EnemyArmoredDmgMult;
+        if (CurrentEnemyModifier == EnemyModifier.Armored && !IsAllBerserker) eff *= EnemyArmoredDmgMult;
         if (CurrentEnemyModifier == EnemyModifier.Cursed && PaladinCount > 0) eff *= PaladinHolyBonus;
         if (BerserkerRageActive) eff *= BerserkerRageMult;
         if (BossShieldActive)
