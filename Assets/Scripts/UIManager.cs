@@ -57,6 +57,10 @@ public class UIManager : MonoBehaviour
     public Button buyWorkerButton;
     public Button bloodPactButton;
     public Text bloodPactText;
+    public Text shrineInfoText;
+    public Button buyShrineButton;
+    public Text clickPowerInfoText;
+    public Button clickPowerButton;
 
     [Header("Equipment")]
     public GameObject equipmentPanel;
@@ -442,6 +446,23 @@ public class UIManager : MonoBehaviour
             bloodPactButton.interactable = gm.Blood >= GameManager.BloodPactBloodCost;
             if (bloodPactText != null)
                 bloodPactText.text = $"Blood Pact\n({GameManager.FormatNumber(GameManager.BloodPactBloodCost)} blood → {GameManager.FormatNumber(GameManager.BloodPactWoodGain)} wood)";
+        }
+        if (shrineInfoText != null)
+        {
+            double shrineIncome = gm.ShrineCount * GameManager.ShrineBloodPerSec;
+            shrineInfoText.text = $"Blood Shrine  {gm.ShrineCount}/{GameManager.ShrineMaxCount}  (+{shrineIncome:F1}/s blood)";
+        }
+        if (buyShrineButton != null)
+        {
+            buyShrineButton.interactable = gm.ShrineUnlocked && gm.Wood >= GameManager.ShrineWoodCost && gm.ShrineCount < GameManager.ShrineMaxCount;
+        }
+        if (clickPowerInfoText != null)
+        {
+            clickPowerInfoText.text = $"Click Power  Lv.{gm.ClickPowerLevel}/{GameManager.ClickPowerMaxLevel}  (+{gm.ClickPowerLevel}/tap)";
+        }
+        if (clickPowerButton != null)
+        {
+            clickPowerButton.interactable = gm.ClickPowerUnlocked && gm.Wood >= gm.ClickPowerCost && gm.ClickPowerLevel < GameManager.ClickPowerMaxLevel;
         }
 
         // Equipment

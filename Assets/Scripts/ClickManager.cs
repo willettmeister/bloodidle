@@ -13,6 +13,8 @@ public class ClickManager : MonoBehaviour
     public void OnUseBloodStorm()          => GameManager.Instance.UseBloodStorm();
     public void OnUseBloodPact()           => GameManager.Instance.UseBloodPact();
     public void OnBuyWorker()              => GameManager.Instance.BuyWorker();
+    public void OnBuyShrine()              => GameManager.Instance.BuyShrine();
+    public void OnBuyClickPower()          => GameManager.Instance.BuyClickPower();
     public void OnBuyBloodRitual()         => GameManager.Instance.BuyBloodRitual();
     public void OnUpgradeBarracks()        => GameManager.Instance.UpgradeBarracks();
     public void OnUpgradeFortification()   => GameManager.Instance.UpgradeFortification();

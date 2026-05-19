@@ -1557,6 +1557,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("FortificationLevel",  FortificationLevel);
         PlayerPrefs.SetString("FortificationCost",   FortificationCost.ToString("R", ic));
         PlayerPrefs.SetInt   ("ClickPowerLevel",      ClickPowerLevel);
+        PlayerPrefs.SetInt   ("ShrineCount",          ShrineCount);
         PlayerPrefs.SetString("ClickPowerCost",       ClickPowerCost.ToString("R", ic));
         PlayerPrefs.SetString("SoulShards",          SoulShards.ToString("R", ic));
         PlayerPrefs.SetInt   ("SoulShardShopUnlocked", SoulShardShopUnlocked ? 1 : 0);
@@ -1628,6 +1629,7 @@ public class GameManager : MonoBehaviour
         FortificationLevel  = PlayerPrefs.GetInt   ("FortificationLevel",  0);
         FortificationCost   = double.Parse(PlayerPrefs.GetString("FortificationCost", FortBaseCost.ToString("R", ic)), ic);
         ClickPowerLevel     = PlayerPrefs.GetInt   ("ClickPowerLevel", 0);
+        ShrineCount         = PlayerPrefs.GetInt   ("ShrineCount",     0);
         ClickPowerCost      = double.Parse(PlayerPrefs.GetString("ClickPowerCost", ClickPowerBaseCost.ToString("R", ic)), ic);
         SoulShards          = double.Parse(PlayerPrefs.GetString("SoulShards",        "0"), ic);
         SoulShardShopUnlocked = PlayerPrefs.GetInt ("SoulShardShopUnlocked", 0) == 1;
