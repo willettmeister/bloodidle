@@ -97,7 +97,8 @@ public class GameManager : MonoBehaviour
     public const float  BerserkerRageMult    = 1.5f;
     public const float  BerserkerRageThresh  = 0.3f;
     public bool         BerserkerRageActive  => FrontlineIsBerserker && SoldierHP < FrontlineMaxHP * BerserkerRageThresh;
-    public const float  MixedArmyDmgReduction = 0.15f;
+    public const float  MixedArmyDmgReduction  = 0.15f;
+    public const float  TankShieldWallReduction = 0.10f;
 
     // --- Equipment ---
     public int WeaponLevel   { get; private set; }
@@ -639,6 +640,7 @@ public class GameManager : MonoBehaviour
         if (isSpecialFoe && CurrentBossAbility == BossAbility.Berserk && EnemyHP < EnemyMaxHP * 0.25f)
             incomingAtk *= 2f;
         if (IsMixedArmy)        incomingAtk *= (1f - MixedArmyDmgReduction);
+        if (IsAllTank)          incomingAtk *= (1f - TankShieldWallReduction);
         if (PIronWallLevel > 0) incomingAtk *= (1f - PIronWallLevel * IronWallDmgReduction);
         float totalIncoming = incomingAtk;
         if (isSpecialFoe && CurrentBossAbility == BossAbility.Drain && EnemyHP > 0)
