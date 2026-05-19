@@ -364,6 +364,14 @@ public class GameManager : MonoBehaviour
     public bool  WarCryActive    => _warCryTimer > 0f;
     public float WarCryTimeLeft  => _warCryTimer;
     public bool  WarCryUnlocked      => Wave >= WarCryUnlockWave;
+    public const double HexCurseCost        = 20.0;
+    public const float  HexCurseDuration    = 15f;
+    public const float  HexCurseAtkReduction = 0.20f;
+    public const int    HexCurseUnlockWave  = 4;
+    float _hexCurseTimer;
+    public bool  HexCurseActive   => _hexCurseTimer > 0f;
+    public float HexCurseTimeLeft => _hexCurseTimer;
+    public bool  HexCurseUnlocked => Wave >= HexCurseUnlockWave;
     public const float SiphonRate    = 0.10f;
     public const int   SiphonUnlockWave = 6;
     public bool SiphonUnlocked       => Wave >= SiphonUnlockWave;
@@ -614,6 +622,7 @@ public class GameManager : MonoBehaviour
             SoldierHP = Mathf.Max(0f, SoldierHP - EnemyCursedDotRate * dt);
 
         if (_warCryTimer > 0f) { _warCryTimer -= dt; if (_warCryTimer < 0f) _warCryTimer = 0f; }
+        if (_hexCurseTimer > 0f) { _hexCurseTimer -= dt; if (_hexCurseTimer < 0f) _hexCurseTimer = 0f; }
         float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f) * (WarCryActive ? WarCryMult : 1f);
         if (CurrentEnemyModifier == EnemyModifier.Armored && !IsAllBerserker)
             eff *= IsAllTank ? EnemyArmoredDmgMult + 0.25f : EnemyArmoredDmgMult;
@@ -687,7 +696,7 @@ public class GameManager : MonoBehaviour
             return true;
         }
 
-        float incomingAtk   = EnemyAttack;
+        float incomingAtk   = EnemyAttack * (HexCurseActive ? (1f - HexCurseAtkReduction) : 1f);
         bool  isSpecialFoe  = IsBossWave || DailyChallengeActive;
         if (isSpecialFoe && CurrentBossAbility == BossAbility.Berserk && EnemyHP < EnemyMaxHP * 0.25f)
             incomingAtk *= 2f;
@@ -913,6 +922,15 @@ public class GameManager : MonoBehaviour
         TotalSoldiersLost++;
         SoldierHP = SoldierCount > 0 ? FrontlineMaxHP : 0f;
         EnemyHP   = Mathf.Max(0f, EnemyHP - burstDmg);
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    public bool UseHexCurse()
+    {
+        if (!HexCurseUnlocked || Blood < HexCurseCost || HexCurseActive || EnemyHP <= 0) return false;
+        Blood -= HexCurseCost;
+        _hexCurseTimer = HexCurseDuration;
         OnStateChanged?.Invoke();
         return true;
     }
