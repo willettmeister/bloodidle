@@ -372,6 +372,11 @@ public class GameManager : MonoBehaviour
     public bool  HexCurseActive   => _hexCurseTimer > 0f;
     public float HexCurseTimeLeft => _hexCurseTimer;
     public bool  HexCurseUnlocked => Wave >= HexCurseUnlockWave;
+    public const float CursedBloodConversionRate = 0.10f;
+    public const int   CursedBloodUnlockWave     = 7;
+    public bool CursedBloodEnabled { get; private set; }
+    public bool CursedBloodUnlocked => Wave >= CursedBloodUnlockWave;
+    public void ToggleCursedBlood() { if (CursedBloodUnlocked) { CursedBloodEnabled = !CursedBloodEnabled; OnStateChanged?.Invoke(); } }
     public const float SiphonRate    = 0.10f;
     public const int   SiphonUnlockWave = 6;
     public bool SiphonUnlocked       => Wave >= SiphonUnlockWave;
@@ -713,6 +718,7 @@ public class GameManager : MonoBehaviour
             BloodShieldHP -= absorbed;
             dmg           -= absorbed;
         }
+        if (CursedBloodEnabled && dmg > 0) AddBlood(dmg * CursedBloodConversionRate);
         SoldierHP -= dmg;
 
         if (SoldierHP <= 0f)
