@@ -343,14 +343,14 @@ public class GameManager : MonoBehaviour
     public bool   BloodShieldUnlocked { get; private set; }
     public bool   AutoBuySoldiers     { get; private set; }
     public const double TruceCost        = 100.0;
-    public const double BloodFrenzyCost  = 30.0;
-    public const float  BloodFrenzyDuration = 10f;
-    public const float  BloodFrenzyMult  = 2f;
-    public const int    BloodFrenzyUnlockWave = 5;
-    float _bloodFrenzyTimer;
-    public bool BloodFrenzyActive    => _bloodFrenzyTimer > 0f;
-    public float BloodFrenzyTimeLeft => _bloodFrenzyTimer;
-    public bool BloodFrenzyUnlocked  => Wave >= BloodFrenzyUnlockWave;
+    public const double WarCryCost         = 30.0;
+    public const float  WarCryDuration     = 10f;
+    public const float  WarCryMult         = 2f;
+    public const int    WarCryUnlockWave   = 5;
+    float _warCryTimer;
+    public bool  WarCryActive    => _warCryTimer > 0f;
+    public float WarCryTimeLeft  => _warCryTimer;
+    public bool  WarCryUnlocked  => Wave >= WarCryUnlockWave;
 
     public event Action OnStateChanged;
     public event Action<float, bool> OnDamageDealt;
@@ -590,8 +590,8 @@ public class GameManager : MonoBehaviour
         if (CurrentEnemyModifier == EnemyModifier.Cursed && SoldierCount > 0)
             SoldierHP = Mathf.Max(0f, SoldierHP - EnemyCursedDotRate * dt);
 
-        if (_bloodFrenzyTimer > 0f) { _bloodFrenzyTimer -= dt; if (_bloodFrenzyTimer < 0f) _bloodFrenzyTimer = 0f; }
-        float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f) * (BloodFrenzyActive ? BloodFrenzyMult : 1f);
+        if (_warCryTimer > 0f) { _warCryTimer -= dt; if (_warCryTimer < 0f) _warCryTimer = 0f; }
+        float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f) * (WarCryActive ? WarCryMult : 1f);
         if (CurrentEnemyModifier == EnemyModifier.Armored && !IsAllBerserker)
             eff *= IsAllTank ? EnemyArmoredDmgMult + 0.25f : EnemyArmoredDmgMult;
         if (CurrentEnemyModifier == EnemyModifier.Cursed && PaladinCount > 0) eff *= PaladinHolyBonus;
@@ -873,11 +873,11 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
-    public bool UseBloodFrenzy()
+    public bool UseWarCry()
     {
-        if (!BloodFrenzyUnlocked || Blood < BloodFrenzyCost || BloodFrenzyActive) return false;
-        Blood -= BloodFrenzyCost;
-        _bloodFrenzyTimer = BloodFrenzyDuration;
+        if (!WarCryUnlocked || Blood < WarCryCost || WarCryActive) return false;
+        Blood -= WarCryCost;
+        _warCryTimer = WarCryDuration;
         OnStateChanged?.Invoke();
         return true;
     }
