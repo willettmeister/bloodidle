@@ -41,7 +41,13 @@ public class GameManager : MonoBehaviour
     public double Blood { get; private set; }
     public double TotalBloodEarned { get; private set; }
     public const double BloodPerClick = 1.0;
-    public double EffectiveBloodPerClick => (BloodPerClick + PClickBonusLevel * 0.5) * PrestigeMultiplier;
+    public double EffectiveBloodPerClick => (BloodPerClick + PClickBonusLevel * 0.5 + ClickPowerLevel) * PrestigeMultiplier;
+    public const double ClickPowerBaseCost  = 15.0;
+    public const double ClickPowerCostMult  = 2.0;
+    public const int    ClickPowerMaxLevel  = 5;
+    public int    ClickPowerLevel { get; private set; }
+    public double ClickPowerCost  { get; private set; } = ClickPowerBaseCost;
+    public bool   ClickPowerUnlocked => WorkerCount > 0;
     public const int    EchoTapInterval  = 5;
     int _tapCount;
     public bool NextTapIsEcho => (_tapCount + 1) % EchoTapInterval == 0;
@@ -981,6 +987,16 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuyClickPower()
+    {
+        if (!ClickPowerUnlocked || Wood < ClickPowerCost || ClickPowerLevel >= ClickPowerMaxLevel) return false;
+        Wood -= ClickPowerCost;
+        ClickPowerLevel++;
+        ClickPowerCost = Math.Floor(ClickPowerCost * ClickPowerCostMult);
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public bool BuyShrine()
     {
         if (!ShrineUnlocked || Wood < ShrineWoodCost || ShrineCount >= ShrineMaxCount) return false;
@@ -1457,6 +1473,8 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("BerserkerFront",      BerserkerFront ? 1 : 0);
         PlayerPrefs.SetInt   ("FortificationLevel",  FortificationLevel);
         PlayerPrefs.SetString("FortificationCost",   FortificationCost.ToString("R", ic));
+        PlayerPrefs.SetInt   ("ClickPowerLevel",      ClickPowerLevel);
+        PlayerPrefs.SetString("ClickPowerCost",       ClickPowerCost.ToString("R", ic));
         PlayerPrefs.SetString("SoulShards",          SoulShards.ToString("R", ic));
         PlayerPrefs.SetInt   ("SoulShardShopUnlocked", SoulShardShopUnlocked ? 1 : 0);
         PlayerPrefs.SetInt   ("SSBossTimerLevel",    SSBossTimerLevel);
@@ -1524,6 +1542,8 @@ public class GameManager : MonoBehaviour
         BerserkerFront      = PlayerPrefs.GetInt   ("BerserkerFront",      0) == 1;
         FortificationLevel  = PlayerPrefs.GetInt   ("FortificationLevel",  0);
         FortificationCost   = double.Parse(PlayerPrefs.GetString("FortificationCost", FortBaseCost.ToString("R", ic)), ic);
+        ClickPowerLevel     = PlayerPrefs.GetInt   ("ClickPowerLevel", 0);
+        ClickPowerCost      = double.Parse(PlayerPrefs.GetString("ClickPowerCost", ClickPowerBaseCost.ToString("R", ic)), ic);
         SoulShards          = double.Parse(PlayerPrefs.GetString("SoulShards",        "0"), ic);
         SoulShardShopUnlocked = PlayerPrefs.GetInt ("SoulShardShopUnlocked", 0) == 1;
         SSBossTimerLevel    = PlayerPrefs.GetInt   ("SSBossTimerLevel",    0);
