@@ -60,6 +60,9 @@ public class GameManager : MonoBehaviour
     public double KillIncomePerSec      => TotalEnemiesKilled * KillIncomeRate;
     public bool   IsBloodyWave          => Wave > 0 && Wave % 10 == 0 && !IsBossWave;
     public const double BloodMoonMult   = 2.0;
+    public bool   IsBountyWave          => Wave % 10 == 5 && !IsBossWave;
+    public const double BountyHPMult    = 2.0;
+    public const double BountyRewardMult= 3.0;
     public const double FortWoodPerSec  = 0.1;
     public double WoodPerSecond        => WorkerCount * WorkerWoodPerSec * WorkerEfficiencyMult
                                         + FortificationLevel * FortWoodPerSec;
@@ -350,6 +353,7 @@ public class GameManager : MonoBehaviour
     public bool FlawlessActive => _flawlessTimer <= FlawlessThreshold && EnemyHP > 0 && !WavePreviewActive;
     float _flawlessTimer;
     bool  _undyingUsedThisWave;
+    bool  _isBountyEnemy;
 
     // --- Settings ---
     public bool SoundEnabled         { get; private set; } = true;
@@ -699,6 +703,7 @@ public class GameManager : MonoBehaviour
             if (CurrentEnemyModifier == EnemyModifier.Cursed)
                 reward = Math.Floor(reward * EnemyCursedRewardMult);
             if (IsBloodyWave) reward = Math.Floor(reward * BloodMoonMult);
+            if (_isBountyEnemy) reward = Math.Floor(reward * BountyRewardMult);
             if (wasBoss)
             {
                 reward *= 3;
@@ -722,6 +727,7 @@ public class GameManager : MonoBehaviour
             if (SoulHarvestUnlocked) reward += Math.Floor(EnemyMaxHP * SoulHarvestPct);
             AddBlood(reward);
             if (isFlawless) OnMilestoneChest?.Invoke("⚡ FLAWLESS! ×2 blood!");
+            if (_isBountyEnemy) OnMilestoneChest?.Invoke($"★ BOUNTY CLAIMED! +{FormatHP((float)reward)} blood!");
             if ((wasBoss || wasChallenge) && HasTalent(TalentFlags.BloodRush) && !SurgeActive)
             {
                 SurgeActive        = true;
@@ -851,6 +857,7 @@ public class GameManager : MonoBehaviour
         float fortReduction = 1f - FortificationDmgReduction;
         if (isBoss)
         {
+            _isBountyEnemy   = false;
             int idx          = UnityEngine.Random.Range(0, BossNames.Length);
             EnemyName        = BossNames[idx];
             EnemySpriteIndex = 6;
@@ -871,6 +878,13 @@ public class GameManager : MonoBehaviour
             EnemyMaxHP       = (float)(100 * Math.Pow(1.5, wave - 1) * def.HPMult * fortReduction * (1.0 - PrestigeMilestoneHPReduction));
             EnemyHP          = EnemyMaxHP;
             EnemyAttack      = (float)(3   * Math.Pow(1.3, wave - 1) * def.AtkMult);
+
+            _isBountyEnemy = wave % 10 == 5;
+            if (_isBountyEnemy)
+            {
+                EnemyMaxHP *= (float)BountyHPMult;
+                EnemyHP     = EnemyMaxHP;
+            }
 
             CurrentBossAbility = BossAbility.None;
             BossShieldActive   = false;
