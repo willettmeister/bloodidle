@@ -144,7 +144,13 @@ public class GameManager : MonoBehaviour
     public double BloodRitualCost  { get; private set; } = BloodRitualBaseCost;
     public double BloodPerSec      => BloodRitualCount * (BloodRitualBloodPerSec + PRitualEffLevel * 0.5) * PrestigeMultiplier
                                     * (HasTalent(TalentFlags.Glutton) ? TalentGluttonMult : 1f)
-                                    + BloodTithePerSec + BloodTapPerSec + KillIncomePerSec;
+                                    + BloodTithePerSec + BloodTapPerSec + KillIncomePerSec
+                                    + ShrineCount * ShrineBloodPerSec;
+    public const double ShrineWoodCost   = 20.0;
+    public const double ShrineBloodPerSec = 0.5;
+    public const int    ShrineMaxCount   = 3;
+    public int ShrineCount { get; private set; }
+    public bool ShrineUnlocked => WorkerCount > 0;
     public const double BloodRitualBaseCost       = 30.0;
     public const double BloodRitualBloodPerSec    = 1.0;
     public const double BloodRitualCostMultiplier = 2.0;
@@ -945,6 +951,15 @@ public class GameManager : MonoBehaviour
         if (Blood < WorkerCost) return false;
         Blood -= WorkerCost;
         WorkerCount++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    public bool BuyShrine()
+    {
+        if (!ShrineUnlocked || Wood < ShrineWoodCost || ShrineCount >= ShrineMaxCount) return false;
+        Wood -= ShrineWoodCost;
+        ShrineCount++;
         OnStateChanged?.Invoke();
         return true;
     }
