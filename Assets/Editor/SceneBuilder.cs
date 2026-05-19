@@ -762,9 +762,57 @@ public static class SceneBuilder
         PT(statusTextGO, 640, 44, 0, 880);
 
         var featureCancelGO = Btn(card, "FeatureCancelButton", "Cancel", 36, HC("252440"));
-        PT(featureCancelGO, 692, 86, 0, 880);
+        PT(featureCancelGO, 692, 86, -225, 430);
+
+        var voteOpenGO = Btn(card, "CommunityVotesButton", "Community Votes", 36, HC("1A3A5A"));
+        PT(voteOpenGO, 692, 86, 225, 430);
 
         overlay.SetActive(false);
+
+        // ════════════════════════════════════════════════════════════════════
+        // FEATURE VOTE OVERLAY
+        // ════════════════════════════════════════════════════════════════════
+        var voteOverlay = cv.CreateChild("FeatureVoteOverlay");
+        voteOverlay.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.86f);
+        voteOverlay.Stretch();
+
+        var voteCard   = voteOverlay.CreateChild("VoteCard");
+        RImg(voteCard, Surface1);
+        var voteCardRT = voteCard.GetComponent<RectTransform>();
+        voteCardRT.anchorMin        = new Vector2(0.5f, 0.5f);
+        voteCardRT.anchorMax        = new Vector2(0.5f, 0.5f);
+        voteCardRT.anchoredPosition = Vector2.zero;
+        voteCardRT.sizeDelta        = new Vector2(960, 720);
+
+        var voteCardTitleGO = Label(voteCard, "VoteCardTitle", "Community Votes", 52, Crimson);
+        PT(voteCardTitleGO, 22, 62, 0, 900);
+
+        var voteDividerGO = voteCard.CreateChild("VoteDivider");
+        voteDividerGO.AddImage(HC("2D2D4A")); PT(voteDividerGO, 88, 2, 0, 880);
+
+        var voteIssueTxtGO  = Label(voteCard, "VoteIssueText",  "Loading...", 34, Color.white);
+        PT(voteIssueTxtGO, 100, 140, 0, 880);
+        voteIssueTxtGO.GetComponent<Text>().alignment = TextAnchor.MiddleCenter;
+
+        var votePrevGO = Btn(voteCard, "VotePrevButton", "< Prev", 32, HC("252440"));
+        PT(votePrevGO, 252, 70, -270, 260);
+
+        var voteNextGO = Btn(voteCard, "VoteNextButton", "Next >", 32, HC("252440"));
+        PT(voteNextGO, 252, 70, 270, 260);
+
+        var voteSubmitGO = Btn(voteCard, "VoteSubmitButton", "+1 Vote", 42, Crimson);
+        PT(voteSubmitGO, 336, 96, 0, 460);
+
+        var voteStatusTxtGO = Label(voteCard, "VoteStatusText", "", 30, HC("81C784"));
+        PT(voteStatusTxtGO, 444, 44, 0, 880);
+
+        var voteRefreshGO = Btn(voteCard, "VoteRefreshButton", "Refresh List", 30, HC("1A3A2A"));
+        PT(voteRefreshGO, 500, 68, 0, 400);
+
+        var voteCancelGO = Btn(voteCard, "VoteCloseButton", "Close", 36, HC("252440"));
+        PT(voteCancelGO, 582, 86, 0, 880);
+
+        voteOverlay.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
         // Wire UIManager
@@ -874,6 +922,12 @@ public static class SceneBuilder
         uim.featureDescField        = descField;
         uim.featureStatusText       = statusTextGO.GetComponent<Text>();
         uim.featureSubmitButton     = featureSubmitGO.GetComponent<Button>();
+        uim.featureVotePanel        = voteOverlay;
+        uim.voteIssueText           = voteIssueTxtGO.GetComponent<Text>();
+        uim.voteStatusText          = voteStatusTxtGO.GetComponent<Text>();
+        uim.votePrevButton          = votePrevGO.GetComponent<Button>();
+        uim.voteNextButton          = voteNextGO.GetComponent<Button>();
+        uim.voteButton              = voteSubmitGO.GetComponent<Button>();
         uim.talentSelectionPanel    = talentOverlay;
         uim.talentHeaderText        = talentHeaderGO.GetComponent<Text>();
         uim.talentButton0           = talent0BtnGO.GetComponent<Button>();
@@ -934,6 +988,12 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(offlineDismissGO.GetComponent<Button>().onClick,        uim.DismissOfflinePanel);
         UnityEventTools.AddPersistentListener(featureSubmitGO.GetComponent<Button>().onClick,         uim.SubmitFeature);
         UnityEventTools.AddPersistentListener(featureCancelGO.GetComponent<Button>().onClick,         uim.HideFeaturePanel);
+        UnityEventTools.AddPersistentListener(voteOpenGO.GetComponent<Button>().onClick,              uim.ShowVotePanel);
+        UnityEventTools.AddPersistentListener(votePrevGO.GetComponent<Button>().onClick,              uim.VotePrev);
+        UnityEventTools.AddPersistentListener(voteNextGO.GetComponent<Button>().onClick,              uim.VoteNext);
+        UnityEventTools.AddPersistentListener(voteSubmitGO.GetComponent<Button>().onClick,            uim.VoteOnCurrent);
+        UnityEventTools.AddPersistentListener(voteRefreshGO.GetComponent<Button>().onClick,           uim.RefreshVoteList);
+        UnityEventTools.AddPersistentListener(voteCancelGO.GetComponent<Button>().onClick,            uim.HideVotePanel);
         UnityEventTools.AddPersistentListener(talent0BtnGO.GetComponent<Button>().onClick,            clk.OnConfirmTalent0);
         UnityEventTools.AddPersistentListener(talent1BtnGO.GetComponent<Button>().onClick,            clk.OnConfirmTalent1);
         UnityEventTools.AddPersistentListener(talent2BtnGO.GetComponent<Button>().onClick,            clk.OnConfirmTalent2);

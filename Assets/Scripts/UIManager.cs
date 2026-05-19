@@ -149,6 +149,14 @@ public class UIManager : MonoBehaviour
     public Text featureStatusText;
     public Button featureSubmitButton;
 
+    [Header("Feature Vote")]
+    public GameObject featureVotePanel;
+    public Text voteIssueText;
+    public Text voteStatusText;
+    public Button votePrevButton;
+    public Button voteNextButton;
+    public Button voteButton;
+
     [Header("Offline Earnings")]
     public GameObject offlinePanel;
     public Text offlineText;
@@ -996,6 +1004,196 @@ public class UIManager : MonoBehaviour
     public static string JStrForTest(string s)               => JStr(s);
     public static string ParseIssueNumberForTest(string raw) => ParseIssueNumber(raw);
 #endif
+
+    // ── Feature Vote Panel ────────────────────────────────────────────────────
+
+    struct IssueEntry { public int Number; public string Title; public int Votes; }
+
+    IssueEntry[] _voteIssues;
+    int          _voteIndex;
+    bool         _voteFetching;
+
+    const string k_VotedKeyPrefix = "VotedIssue_";
+
+    public void ShowVotePanel()
+    {
+        if (featureVotePanel == null) return;
+        HideFeaturePanel();
+        featureVotePanel.SetActive(true);
+        if (_voteIssues == null && !_voteFetching)
+            StartCoroutine(FetchOpenFeatureRequests());
+        else
+            RefreshVoteDisplay();
+    }
+
+    public void HideVotePanel()
+    {
+        if (featureVotePanel != null) featureVotePanel.SetActive(false);
+    }
+
+    public void VotePrev()
+    {
+        if (_voteIssues == null || _voteIssues.Length == 0) return;
+        _voteIndex = (_voteIndex - 1 + _voteIssues.Length) % _voteIssues.Length;
+        RefreshVoteDisplay();
+    }
+
+    public void VoteNext()
+    {
+        if (_voteIssues == null || _voteIssues.Length == 0) return;
+        _voteIndex = (_voteIndex + 1) % _voteIssues.Length;
+        RefreshVoteDisplay();
+    }
+
+    public void VoteOnCurrent()
+    {
+        if (_voteIssues == null || _voteIssues.Length == 0) return;
+        var issue = _voteIssues[_voteIndex];
+        if (HasVoted(issue.Number))
+        {
+            if (voteStatusText != null) voteStatusText.text = "Already voted!";
+            return;
+        }
+        StartCoroutine(PostVote(issue.Number));
+    }
+
+    public void RefreshVoteList()
+    {
+        if (_voteFetching) return;
+        _voteIssues = null;
+        StartCoroutine(FetchOpenFeatureRequests());
+    }
+
+    bool HasVoted(int n) => PlayerPrefs.GetInt(k_VotedKeyPrefix + n, 0) == 1;
+    void MarkVoted(int n) { PlayerPrefs.SetInt(k_VotedKeyPrefix + n, 1); PlayerPrefs.Save(); }
+
+    void RefreshVoteDisplay()
+    {
+        if (_voteIssues == null || _voteIssues.Length == 0)
+        {
+            if (voteIssueText  != null) voteIssueText.text  = _voteFetching ? "Loading..." : "No open feature requests.";
+            if (voteStatusText != null) voteStatusText.text = "";
+            if (voteButton     != null) voteButton.interactable     = false;
+            if (votePrevButton != null) votePrevButton.interactable = false;
+            if (voteNextButton != null) voteNextButton.interactable = false;
+            return;
+        }
+        var issue = _voteIssues[_voteIndex];
+        bool voted = HasVoted(issue.Number);
+        if (voteIssueText  != null)
+            voteIssueText.text  = $"#{issue.Number}: {issue.Title}\n+1  {issue.Votes} vote{(issue.Votes != 1 ? "s" : "")}";
+        if (voteStatusText != null)
+            voteStatusText.text = voted ? "You voted on this" : $"({_voteIndex + 1} of {_voteIssues.Length})";
+        if (voteButton     != null) voteButton.interactable     = !voted;
+        if (votePrevButton != null) votePrevButton.interactable = _voteIssues.Length > 1;
+        if (voteNextButton != null) voteNextButton.interactable = _voteIssues.Length > 1;
+    }
+
+    IEnumerator FetchOpenFeatureRequests()
+    {
+        _voteFetching = true;
+        RefreshVoteDisplay();
+        string url = k_GhApi + "?labels=feature+request&state=open&per_page=20";
+        var req = UnityWebRequest.Get(url);
+        req.timeout = 15;
+        req.SetRequestHeader("Accept",               "application/vnd.github+json");
+        req.SetRequestHeader("X-GitHub-Api-Version", "2022-11-28");
+        req.SetRequestHeader("User-Agent",           "BloodIdle/1.0");
+        string token = GetToken();
+        if (token.Length > 0)
+            req.SetRequestHeader("Authorization", "Bearer " + token);
+        yield return req.SendWebRequest();
+        if (req.result == UnityWebRequest.Result.Success)
+            _voteIssues = ParseIssueList(req.downloadHandler.text);
+        else if (voteIssueText != null)
+            voteIssueText.text = "Failed to load — check connection.";
+        req.Dispose();
+        _voteFetching = false;
+        RefreshVoteDisplay();
+    }
+
+    IEnumerator PostVote(int issueNumber)
+    {
+        if (voteButton     != null) voteButton.interactable = false;
+        if (voteStatusText != null) voteStatusText.text     = "Voting...";
+        string token = GetToken();
+        if (token.Length == 0)
+        {
+            if (voteStatusText != null) voteStatusText.text = "Voting not configured.";
+            yield break;
+        }
+        string url   = k_GhApi + "/" + issueNumber + "/reactions";
+        byte[] bytes = System.Text.Encoding.UTF8.GetBytes("{\"content\":\"+1\"}");
+        var req = new UnityWebRequest(url, "POST");
+        req.uploadHandler   = new UploadHandlerRaw(bytes);
+        req.downloadHandler = new DownloadHandlerBuffer();
+        req.timeout         = 15;
+        req.SetRequestHeader("Authorization",        "Bearer " + token);
+        req.SetRequestHeader("Accept",               "application/vnd.github+json");
+        req.SetRequestHeader("Content-Type",         "application/json");
+        req.SetRequestHeader("X-GitHub-Api-Version", "2022-11-28");
+        req.SetRequestHeader("User-Agent",           "BloodIdle/1.0");
+        yield return req.SendWebRequest();
+        bool ok = req.result == UnityWebRequest.Result.Success ||
+                  req.responseCode == 200 || req.responseCode == 201;
+        if (ok)
+        {
+            MarkVoted(issueNumber);
+            for (int i = 0; i < _voteIssues.Length; i++)
+            {
+                if (_voteIssues[i].Number != issueNumber) continue;
+                var e = _voteIssues[i]; e.Votes++; _voteIssues[i] = e; break;
+            }
+        }
+        else if (voteStatusText != null)
+            voteStatusText.text = $"Vote failed ({req.responseCode}) — try again.";
+        req.Dispose();
+        RefreshVoteDisplay();
+    }
+
+    static IssueEntry[] ParseIssueList(string json)
+    {
+        var issues = new System.Collections.Generic.List<IssueEntry>();
+        if (string.IsNullOrEmpty(json)) return issues.ToArray();
+        int pos = 0;
+        while (pos < json.Length)
+        {
+            int ni = json.IndexOf("\"number\":", pos, StringComparison.Ordinal);
+            if (ni < 0) break;
+            int n = ExtractJsonInt(json, ni + 9);
+            if (n <= 0) { pos = ni + 9; continue; }
+            int ti = json.IndexOf("\"title\":", ni, StringComparison.Ordinal);
+            string title = (ti > 0 && ti - ni < 3000) ? ExtractJsonStr(json, ti + 8) : "";
+            int pi = json.IndexOf("\"+1\":", ni, StringComparison.Ordinal);
+            int votes = (pi > 0 && pi - ni < 6000) ? ExtractJsonInt(json, pi + 5) : 0;
+            if (title.Length > 0)
+                issues.Add(new IssueEntry { Number = n, Title = title, Votes = votes });
+            pos = ni + 9;
+        }
+        return issues.ToArray();
+    }
+
+    static int ExtractJsonInt(string s, int start)
+    {
+        while (start < s.Length && s[start] == ' ') start++;
+        int end = start;
+        while (end < s.Length && char.IsDigit(s[end])) end++;
+        return (end > start && int.TryParse(s.Substring(start, end - start), out int v)) ? v : 0;
+    }
+
+    static string ExtractJsonStr(string s, int start)
+    {
+        while (start < s.Length && s[start] != '\"') start++;
+        if (start >= s.Length) return "";
+        start++;
+        var sb = new StringBuilder();
+        while (start < s.Length && s[start] != '\"')
+        {
+            if (s[start] == '\\' && start + 1 < s.Length) { sb.Append(s[start + 1]); start += 2; }
+            else sb.Append(s[start++]);
+        }
+        return sb.ToString();
+    }
 
     static string JStr(string s) =>
         "\"" + s.Replace("\\", "\\\\").Replace("\"", "\\\"")
