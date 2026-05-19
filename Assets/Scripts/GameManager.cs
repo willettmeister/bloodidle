@@ -362,6 +362,8 @@ public class GameManager : MonoBehaviour
     public const double SoulHarvestPct        = 0.01;
     public const int    SoulHarvestUnlockWave = 10;
     public bool SoulHarvestUnlocked => TotalEnemiesKilled >= 10;
+    bool _crimsonPactCharged;
+    public bool CrimsonPactCharged => _crimsonPactCharged;
     public const float SacrificeDmgMult = 3f;
     public bool SacrificeUnlocked       => Wave >= 3 && SoldierCount >= 2;
 
@@ -719,6 +721,7 @@ public class GameManager : MonoBehaviour
         {
             _dmgTimer = 0f;
             float tickDmg = eff * DmgTickInterval;
+            if (_crimsonPactCharged) { tickDmg *= 2f; _crimsonPactCharged = false; }
             if (BerserkerCount > 0 && TankCount == 0 && UnityEngine.Random.value < BerserkerCritChance)
             {
                 tickDmg *= BerserkerCritMult;
@@ -833,6 +836,7 @@ public class GameManager : MonoBehaviour
     public void FarmBlood()
     {
         _tapCount++;
+        if (SoldierCount > 0 && EnemyHP > 0) _crimsonPactCharged = true;
         double amount = EffectiveBloodPerClick * (_tapCount % EchoTapInterval == 0 ? 2.0 : 1.0);
         if (DailyBonusAvailable)
         {
