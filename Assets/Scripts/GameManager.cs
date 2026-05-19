@@ -321,7 +321,9 @@ public class GameManager : MonoBehaviour
     static readonly int[] k_PrestigeMilestones = { 5, 10, 20, 50 };
     public int   PrestigeMilestonesReached { get { int c = 0; foreach (var m in k_PrestigeMilestones) if (PrestigeCount >= m) c++; return c; } }
     public float PrestigeMilestoneDmgBonus => PrestigeMilestonesReached * MilestoneDmgBonusPerLevel;
-    public const float MilestoneDmgBonusPerLevel = 0.05f;
+    public const float MilestoneDmgBonusPerLevel  = 0.05f;
+    public const float MilestoneHPReductionPerLevel = 0.05f;
+    public float PrestigeMilestoneHPReduction => Mathf.Min(PrestigeMilestonesReached * MilestoneHPReductionPerLevel, 0.40f);
 
     // --- Daily login bonus ---
     public bool DailyBonusAvailable { get; private set; }
@@ -790,7 +792,7 @@ public class GameManager : MonoBehaviour
             int idx          = UnityEngine.Random.Range(0, BossNames.Length);
             EnemyName        = BossNames[idx];
             EnemySpriteIndex = 6;
-            EnemyMaxHP       = (float)(100 * Math.Pow(1.5, wave - 1) * 5.0 * fortReduction);
+            EnemyMaxHP       = (float)(100 * Math.Pow(1.5, wave - 1) * 5.0 * fortReduction * (1.0 - PrestigeMilestoneHPReduction));
             EnemyHP          = EnemyMaxHP;
             EnemyAttack      = (float)(3   * Math.Pow(1.3, wave - 1) * 2.0);
             BossTimeRemaining = BossTimeLimit + SSBossTimerLevel * 15f;
@@ -804,7 +806,7 @@ public class GameManager : MonoBehaviour
             var def          = EnemyPool[UnityEngine.Random.Range(0, EnemyPool.Length)];
             EnemyName        = def.Name;
             EnemySpriteIndex = def.SpriteIdx;
-            EnemyMaxHP       = (float)(100 * Math.Pow(1.5, wave - 1) * def.HPMult * fortReduction);
+            EnemyMaxHP       = (float)(100 * Math.Pow(1.5, wave - 1) * def.HPMult * fortReduction * (1.0 - PrestigeMilestoneHPReduction));
             EnemyHP          = EnemyMaxHP;
             EnemyAttack      = (float)(3   * Math.Pow(1.3, wave - 1) * def.AtkMult);
 
