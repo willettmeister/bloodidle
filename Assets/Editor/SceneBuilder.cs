@@ -33,6 +33,7 @@ public static class SceneBuilder
     const string OutSprites = "Assets/Resources/Sprites/";
 
     static Sprite s_Rounded;
+    static Sprite s_Background;
 
     // ── Palette ──────────────────────────────────────────────────────────────
     static readonly Color BgBase   = HC("0B0B18");
@@ -61,6 +62,19 @@ public static class SceneBuilder
 
         s_Rounded = AssetDatabase.LoadAssetAtPath<Sprite>(OutSprites + "rounded_rect.png");
 
+        // Ensure background.png is imported as a sprite (in case GenerateAssets hasn't been re-run)
+        var bgPath = OutSprites + "background.png";
+        var bgImp  = AssetImporter.GetAtPath(bgPath) as TextureImporter;
+        if (bgImp != null && bgImp.textureType != TextureImporterType.Sprite)
+        {
+            bgImp.textureType      = TextureImporterType.Sprite;
+            bgImp.filterMode       = FilterMode.Bilinear;
+            bgImp.mipmapEnabled    = false;
+            bgImp.spriteImportMode = SpriteImportMode.Single;
+            bgImp.SaveAndReimport();
+        }
+        s_Background = AssetDatabase.LoadAssetAtPath<Sprite>(bgPath);
+
         // Camera
         var camGO = new GameObject("Main Camera");
         var cam   = camGO.AddComponent<Camera>();
@@ -83,9 +97,17 @@ public static class SceneBuilder
         scaler.matchWidthOrHeight  = 0.5f;
         cv.AddComponent<GraphicRaycaster>();
 
-        // Background fill
-        var bgGO = cv.CreateChild("Background");
-        bgGO.AddImage(BgBase); bgGO.Stretch();
+        // Background fill — use generated background sprite if available, else solid color
+        var bgGO  = cv.CreateChild("Background");
+        var bgImg = bgGO.AddImage(BgBase);
+        if (s_Background != null)
+        {
+            bgImg.sprite              = s_Background;
+            bgImg.type                = Image.Type.Simple;
+            bgImg.preserveAspectRatio = false;
+            bgImg.color               = Color.white;
+        }
+        bgGO.Stretch();
 
         // GameManager + components
         var gmGO = new GameObject("GameManager");
@@ -143,6 +165,7 @@ public static class SceneBuilder
         // ENEMY CARD  (y 120–455)
         // ════════════════════════════════════════════════════════════════════
         Panel(content, "EnemyCardBg", 120, 335, Surface1, 24);
+        { var a = content.CreateChild("EnemyCardAccent"); a.AddImage(HC("8B0000")); PF(a, 120, 4, 24); }
 
         var enemyImgGO = content.CreateChild("EnemyImage");
         var enemyImg   = enemyImgGO.AddComponent<Image>();
@@ -186,6 +209,7 @@ public static class SceneBuilder
         // ARMY CARD  (y 465–715)
         // ════════════════════════════════════════════════════════════════════
         Panel(content, "ArmyCardBg", 465, 380, Surface1, 24);
+        { var a = content.CreateChild("ArmyCardAccent"); a.AddImage(HC("1B5E20")); PF(a, 465, 4, 24); }
 
         var soldierCountGO = Label(content, "SoldierCountText",
             "No soldiers — buy one!  (max 10)", 34, TextSec);
@@ -269,6 +293,7 @@ public static class SceneBuilder
         PF(workersPanel, 1290, 165);
 
         Panel(workersPanel, "WorkersCardBg", 0, 165, Surface1, 24);
+        { var a = workersPanel.CreateChild("WorkersAccent"); a.AddImage(Amber); PF(a, 0, 4, 24); }
 
         var workerInfoGO = Label(workersPanel, "WorkerInfoText", "Workers: 0",
             38, Color.white, TextAnchor.MiddleLeft);
@@ -283,6 +308,7 @@ public static class SceneBuilder
         // BARRACKS CARD  (y 1265–1430)
         // ════════════════════════════════════════════════════════════════════
         Panel(content, "BarracksCardBg", 1465, 165, Surface1, 24);
+        { var a = content.CreateChild("BarracksCardAccent"); a.AddImage(Brown); PF(a, 1465, 4, 24); }
 
         var barracksInfoGO = Label(content, "BarracksInfoText",
             "Barracks  Lv.1  —  Max 10 soldiers",
@@ -296,6 +322,7 @@ public static class SceneBuilder
         // FORTIFICATIONS CARD  (y 1440–1605) — always visible
         // ════════════════════════════════════════════════════════════════════
         Panel(content, "FortificationsCardBg", 1640, 165, Surface1, 24);
+        { var a = content.CreateChild("FortCardAccent"); a.AddImage(HC("4A3728")); PF(a, 1640, 4, 24); }
 
         var fortInfoGO = Label(content, "FortificationsInfoText",
             "Fortifications  Lv.0/10  (−0% enemy HP)",
@@ -313,6 +340,7 @@ public static class SceneBuilder
         PF(equipmentPanel, 1815, 245);
 
         Panel(equipmentPanel, "EquipmentCardBg", 0, 245, Surface1, 24);
+        { var a = equipmentPanel.CreateChild("EquipAccent"); a.AddImage(Blue); PF(a, 0, 4, 24); }
 
         var equipTitleGO = Label(equipmentPanel, "EquipmentTitle", "Equipment", 40, Gold, TextAnchor.MiddleLeft);
         PT(equipTitleGO, 10, 44, -200, 400);
@@ -351,6 +379,7 @@ public static class SceneBuilder
         PF(bloodRitualPanel, 2070, 215);
 
         Panel(bloodRitualPanel, "BloodRitualCardBg", 0, 215, Surface1, 24);
+        { var a = bloodRitualPanel.CreateChild("RitualAccent"); a.AddImage(Purple); PF(a, 0, 4, 24); }
 
         var bloodRitualInfoGO = Label(bloodRitualPanel, "BloodRitualInfoText",
             "Blood Ritual  —  passive blood income",
@@ -403,6 +432,7 @@ public static class SceneBuilder
         PF(bloodSurgePanel, 2445, 420);
 
         Panel(bloodSurgePanel, "BloodSurgeCardBg", 0, 420, Surface1, 24);
+        { var a = bloodSurgePanel.CreateChild("SurgeAccent"); a.AddImage(Crimson); PF(a, 0, 4, 24); }
 
         var bloodSurgeInfoGO = Label(bloodSurgePanel, "BloodSurgeInfoText",
             "Blood Surge  —  2× attack for 10s",
@@ -453,6 +483,7 @@ public static class SceneBuilder
         PF(bloodBankPanel, 2875, 165);
 
         Panel(bloodBankPanel, "BloodBankCardBg", 0, 165, Surface1, 24);
+        { var a = bloodBankPanel.CreateChild("BankAccent"); a.AddImage(Gold); PF(a, 0, 4, 24); }
 
         var bankTitleGO = Label(bloodBankPanel, "BloodBankTitle", "Blood Bank", 40, Gold, TextAnchor.MiddleLeft);
         PT(bankTitleGO, 8, 44, -200, 400);

@@ -174,35 +174,75 @@ public static class AssetGenerator
     // ── Background ───────────────────────────────────────────────────────────
     static void Background()
     {
-        int W = 256, H = 512;
+        int W = 512, H = 1024;
         var px = new Color32[W * H];
 
         for (int y = 0; y < H; y++)
         for (int x = 0; x < W; x++)
         {
-            float t    = (float)y / H;
-            float n    = Mathf.PerlinNoise(x * 0.05f, y * 0.05f) * 18f;
-            byte  r    = (byte)Mathf.Clamp(Lerp(20, 8,  t) + n, 0, 255);
-            byte  g    = (byte)Mathf.Clamp(Lerp(8,  3,  t) + n * 0.4f, 0, 255);
-            byte  b    = (byte)Mathf.Clamp(Lerp(30, 12, t) + n, 0, 255);
-            px[y * W + x] = C(r, g, b);
+            float t  = (float)y / H;
+            float n  = Mathf.PerlinNoise(x * 0.04f, y * 0.04f) * 14f;
+            float n2 = Mathf.PerlinNoise(x * 0.10f + 31f, y * 0.10f) * 5f;
+
+            // Base gradient: deep indigo top -> near-black bottom
+            float baseR = Lerp(22, 6,  t);
+            float baseG = Lerp(7,  2,  t);
+            float baseB = Lerp(38, 14, t);
+
+            // Blood moon: soft red radial glow centred top-middle
+            float mdx = (x - W * 0.5f) / (W * 0.45f);
+            float mdy = (float)y / (H * 0.6f);
+            float moon = Mathf.Max(0f, 1f - (mdx * mdx + mdy * mdy));
+            float redGlow = moon * moon * 32f;
+
+            // Vignette: darken corners and edges
+            float vx = (x - W * 0.5f) / (W * 0.42f);
+            float vy = (y - H * 0.5f) / (H * 0.42f);
+            float vig = Mathf.Clamp01(vx * vx + vy * vy);
+            float dark = vig * vig * 18f;
+
+            float r = baseR + n + redGlow - dark;
+            float g = baseG + n * 0.25f - dark * 0.4f;
+            float b = baseB + n + n2 - dark * 0.6f;
+            px[y * W + x] = C((byte)Mathf.Clamp(r, 0, 255),
+                               (byte)Mathf.Clamp(g, 0, 255),
+                               (byte)Mathf.Clamp(b, 0, 255));
         }
 
-        // Blood drips
-        for (int y = 10; y < 90; y++)
+        // Blood drips — five positions, varied lengths
+        int[,] drips = { {56,4,160},{W-85,18,200},{W/2-22,0,110},{W-150,35,240},{W/4,12,175} };
+        for (int d = 0; d < drips.GetLength(0); d++)
         {
-            int x = 28 + (int)(Mathf.Sin(y * 0.22f) * 3);
-            DotPx(px, W, H, x, y, C(110, 4, 4, 190));
-            DotPx(px, W, H, x + 1, y, C(110, 4, 4, 190));
+            int sx = drips[d,0], sy = drips[d,1], len = drips[d,2];
+            for (int y = sy; y < sy + len; y++)
+            {
+                int x = sx + (int)(Mathf.Sin(y * 0.2f) * 3);
+                byte a = (byte)Mathf.Clamp((float)(sy + len - y) / len * 220f, 40, 220);
+                DotPx(px, W, H, x,   y, C(120, 4, 4, a));
+                DotPx(px, W, H, x+1, y, C(100, 3, 3, (byte)(a * 0.55f)));
+            }
         }
-        for (int y = 30; y < 130; y++)
-        {
-            int x = 218 + (int)(Mathf.Sin(y * 0.18f) * 4);
-            DotPx(px, W, H, x, y, C(90, 3, 3, 170));
-        }
+
+        // Keep original two drips for compat, remove by replacing with:
+        // (nothing — the drips above cover them)
+        // Old code was:
+        // for (int y = 30; y < 130; y++) ... REPLACED
 
         var tex = MakeTex(W, H, px);
-        Save(tex, OutPath + "background.png", sprite: false);
+        string path = OutPath + "background.png";
+        File.WriteAllBytes(path, tex.EncodeToPNG());
+        AssetDatabase.ImportAsset(path);
+        var bgImp = AssetImporter.GetAtPath(path) as TextureImporter;
+        if (bgImp != null)
+        {
+            bgImp.textureType       = TextureImporterType.Sprite;
+            bgImp.filterMode        = FilterMode.Bilinear;
+            bgImp.mipmapEnabled     = false;
+            bgImp.alphaIsTransparency = false;
+            bgImp.spriteImportMode  = SpriteImportMode.Single;
+            bgImp.SaveAndReimport();
+        }
+
     }
 
     // ── Buttons (9-slice, 64×32) ─────────────────────────────────────────────
