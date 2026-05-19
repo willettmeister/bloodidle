@@ -49,6 +49,8 @@ public class GameManager : MonoBehaviour
     public double WorkerEfficiencyMult => 1.0 + Math.Floor(WorkerCount / 5.0) * 0.1;
     public const double KillIncomeRate  = 0.01;
     public double KillIncomePerSec      => TotalEnemiesKilled * KillIncomeRate;
+    public bool   IsBloodyWave          => Wave > 0 && Wave % 10 == 0 && !IsBossWave;
+    public const double BloodMoonMult   = 2.0;
     public double WoodPerSecond        => WorkerCount * WorkerWoodPerSec * WorkerEfficiencyMult;
     public const double WorkerCost = 50.0;
     public const double WorkerWoodPerSec = 0.5;
@@ -603,6 +605,7 @@ public class GameManager : MonoBehaviour
             double reward = Math.Floor(25 * Math.Pow(1.4, Wave - 1) * PrestigeMultiplier * (1.0 + EquipTalismanBonus));
             if (CurrentEnemyModifier == EnemyModifier.Cursed)
                 reward = Math.Floor(reward * EnemyCursedRewardMult);
+            if (IsBloodyWave) reward = Math.Floor(reward * BloodMoonMult);
             if (wasBoss)
             {
                 reward *= 3;
