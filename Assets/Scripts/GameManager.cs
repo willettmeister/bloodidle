@@ -72,6 +72,7 @@ public class GameManager : MonoBehaviour
             if (CurrentEnemyModifier == EnemyModifier.Cursed) r = Math.Floor(r * EnemyCursedRewardMult);
             if (IsBloodyWave)  r = Math.Floor(r * BloodMoonMult);
             if (_isBountyEnemy) r = Math.Floor(r * EffectiveBountyMult);
+            if (_isEliteEnemy)  r = Math.Floor(r * EliteRewardMult);
             if (IsBossWave)    r *= 3;
             if (HasTalent(TalentFlags.BloodFrenzy)) r = Math.Floor(r * (1.0 + TalentBloodFrenzyBonus));
             r = Math.Floor(r * StreakMultiplier * KillStreakBonusMult);
@@ -84,6 +85,10 @@ public class GameManager : MonoBehaviour
     public bool   IsBountyWave          => Wave % 10 == 5 && !IsBossWave;
     public const double BountyHPMult    = 2.0;
     public const double BountyRewardMult= 3.0;
+    public bool   IsEliteWave           => Wave % 17 == 8 && !IsBossWave && !IsBloodyWave && !IsBountyWave;
+    public const double EliteHPMult     = 1.75;
+    public const float  EliteAtkMult    = 1.25f;
+    public const double EliteRewardMult = 2.0;
     public const double FortWoodPerSec  = 0.1;
     public double WoodPerSecond        => WorkerCount * WorkerWoodPerSec * WorkerEfficiencyMult
                                         + FortificationLevel * FortWoodPerSec;
@@ -384,6 +389,7 @@ public class GameManager : MonoBehaviour
     float _flawlessTimer;
     bool  _undyingUsedThisWave;
     bool  _isBountyEnemy;
+    bool  _isEliteEnemy;
 
     // --- Settings ---
     public bool SoundEnabled         { get; private set; } = true;
@@ -740,6 +746,7 @@ public class GameManager : MonoBehaviour
                 reward = Math.Floor(reward * EnemyCursedRewardMult);
             if (IsBloodyWave) reward = Math.Floor(reward * BloodMoonMult);
             if (_isBountyEnemy) reward = Math.Floor(reward * EffectiveBountyMult);
+            if (_isEliteEnemy)  reward = Math.Floor(reward * EliteRewardMult);
             if (wasBoss)
             {
                 reward *= 3;
@@ -930,6 +937,15 @@ public class GameManager : MonoBehaviour
             {
                 EnemyMaxHP *= (float)BountyHPMult;
                 EnemyHP     = EnemyMaxHP;
+            }
+
+            _isEliteEnemy = IsEliteWave;
+            if (_isEliteEnemy)
+            {
+                EnemyName   = "Elite " + EnemyName;
+                EnemyMaxHP *= (float)EliteHPMult;
+                EnemyHP     = EnemyMaxHP;
+                EnemyAttack *= EliteAtkMult;
             }
 
             CurrentBossAbility = BossAbility.None;

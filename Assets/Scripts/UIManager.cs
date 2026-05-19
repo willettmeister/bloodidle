@@ -287,6 +287,8 @@ public class UIManager : MonoBehaviour
                 waveSubText.text = $"★ BOSS WAVE ★{streakTag}";
             else if (gm.IsBountyWave)
                 waveSubText.text = $"★ BOUNTY WAVE ★{streakTag}";
+            else if (gm.IsEliteWave)
+                waveSubText.text = $"⚔ ELITE WAVE ⚔{streakTag}";
             else
                 waveSubText.text = $"Boss in {gm.WavesUntilBoss} wave{(gm.WavesUntilBoss == 1 ? "" : "s")}{streakTag}";
         }
@@ -304,6 +306,14 @@ public class UIManager : MonoBehaviour
             {
                 enemyModifierText.text  = "2x HP  |  3x Blood";
                 enemyModifierText.color = new Color(1f, 0.84f, 0f);
+                enemyModifierText.gameObject.SetActive(true);
+            }
+            else if (gm.IsEliteWave)
+            {
+                string mod = gm.CurrentEnemyModifier != EnemyModifier.None
+                    ? $"  |  {gm.EnemyModifierDisplay}" : "";
+                enemyModifierText.text  = $"⚔ 1.75x HP  |  2x Blood{mod}";
+                enemyModifierText.color = new Color(1f, 0.55f, 0.1f);
                 enemyModifierText.gameObject.SetActive(true);
             }
             else if (gm.IsBloodyWave)
@@ -335,6 +345,11 @@ public class UIManager : MonoBehaviour
         {
             enemyNameText.text  = $"★ {gm.EnemyName} ★";
             enemyNameText.color = new Color(1f, 0.84f, 0f);
+        }
+        else if (gm.IsEliteWave)
+        {
+            enemyNameText.text  = gm.EnemyName;
+            enemyNameText.color = new Color(1f, 0.55f, 0.1f);
         }
         else
         {
