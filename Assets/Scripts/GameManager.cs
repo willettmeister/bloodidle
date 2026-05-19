@@ -214,6 +214,10 @@ public class GameManager : MonoBehaviour
     public const float DeathsDoorThresh = 0.15f;
     public const float DeathsDoorMult   = 1.50f;
     public bool  DeathsDoorActive     => LastStandActive && SoldierHP < FrontlineMaxHP * DeathsDoorThresh;
+    public const float MeditationThreshold = 5f;
+    public const float MeditationMult      = 3f;
+    float _meditationTimer;
+    public bool MeditationReady => _meditationTimer >= MeditationThreshold && SoldierCount > 0 && EnemyHP > 0;
 
     // --- Prestige Talent Tree ---
     public TalentFlags   Talents              { get; private set; }
@@ -637,6 +641,7 @@ public class GameManager : MonoBehaviour
 
         if (_warCryTimer > 0f) { _warCryTimer -= dt; if (_warCryTimer < 0f) _warCryTimer = 0f; }
         if (_hexCurseTimer > 0f) { _hexCurseTimer -= dt; if (_hexCurseTimer < 0f) _hexCurseTimer = 0f; }
+        if (SoldierCount > 0) _meditationTimer += dt;
         float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f) * (WarCryActive ? WarCryMult : 1f);
         if (CurrentEnemyModifier == EnemyModifier.Armored && !IsAllBerserker)
             eff *= IsAllTank ? EnemyArmoredDmgMult + 0.25f : EnemyArmoredDmgMult;
@@ -729,6 +734,7 @@ public class GameManager : MonoBehaviour
             dmg           -= absorbed;
         }
         if (CursedBloodEnabled && dmg > 0) AddBlood(dmg * CursedBloodConversionRate);
+        if (dmg > 0) _meditationTimer = 0f;
         SoldierHP -= dmg;
 
         if (SoldierHP <= 0f)
@@ -755,6 +761,7 @@ public class GameManager : MonoBehaviour
             _dmgTimer = 0f;
             float tickDmg = eff * DmgTickInterval;
             if (_crimsonPactCharged) { tickDmg *= 2f; _crimsonPactCharged = false; }
+            if (MeditationReady) { tickDmg *= MeditationMult; _meditationTimer = 0f; }
             if (BerserkerCount > 0 && TankCount == 0 && UnityEngine.Random.value < BerserkerCritChance)
             {
                 tickDmg *= BerserkerCritMult;
