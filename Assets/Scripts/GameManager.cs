@@ -209,8 +209,11 @@ public class GameManager : MonoBehaviour
     public const float MaxStreakMultiplier = 3f;
     public float KillStreakBonusMult => 1f + Mathf.Min(WaveStreak, 5) * 0.05f;
     public float MoraleBonusMult     => WaveStreak >= 3 ? 1.15f : 1f;
-    public bool  LastStandActive     => SoldierCount == 1;
+    public bool  LastStandActive      => SoldierCount == 1;
     public const float LastStandMult  = 1.20f;
+    public const float DeathsDoorThresh = 0.15f;
+    public const float DeathsDoorMult   = 1.50f;
+    public bool  DeathsDoorActive     => LastStandActive && SoldierHP < FrontlineMaxHP * DeathsDoorThresh;
 
     // --- Prestige Talent Tree ---
     public TalentFlags   Talents              { get; private set; }
@@ -640,6 +643,7 @@ public class GameManager : MonoBehaviour
         if (CurrentEnemyModifier == EnemyModifier.Cursed && PaladinCount > 0) eff *= PaladinHolyBonus;
         if (BerserkerRageActive) eff *= BerserkerRageMult;
         if (LastStandActive)     eff *= LastStandMult;
+        if (DeathsDoorActive)    eff *= DeathsDoorMult;
         if (BossShieldActive)
         {
             _bossShieldHP -= eff * dt;
