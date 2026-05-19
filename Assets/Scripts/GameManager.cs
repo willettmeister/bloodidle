@@ -81,10 +81,12 @@ public class GameManager : MonoBehaviour
             + EquipArmorBonus
             + (HasTalent(TalentFlags.IronSkin) ? TalentIronSkinHP : 0f)
             - CorruptionLevel * CorruptionHPPenalty);
-    public float TotalAttack         => (TankCount     * (SoldierAttack   + EquipAttackBonus)
-                                       + BerserkerCount * (BerserkerAttack + EquipAttackBonus)
-                                       + PaladinCount   * (PaladinAttack   + EquipAttackBonus))
+    public float TotalAttack         => (TankCount     * (SoldierAttack   + EquipAttackBonus + VeteranAttackBonus)
+                                       + BerserkerCount * (BerserkerAttack + EquipAttackBonus + VeteranAttackBonus)
+                                       + PaladinCount   * (PaladinAttack   + EquipAttackBonus + VeteranAttackBonus))
                                        * (1f + PrestigeMilestoneDmgBonus) * MoraleBonusMult;
+    public const int VeteranAttackCap = 10;
+    public float VeteranAttackBonus { get; private set; }
     public bool  IsAllTank       => TankCount > 0 && BerserkerCount == 0 && PaladinCount == 0;
     public bool  IsAllBerserker  => BerserkerCount > 0 && TankCount == 0 && PaladinCount == 0;
     public bool  IsAllPaladin    => PaladinCount > 0 && TankCount == 0 && BerserkerCount == 0;
@@ -632,6 +634,7 @@ public class GameManager : MonoBehaviour
             if (wasBoss)
             {
                 reward *= 3;
+                if (VeteranAttackBonus < VeteranAttackCap) VeteranAttackBonus++;
                 SoulShards += HasTalent(TalentFlags.ShardHunter) ? 2 : 1;
                 SoulShardShopUnlocked = true;
                 BossTimeRemaining = 0f;
