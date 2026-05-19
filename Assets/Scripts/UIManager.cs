@@ -296,6 +296,14 @@ public class UIManager : MonoBehaviour
                 enemyModifierText.color = new Color(1f, 0.84f, 0f);
                 enemyModifierText.gameObject.SetActive(true);
             }
+            else if (gm.IsBloodyWave)
+            {
+                string mod = gm.CurrentEnemyModifier != EnemyModifier.None
+                    ? $"  |  {gm.EnemyModifierDisplay}" : "";
+                enemyModifierText.text  = $"☽ Blood Moon  |  +20% Atk{mod}";
+                enemyModifierText.color = new Color(0.9f, 0.2f, 0.2f);
+                enemyModifierText.gameObject.SetActive(true);
+            }
             else if (gm.CurrentEnemyModifier != EnemyModifier.None)
             {
                 enemyModifierText.text  = gm.EnemyModifierDisplay;

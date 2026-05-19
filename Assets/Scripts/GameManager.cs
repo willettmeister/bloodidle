@@ -60,6 +60,8 @@ public class GameManager : MonoBehaviour
     public double KillIncomePerSec      => TotalEnemiesKilled * KillIncomeRate;
     public bool   IsBloodyWave          => Wave > 0 && Wave % 10 == 0 && !IsBossWave;
     public const double BloodMoonMult   = 2.0;
+    public const float  BloodMoonAtkMult= 1.20f;
+    public const float  BossVictoryHealPct = 0.25f;
     public bool   IsBountyWave          => Wave % 10 == 5 && !IsBossWave;
     public const double BountyHPMult    = 2.0;
     public const double BountyRewardMult= 3.0;
@@ -679,7 +681,7 @@ public class GameManager : MonoBehaviour
         if (_adrenalineTimer > 0f) { _adrenalineTimer -= dt; if (_adrenalineTimer <= 0f) _adrenalineStacks = 0; }
         _idleTimer += dt;
         if (_bloodStormTimer > 0f) { _bloodStormTimer -= dt; if (_bloodStormTimer < 0f) _bloodStormTimer = 0f; }
-        float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f) * (WarCryActive ? WarCryMult : 1f) * AdrenalineMult * IdleFuryMult;
+        float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f) * (WarCryActive ? WarCryMult : 1f) * AdrenalineMult * IdleFuryMult * (IsBloodyWave ? BloodMoonAtkMult : 1f);
         if (CurrentEnemyModifier == EnemyModifier.Armored && !IsAllBerserker)
             eff *= IsAllTank ? EnemyArmoredDmgMult + 0.25f : EnemyArmoredDmgMult;
         if (CurrentEnemyModifier == EnemyModifier.Cursed && PaladinCount > 0) eff *= PaladinHolyBonus;
@@ -715,6 +717,11 @@ public class GameManager : MonoBehaviour
                 SoulShards += HasTalent(TalentFlags.ShardHunter) ? 2 : 1;
                 SoulShardShopUnlocked = true;
                 BossTimeRemaining = 0f;
+                if (SoldierCount > 0)
+                {
+                    float healAmt = FrontlineMaxHP * BossVictoryHealPct;
+                    SoldierHP = Mathf.Min(SoldierHP + healAmt, FrontlineMaxHP);
+                }
             }
             if (wasChallenge)
             {
