@@ -342,7 +342,15 @@ public class GameManager : MonoBehaviour
     public float  BloodShieldHP       { get; private set; }
     public bool   BloodShieldUnlocked { get; private set; }
     public bool   AutoBuySoldiers     { get; private set; }
-    public const double TruceCost      = 100.0;
+    public const double TruceCost        = 100.0;
+    public const double BloodFrenzyCost  = 30.0;
+    public const float  BloodFrenzyDuration = 10f;
+    public const float  BloodFrenzyMult  = 2f;
+    public const int    BloodFrenzyUnlockWave = 5;
+    float _bloodFrenzyTimer;
+    public bool BloodFrenzyActive    => _bloodFrenzyTimer > 0f;
+    public float BloodFrenzyTimeLeft => _bloodFrenzyTimer;
+    public bool BloodFrenzyUnlocked  => Wave >= BloodFrenzyUnlockWave;
 
     public event Action OnStateChanged;
     public event Action<float, bool> OnDamageDealt;
@@ -582,7 +590,8 @@ public class GameManager : MonoBehaviour
         if (CurrentEnemyModifier == EnemyModifier.Cursed && SoldierCount > 0)
             SoldierHP = Mathf.Max(0f, SoldierHP - EnemyCursedDotRate * dt);
 
-        float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f);
+        if (_bloodFrenzyTimer > 0f) { _bloodFrenzyTimer -= dt; if (_bloodFrenzyTimer < 0f) _bloodFrenzyTimer = 0f; }
+        float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f) * (BloodFrenzyActive ? BloodFrenzyMult : 1f);
         if (CurrentEnemyModifier == EnemyModifier.Armored && !IsAllBerserker)
             eff *= IsAllTank ? EnemyArmoredDmgMult + 0.25f : EnemyArmoredDmgMult;
         if (CurrentEnemyModifier == EnemyModifier.Cursed && PaladinCount > 0) eff *= PaladinHolyBonus;
@@ -860,6 +869,15 @@ public class GameManager : MonoBehaviour
         WavePreviewActive = true;
         _previewTimer     = WavePreviewDuration;
         _dmgTimer         = 0f;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    public bool UseBloodFrenzy()
+    {
+        if (!BloodFrenzyUnlocked || Blood < BloodFrenzyCost || BloodFrenzyActive) return false;
+        Blood -= BloodFrenzyCost;
+        _bloodFrenzyTimer = BloodFrenzyDuration;
         OnStateChanged?.Invoke();
         return true;
     }
