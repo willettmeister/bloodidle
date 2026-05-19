@@ -10,6 +10,7 @@ public class ClickManager : MonoBehaviour
     public void OnBuyBerserker()           => GameManager.Instance.BuyBerserker();
     public void OnHealSelf()               => GameManager.Instance.UseHealSelf();
     public void OnUseSurge()               => GameManager.Instance.UseSurge();
+    public void OnUseBloodStorm()          => GameManager.Instance.UseBloodStorm();
     public void OnUseBloodPact()           => GameManager.Instance.UseBloodPact();
     public void OnBuyWorker()              => GameManager.Instance.BuyWorker();
     public void OnBuyBloodRitual()         => GameManager.Instance.BuyBloodRitual();

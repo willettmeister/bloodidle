@@ -111,7 +111,7 @@ public static class SceneBuilder
         contentRT.anchorMax        = new Vector2(1f, 1f);
         contentRT.pivot            = new Vector2(0.5f, 1f);
         contentRT.anchoredPosition = Vector2.zero;
-        contentRT.sizeDelta        = new Vector2(0, 3785);
+        contentRT.sizeDelta        = new Vector2(0, 3895);
 
         var scroll = scrollGO.AddComponent<ScrollRect>();
         scroll.viewport          = viewportGO.GetComponent<RectTransform>();
@@ -400,9 +400,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var bloodSurgePanel = content.CreateChild("BloodSurgePanel");
         bloodSurgePanel.AddImage(Color.clear);
-        PF(bloodSurgePanel, 2445, 310);
+        PF(bloodSurgePanel, 2445, 420);
 
-        Panel(bloodSurgePanel, "BloodSurgeCardBg", 0, 310, Surface1, 24);
+        Panel(bloodSurgePanel, "BloodSurgeCardBg", 0, 420, Surface1, 24);
 
         var bloodSurgeInfoGO = Label(bloodSurgePanel, "BloodSurgeInfoText",
             "Blood Surge  —  2× attack for 10s",
@@ -430,14 +430,27 @@ public static class SceneBuilder
             "Sacrifice!", 32, HC("4A1A00"));
         PT(soulSacBtnGO, 268, 28, 0, 680);
 
+        // Blood Storm section (inside the blood surge card)
+        var stormDivGO = bloodSurgePanel.CreateChild("BloodStormDiv");
+        stormDivGO.AddImage(HC("2D2D4A")); PT(stormDivGO, 306, 2, 0, 640);
+
+        var bloodStormInfoGO = Label(bloodSurgePanel, "BloodStormInfoText",
+            "Blood Storm  —  Unlocks at wave 8",
+            30, new Color(0.55f, 0.8f, 1f), TextAnchor.MiddleLeft);
+        PT(bloodStormInfoGO, 314, 44, -140, 620);
+
+        var bloodStormBtnGO = Btn(bloodSurgePanel, "BloodStormButton",
+            "Storm! (50 blood)", 30, HC("0D3A6E"));
+        PT(bloodStormBtnGO, 364, 42, 0, 680);
+
         bloodSurgePanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
-        // BLOOD BANK CARD  (y 2395–2560) — always visible
+        // BLOOD BANK CARD  (y 2875–3040) — always visible
         // ════════════════════════════════════════════════════════════════════
         var bloodBankPanel = content.CreateChild("BloodBankPanel");
         bloodBankPanel.AddImage(Color.clear);
-        PF(bloodBankPanel, 2765, 165);
+        PF(bloodBankPanel, 2875, 165);
 
         Panel(bloodBankPanel, "BloodBankCardBg", 0, 165, Surface1, 24);
 
@@ -463,7 +476,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var prestigeShopPanel = content.CreateChild("PrestigeShopPanel");
         prestigeShopPanel.AddImage(Color.clear);
-        PF(prestigeShopPanel, 2940, 415);
+        PF(prestigeShopPanel, 3050, 415);
 
         Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 415, HC("150A30"), 24);
 
@@ -524,7 +537,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var soulShardShopPanel = content.CreateChild("SoulShardShopPanel");
         soulShardShopPanel.AddImage(Color.clear);
-        PF(soulShardShopPanel, 3365, 310);
+        PF(soulShardShopPanel, 3475, 310);
 
         Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 310, HC("0A1A30"), 24);
 
@@ -873,6 +886,8 @@ public static class SceneBuilder
         uim.bloodSurgeButton        = surgeBtnGO.GetComponent<Button>();
         uim.upgradeSurgeButton      = upgradeSurgeBtnGO.GetComponent<Button>();
         uim.surgeCostText           = upgradeSurgeBtnGO.GetComponentInChildren<Text>();
+        uim.bloodStormInfoText      = bloodStormInfoGO.GetComponent<Text>();
+        uim.bloodStormButton        = bloodStormBtnGO.GetComponent<Button>();
         uim.upgradeHealSelfButton   = upgradeHealBtnGO.GetComponent<Button>();
         uim.healCostText            = upgradeHealBtnGO.GetComponentInChildren<Text>();
         uim.prestigeShopPanel       = prestigeShopPanel;
@@ -953,6 +968,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(buyPaladinGO.GetComponent<Button>().onClick,            clk.OnBuyPaladin);
         UnityEventTools.AddPersistentListener(healBtnGO.GetComponent<Button>().onClick,               clk.OnHealSelf);
         UnityEventTools.AddPersistentListener(surgeBtnGO.GetComponent<Button>().onClick,              clk.OnUseSurge);
+        UnityEventTools.AddPersistentListener(bloodStormBtnGO.GetComponent<Button>().onClick,         clk.OnUseBloodStorm);
         UnityEventTools.AddPersistentListener(bloodPactGO.GetComponent<Button>().onClick,             clk.OnUseBloodPact);
         UnityEventTools.AddPersistentListener(buyWorkerGO.GetComponent<Button>().onClick,             clk.OnBuyWorker);
         UnityEventTools.AddPersistentListener(buyBloodRitualGO.GetComponent<Button>().onClick,        clk.OnBuyBloodRitual);

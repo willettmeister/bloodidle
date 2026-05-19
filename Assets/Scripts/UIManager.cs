@@ -47,6 +47,10 @@ public class UIManager : MonoBehaviour
     public Button upgradeHealSelfButton;
     public Text healCostText;
 
+    [Header("Blood Storm")]
+    public Text bloodStormInfoText;
+    public Button bloodStormButton;
+
     [Header("Workers")]
     public GameObject workersPanel;
     public Text workerInfoText;
@@ -361,6 +365,21 @@ public class UIManager : MonoBehaviour
                 && gm.SoldierHP < gm.FrontlineMaxHP;
 
         // Blood Surge
+        if (bloodStormInfoText != null && bloodSurgePanel != null && bloodSurgePanel.activeSelf)
+        {
+            if (gm.BloodStormUnlocked)
+            {
+                string stormInfo = gm.BloodStormReady
+                    ? $"Blood Storm  —  {GameManager.FormatNumber(GameManager.BloodStormBaseDmg + (gm.Wave - 1) * GameManager.BloodStormDmgPerWave)} dmg  ({GameManager.FormatNumber(GameManager.BloodStormCost)} blood)"
+                    : $"Blood Storm  —  Cooldown: {Mathf.CeilToInt(gm.BloodStormCooldownLeft)}s";
+                bloodStormInfoText.text = stormInfo;
+                if (bloodStormButton != null)
+                    bloodStormButton.interactable = gm.BloodStormReady && gm.Blood >= GameManager.BloodStormCost && hasSoldiers && gm.EnemyHP > 0;
+            }
+            else if (bloodStormInfoText != null)
+                bloodStormInfoText.text = $"Blood Storm  —  Unlocks at wave {GameManager.BloodStormUnlockWave}";
+        }
+
         if (bloodSurgePanel != null) bloodSurgePanel.SetActive(gm.SurgeUnlocked);
         if (gm.SurgeUnlocked && bloodSurgeInfoText != null)
         {

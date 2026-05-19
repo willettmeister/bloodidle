@@ -234,6 +234,17 @@ public class GameManager : MonoBehaviour
     public int   IdleFuryStacks => Mathf.Min((int)(_idleTimer / IdleFuryStepSecs), IdleFuryMaxStacks);
     public float IdleFuryMult   => 1f + IdleFuryStacks * IdleFuryAtkBonus;
 
+    // --- Blood Storm ---
+    public const double BloodStormCost       = 50.0;
+    public const float  BloodStormBaseDmg    = 50f;
+    public const float  BloodStormDmgPerWave = 10f;
+    public const float  BloodStormCooldown   = 30f;
+    public const int    BloodStormUnlockWave = 8;
+    float _bloodStormTimer;
+    public bool  BloodStormReady       => _bloodStormTimer <= 0f;
+    public float BloodStormCooldownLeft => _bloodStormTimer;
+    public bool  BloodStormUnlocked    => Wave >= BloodStormUnlockWave;
+
     // --- Prestige Talent Tree ---
     public TalentFlags   Talents              { get; private set; }
     public bool          PendingPrestige      { get; private set; }
@@ -659,6 +670,7 @@ public class GameManager : MonoBehaviour
         if (SoldierCount > 0) _meditationTimer += dt;
         if (_adrenalineTimer > 0f) { _adrenalineTimer -= dt; if (_adrenalineTimer <= 0f) _adrenalineStacks = 0; }
         _idleTimer += dt;
+        if (_bloodStormTimer > 0f) { _bloodStormTimer -= dt; if (_bloodStormTimer < 0f) _bloodStormTimer = 0f; }
         float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f) * (WarCryActive ? WarCryMult : 1f) * AdrenalineMult * IdleFuryMult;
         if (CurrentEnemyModifier == EnemyModifier.Armored && !IsAllBerserker)
             eff *= IsAllTank ? EnemyArmoredDmgMult + 0.25f : EnemyArmoredDmgMult;
@@ -982,6 +994,18 @@ public class GameManager : MonoBehaviour
         if (!WarCryUnlocked || Blood < WarCryCost || WarCryActive) return false;
         Blood -= WarCryCost;
         _warCryTimer = WarCryDuration;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    public bool UseBloodStorm()
+    {
+        if (!BloodStormUnlocked || !BloodStormReady || Blood < BloodStormCost || EnemyHP <= 0 || SoldierCount == 0) return false;
+        Blood -= BloodStormCost;
+        float dmg = BloodStormBaseDmg + (Wave - 1) * BloodStormDmgPerWave;
+        EnemyHP = Mathf.Max(float.Epsilon, EnemyHP - dmg);
+        _bloodStormTimer = BloodStormCooldown;
+        OnDamageDealt?.Invoke(dmg, true);
         OnStateChanged?.Invoke();
         return true;
     }
