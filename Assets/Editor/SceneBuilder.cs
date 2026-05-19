@@ -24,9 +24,9 @@ using System.IO;
 // 2370–2510  Prestige card
 // 2520–2940  Blood Surge card  (UpgradeSurge row at bottom)
 // 2950–3115  Blood Bank card
-// 3125–3540  Prestige Shop card  (6 rows)
-// 3550–3860  Soul Shard Shop card  (4 rows incl. Blood Tap)
-// 3870–3970  Bottom row  — Stats | Settings | Suggest
+// 3125–3610  Prestige Shop card  (7 rows)
+// 3620–3930  Soul Shard Shop card  (4 rows incl. Blood Tap)
+// 3940–4040  Bottom row  — Stats | Settings | Suggest
 // overlay    StatsPanel, SettingsPanel, FeatureRequestOverlay — modals
 public static class SceneBuilder
 {
@@ -133,7 +133,7 @@ public static class SceneBuilder
         contentRT.anchorMax        = new Vector2(1f, 1f);
         contentRT.pivot            = new Vector2(0.5f, 1f);
         contentRT.anchoredPosition = Vector2.zero;
-        contentRT.sizeDelta        = new Vector2(0, 4110);
+        contentRT.sizeDelta        = new Vector2(0, 4180);
 
         var scroll = scrollGO.AddComponent<ScrollRect>();
         scroll.viewport          = viewportGO.GetComponent<RectTransform>();
@@ -521,9 +521,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var prestigeShopPanel = content.CreateChild("PrestigeShopPanel");
         prestigeShopPanel.AddImage(Color.clear);
-        PF(prestigeShopPanel, 3265, 415);
+        PF(prestigeShopPanel, 3265, 485);
 
-        Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 415, HC("150A30"), 24);
+        Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 485, HC("150A30"), 24);
 
         var shopTitleGO = Label(prestigeShopPanel, "PrestigeShopTitle",
             "Prestige Shop", 40, Gold, TextAnchor.MiddleLeft);
@@ -575,6 +575,13 @@ public static class SceneBuilder
         var pIronWallBtnGO = Btn(prestigeShopPanel, "PIronWallButton", "Buy (1 PP)", 30, HC("1565C0"));
         PT(pIronWallBtnGO, 348, 54, +245, 260);
 
+        // Row 7 — Bounty Mastery
+        var pBountyBonusInfoGO = Label(prestigeShopPanel, "PBountyBonusInfoText",
+            "Bounty Mastery +1x  (Lv.0)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(pBountyBonusInfoGO, 408, 48, -175, 500);
+        var pBountyBonusBtnGO = Btn(prestigeShopPanel, "PBountyBonusButton", "Buy (1 PP)", 30, HC("E65100"));
+        PT(pBountyBonusBtnGO, 406, 54, +245, 260);
+
         prestigeShopPanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
@@ -582,7 +589,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var soulShardShopPanel = content.CreateChild("SoulShardShopPanel");
         soulShardShopPanel.AddImage(Color.clear);
-        PF(soulShardShopPanel, 3690, 310);
+        PF(soulShardShopPanel, 3760, 310);
 
         Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 310, HC("0A1A30"), 24);
 
@@ -628,13 +635,13 @@ public static class SceneBuilder
         // BOTTOM ROW  (y 3435–3535) — Stats | Settings | Suggest
         // ════════════════════════════════════════════════════════════════════
         var statsBtnGO = Btn(content, "StatsButton", "Statistics", 36, Teal);
-        PT(statsBtnGO, 3900, 100, -345, 310);
+        PT(statsBtnGO, 3970, 100, -345, 310);
 
         var settingsBtnGO = Btn(content, "SettingsButton", "Settings", 36, HC("2A2A4A"));
-        PT(settingsBtnGO, 3900, 100, 0, 300);
+        PT(settingsBtnGO, 3970, 100, 0, 300);
 
         var suggestBtnGO = Btn(content, "SuggestButton", "Suggest", 36, HC("1565C0"));
-        PT(suggestBtnGO, 3900, 100, +345, 300);
+        PT(suggestBtnGO, 3970, 100, +345, 300);
 
         // ── Damage number layer ───────────────────────────────────────────────
         var dmgLayerGO = cv.CreateChild("DamageLayer");
@@ -953,6 +960,8 @@ public static class SceneBuilder
         uim.pBloodTitheButton       = pBloodTitheBtnGO.GetComponent<Button>();
         uim.pIronWallInfoText       = pIronWallInfoGO.GetComponent<Text>();
         uim.pIronWallButton         = pIronWallBtnGO.GetComponent<Button>();
+        uim.pBountyBonusInfoText    = pBountyBonusInfoGO.GetComponent<Text>();
+        uim.pBountyBonusButton      = pBountyBonusBtnGO.GetComponent<Button>();
         uim.bloodBankPanel          = bloodBankPanel;
         uim.bloodBankInfoText       = bankInfoGO.GetComponent<Text>();
         uim.bloodBankAccruedText    = bankAccruedGO.GetComponent<Text>();
@@ -1036,6 +1045,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(pWeaponHeadStartBtnGO.GetComponent<Button>().onClick,   clk.OnBuyPWeaponHeadStart);
         UnityEventTools.AddPersistentListener(pBloodTitheBtnGO.GetComponent<Button>().onClick,        clk.OnBuyPBloodTithe);
         UnityEventTools.AddPersistentListener(pIronWallBtnGO.GetComponent<Button>().onClick,          clk.OnBuyPIronWall);
+        UnityEventTools.AddPersistentListener(pBountyBonusBtnGO.GetComponent<Button>().onClick,      clk.OnBuyPBountyBonus);
         UnityEventTools.AddPersistentListener(ssBossTimerBtnGO.GetComponent<Button>().onClick,        clk.OnBuySSBossTimer);
         UnityEventTools.AddPersistentListener(ssDoubleChestBtnGO.GetComponent<Button>().onClick,      clk.OnBuySSDoubleChest);
         UnityEventTools.AddPersistentListener(ssRollbackBtnGO.GetComponent<Button>().onClick,         clk.OnBuySSRollback);

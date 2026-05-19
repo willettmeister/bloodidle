@@ -105,6 +105,8 @@ public class UIManager : MonoBehaviour
     public Button pBloodTitheButton;
     public Text pIronWallInfoText;
     public Button pIronWallButton;
+    public Text pBountyBonusInfoText;
+    public Button pBountyBonusButton;
 
     [Header("Soul Shard Shop")]
     public GameObject soulShardShopPanel;
@@ -578,6 +580,10 @@ public class UIManager : MonoBehaviour
             if (pIronWallInfoText != null)
                 pIronWallInfoText.text = $"Iron Wall −{GameManager.IronWallDmgReduction * 100:F0}% dmg  (Lv.{gm.PIronWallLevel})";
             if (pIronWallButton != null)     pIronWallButton.interactable     = canSpend;
+
+            if (pBountyBonusInfoText != null)
+                pBountyBonusInfoText.text = $"Bounty Mastery +1x  (Lv.{gm.PBountyBonusLevel})";
+            if (pBountyBonusButton != null)  pBountyBonusButton.interactable  = canSpend;
         }
 
         // Soul Shard Shop
