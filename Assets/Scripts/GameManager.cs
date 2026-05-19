@@ -310,7 +310,6 @@ public class GameManager : MonoBehaviour
     public const float DailyBonusMultiplier = 10f;
 
     // --- Statistics ---
-    public int    TotalEnemiesKilled { get; private set; }
     public double TimePlayed         { get; private set; }
 
     // --- Achievements ---
