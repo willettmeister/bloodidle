@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Globalization;
 using System.Text;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
@@ -201,6 +202,9 @@ public class UIManager : MonoBehaviour
     public Text       tutorialTitleText;
     public Text       tutorialBodyText;
 
+    double _lastBloodDisplay;
+    bool   _tutorialWasActive;
+
     static readonly (AchievementFlags flag, string title, double bloodReward, int ppReward)[] k_AchievDefs =
     {
         (AchievementFlags.FirstKill,     "First Blood",         50.0,  0),
@@ -223,6 +227,7 @@ public class UIManager : MonoBehaviour
 
     void Start()
     {
+        DOTween.Init(recycleAllByDefault: true, useSafeMode: true).SetCapacity(200, 10);
         if (GameManager.Instance == null)
         {
             Debug.LogError("[UIManager] GameManager.Instance is null — check scene setup.");
@@ -261,6 +266,12 @@ public class UIManager : MonoBehaviour
         bloodText.text = gm.BloodPerSec > 0
             ? $"Blood: {GameManager.FormatNumber(gm.Blood)}  +{gm.BloodPerSec:F1}/s{dailyTag}"
             : $"Blood: {GameManager.FormatNumber(gm.Blood)}{dailyTag}";
+        if (gm.Blood > _lastBloodDisplay && bloodText != null)
+        {
+            bloodText.transform.DOKill();
+            bloodText.transform.DOPunchScale(Vector3.one * 0.10f, 0.18f, 1, 0.5f);
+        }
+        _lastBloodDisplay = gm.Blood;
 
         if (gm.SoulShardShopUnlocked)
             woodText.text = $"Wood: {GameManager.FormatNumber(gm.Wood)}  ⬡{GameManager.FormatNumber(gm.SoulShards)}";
@@ -289,6 +300,11 @@ public class UIManager : MonoBehaviour
             enemyImage.color  = spr != null ? Color.white : Color.clear;
         }
 
+        if (waveText.text != $"Wave {gm.Wave}")
+        {
+            waveText.transform.DOKill();
+            waveText.transform.DOPunchScale(Vector3.one * 0.18f, 0.25f, 1, 0.5f);
+        }
         waveText.text = $"Wave {gm.Wave}";
         if (waveSubText != null)
         {
@@ -378,7 +394,8 @@ public class UIManager : MonoBehaviour
             bossTimerText.text  = $"⏱ {secs}s  — defeat the boss or face the penalty!";
             bossTimerText.color = secs <= 10 ? new Color(1f, 0.2f, 0.2f) : new Color(1f, 0.6f, 0.1f);
         }
-        enemyHPFill.fillAmount = gm.EnemyMaxHP > 0 ? gm.EnemyHP / gm.EnemyMaxHP : 0f;
+        float eHPTarget = gm.EnemyMaxHP > 0 ? gm.EnemyHP / gm.EnemyMaxHP : 0f;
+        enemyHPFill.DOFillAmount(eHPTarget, 0.12f).SetEase(Ease.OutSine);
         enemyHPText.text = $"{GameManager.FormatHP(gm.EnemyHP)} / {GameManager.FormatHP(gm.EnemyMaxHP)}  |  +{GameManager.FormatNumber(gm.WaveBloodPreview)} blood";
 
         // Army
@@ -398,7 +415,8 @@ public class UIManager : MonoBehaviour
         soldierHPRow.SetActive(hasSoldiers);
         if (hasSoldiers)
         {
-            soldierHPFill.fillAmount = gm.FrontlineMaxHP > 0 ? gm.SoldierHP / gm.FrontlineMaxHP : 0f;
+            float sHPTarget = gm.FrontlineMaxHP > 0 ? gm.SoldierHP / gm.FrontlineMaxHP : 0f;
+            soldierHPFill.DOFillAmount(sHPTarget, 0.15f).SetEase(Ease.OutCubic);
             string cls = gm.FrontlineIsTank ? "Tank" : gm.FrontlineIsBerserker ? "Berserker" : "Paladin";
             string desperTag   = gm.DesperationActive ? "  💥" : "";
             string lastStandTag = gm.LastStandActive  ? "  ⚔ LAST STAND" : "";
@@ -758,15 +776,26 @@ public class UIManager : MonoBehaviour
                 prestigeInfoText.text += $"\n{talentLine}";
         }
 
-        // Tutorial panel
+        // Tutorial panel — fade in on first show, instant hide on dismiss
         if (tutorialPanel != null)
         {
-            tutorialPanel.SetActive(gm.TutorialActive);
             if (gm.TutorialActive)
             {
                 if (tutorialTitleText != null) tutorialTitleText.text = gm.TutorialTitle;
                 if (tutorialBodyText  != null) tutorialBodyText.text  = gm.TutorialBody;
+                if (!_tutorialWasActive)
+                {
+                    var cg = tutorialPanel.GetComponent<CanvasGroup>() ?? tutorialPanel.AddComponent<CanvasGroup>();
+                    cg.alpha = 0f;
+                    tutorialPanel.SetActive(true);
+                    cg.DOFade(1f, 0.4f).SetEase(Ease.OutQuad);
+                }
             }
+            else
+            {
+                tutorialPanel.SetActive(false);
+            }
+            _tutorialWasActive = gm.TutorialActive;
         }
     }
 
@@ -900,8 +929,14 @@ public class UIManager : MonoBehaviour
     {
         if (achievementToast == null) yield break;
         achievementToastText.text = message;
+        var rt = achievementToast.GetComponent<RectTransform>();
+        rt.DOKill();
+        rt.anchoredPosition = new Vector2(0f, -72f);
         achievementToast.SetActive(true);
-        yield return new WaitForSeconds(3f);
+        rt.DOAnchorPosY(12f, 0.38f).SetEase(Ease.OutBack);
+        yield return new WaitForSeconds(3.2f);
+        rt.DOAnchorPosY(-72f, 0.28f).SetEase(Ease.InQuad);
+        yield return new WaitForSeconds(0.3f);
         achievementToast.SetActive(false);
     }
 
