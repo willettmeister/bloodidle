@@ -342,6 +342,7 @@ public class GameManager : MonoBehaviour
     public float  BloodShieldHP       { get; private set; }
     public bool   BloodShieldUnlocked { get; private set; }
     public bool   AutoBuySoldiers     { get; private set; }
+    public const double TruceCost      = 100.0;
 
     public event Action OnStateChanged;
     public event Action<float, bool> OnDamageDealt;
@@ -846,7 +847,22 @@ public class GameManager : MonoBehaviour
     void PlaySound(object clip) { } // stub — audio module unavailable in this assembly
 
     public bool BuySoldier() => BuyTank();
-    public void ToggleAutoBuySoldiers() { AutoBuySoldiers = !AutoBuySoldiers; FireStateChanged(); }
+    public void ToggleAutoBuySoldiers() { AutoBuySoldiers = !AutoBuySoldiers; OnStateChanged?.Invoke(); }
+
+    public bool UseTruce()
+    {
+        if (Blood < TruceCost || WavePreviewActive || EnemyHP <= 0) return false;
+        Blood -= TruceCost;
+        WaveStreak = 0;
+        Wave++;
+        if (Wave >= 10) TryUnlock(AchievementFlags.Wave10);
+        if (Wave >= 25) TryUnlock(AchievementFlags.Wave25);
+        WavePreviewActive = true;
+        _previewTimer     = WavePreviewDuration;
+        _dmgTimer         = 0f;
+        OnStateChanged?.Invoke();
+        return true;
+    }
 
     public bool BuyTank()
     {
@@ -916,7 +932,7 @@ public class GameManager : MonoBehaviour
         if (!BloodShieldUnlocked || Blood < BloodShieldCost || SoldierCount == 0) return false;
         Blood -= BloodShieldCost;
         BloodShieldHP = BloodShieldAmount;
-        FireStateChanged();
+        OnStateChanged?.Invoke();
         return true;
     }
 
