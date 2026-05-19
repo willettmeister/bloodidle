@@ -326,8 +326,9 @@ public class UIManager : MonoBehaviour
                          : gm.IsAllPaladin   ? "  ✚ Heal"
                          : gm.IsMixedArmy    ? "  🛡 −15% dmg"
                          : "";
+        string furyTag = gm.IdleFuryStacks > 0 ? $"  | Idle Fury x{gm.IdleFuryStacks}" : "";
         soldierCountText.text = hasSoldiers
-            ? $"Soldiers: {gm.SoldierCount}/{gm.MaxSoldiers}  [T:{gm.TankCount} B:{gm.BerserkerCount} P:{gm.PaladinCount}]{compBonus}"
+            ? $"Soldiers: {gm.SoldierCount}/{gm.MaxSoldiers}  [T:{gm.TankCount} B:{gm.BerserkerCount} P:{gm.PaladinCount}]{compBonus}{furyTag}"
             : $"No soldiers — buy one!  (max {gm.MaxSoldiers})";
 
         soldierHPRow.SetActive(hasSoldiers);

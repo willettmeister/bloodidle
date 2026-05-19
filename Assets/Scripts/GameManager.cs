@@ -226,6 +226,14 @@ public class GameManager : MonoBehaviour
     public int   AdrenalineStacks => _adrenalineStacks;
     public float AdrenalineMult   => 1f + _adrenalineStacks * AdrenalineBonus;
 
+    // --- Idle Fury ---
+    public const float IdleFuryStepSecs   = 5f;
+    public const float IdleFuryAtkBonus   = 0.20f;
+    public const int   IdleFuryMaxStacks  = 5;
+    float _idleTimer;
+    public int   IdleFuryStacks => Mathf.Min((int)(_idleTimer / IdleFuryStepSecs), IdleFuryMaxStacks);
+    public float IdleFuryMult   => 1f + IdleFuryStacks * IdleFuryAtkBonus;
+
     // --- Prestige Talent Tree ---
     public TalentFlags   Talents              { get; private set; }
     public bool          PendingPrestige      { get; private set; }
@@ -650,7 +658,8 @@ public class GameManager : MonoBehaviour
         if (_hexCurseTimer > 0f) { _hexCurseTimer -= dt; if (_hexCurseTimer < 0f) _hexCurseTimer = 0f; }
         if (SoldierCount > 0) _meditationTimer += dt;
         if (_adrenalineTimer > 0f) { _adrenalineTimer -= dt; if (_adrenalineTimer <= 0f) _adrenalineStacks = 0; }
-        float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f) * (WarCryActive ? WarCryMult : 1f) * AdrenalineMult;
+        _idleTimer += dt;
+        float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f) * (WarCryActive ? WarCryMult : 1f) * AdrenalineMult * IdleFuryMult;
         if (CurrentEnemyModifier == EnemyModifier.Armored && !IsAllBerserker)
             eff *= IsAllTank ? EnemyArmoredDmgMult + 0.25f : EnemyArmoredDmgMult;
         if (CurrentEnemyModifier == EnemyModifier.Cursed && PaladinCount > 0) eff *= PaladinHolyBonus;
@@ -885,6 +894,7 @@ public class GameManager : MonoBehaviour
     public void FarmBlood()
     {
         _tapCount++;
+        _idleTimer = 0f;
         if (SoldierCount > 0 && EnemyHP > 0) _crimsonPactCharged = true;
         double amount = EffectiveBloodPerClick * (_tapCount % EchoTapInterval == 0 ? 2.0 : 1.0);
         if (DailyBonusAvailable)
