@@ -19,7 +19,7 @@ find_unity() {
   done
 }
 
-UNITY=$(find_unity)
+UNITY=$(find_unity || true)
 
 if [[ -z "$UNITY" ]]; then
   echo "[pre-push] Unity not found — skipping EditMode tests."
