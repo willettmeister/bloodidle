@@ -805,6 +805,7 @@ public class UIManager : MonoBehaviour
         TalentFlags.BloodRush    => "Blood Rush\nBoss/challenge kill activates Blood Surge",
         TalentFlags.Glutton      => "Glutton\nBlood Rituals produce 25% more blood/s",
         TalentFlags.EchoMastery  => "Echo Mastery\nBlood Echo lasts 8 waves instead of 5",
+        TalentFlags.Bloodlust    => "Bloodlust\nHeal frontline for 5% of each enemy's max HP on kill",
         _                        => "",
     };
 
@@ -818,6 +819,7 @@ public class UIManager : MonoBehaviour
         if ((talents & TalentFlags.BloodRush)      != 0) names.Add("BloodRush");
         if ((talents & TalentFlags.Glutton)        != 0) names.Add("Glutton");
         if ((talents & TalentFlags.EchoMastery)    != 0) names.Add("EchoMastery");
+        if ((talents & TalentFlags.Bloodlust)      != 0) names.Add("Bloodlust");
         return names.Count > 0 ? "Talents: " + string.Join(" | ", names) : "";
     }
 

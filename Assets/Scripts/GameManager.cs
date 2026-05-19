@@ -39,6 +39,7 @@ public enum TalentFlags
     BloodRush    = 1 << 4,  // boss kill immediately activates Blood Surge
     Glutton      = 1 << 5,  // Blood Rituals produce 25% more blood/s
     EchoMastery  = 1 << 6,  // Blood Echo lasts 8 waves instead of 5
+    Bloodlust    = 1 << 7,  // heal frontline 5% of enemy max HP on each kill
 }
 
 public class GameManager : MonoBehaviour
@@ -306,9 +307,10 @@ public class GameManager : MonoBehaviour
     public bool          PendingPrestige      { get; private set; }
     public TalentFlags[] PendingTalentChoices { get; private set; } = new TalentFlags[0];
     public bool HasTalent(TalentFlags t)      => (Talents & t) != 0;
-    public const float  TalentIronSkinHP      = 15f;
+    public const float  TalentIronSkinHP       = 15f;
     public const double TalentBloodFrenzyBonus = 0.25;
-    public const float  TalentGluttonMult     = 1.25f;
+    public const float  TalentGluttonMult      = 1.25f;
+    public const float  TalentBloodlustHealPct = 0.05f;
 
     // --- Soul Sacrifice ---
     public bool SoulSacrificeUnlocked  => PrestigeCount >= 1;
@@ -804,6 +806,8 @@ public class GameManager : MonoBehaviour
             if (wasBoss)          BloodEchoCount = HasTalent(TalentFlags.EchoMastery) ? TalentEchoWaves : BloodEchoWaves;
             else if (BloodEchoCount > 0) BloodEchoCount--;
             if (SoulHarvestUnlocked) reward += Math.Floor(EnemyMaxHP * SoulHarvestPct);
+            if (HasTalent(TalentFlags.Bloodlust) && SoldierCount > 0)
+                SoldierHP = Mathf.Min(SoldierHP + EnemyMaxHP * TalentBloodlustHealPct, FrontlineMaxHP);
             AddBlood(reward);
             if (isFlawless) OnMilestoneChest?.Invoke("⚡ FLAWLESS! ×2 blood!");
             if (_isBountyEnemy) OnMilestoneChest?.Invoke($"★ BOUNTY CLAIMED! +{FormatHP((float)reward)} blood!");
@@ -1469,9 +1473,9 @@ public class GameManager : MonoBehaviour
     {
         var all = new TalentFlags[]
         {
-            TalentFlags.BloodFrenzy, TalentFlags.Undying, TalentFlags.ShardHunter,
-            TalentFlags.IronSkin,    TalentFlags.BloodRush, TalentFlags.Glutton,
-            TalentFlags.EchoMastery,
+            TalentFlags.BloodFrenzy, TalentFlags.Undying,    TalentFlags.ShardHunter,
+            TalentFlags.IronSkin,    TalentFlags.BloodRush,  TalentFlags.Glutton,
+            TalentFlags.EchoMastery, TalentFlags.Bloodlust,
         };
         int availCount = 0;
         for (int k = 0; k < all.Length; k++)
