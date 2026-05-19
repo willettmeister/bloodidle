@@ -413,10 +413,11 @@ public class UIManager : MonoBehaviour
         bool hasSoldiers = gm.SoldierCount > 0;
         bool atCap       = gm.SoldierCount >= gm.MaxSoldiers;
 
-        string compBonus = gm.IsAllTank      ? "  ♦ Regen"
-                         : gm.IsAllBerserker ? "  ⚡ Crit"
-                         : gm.IsAllPaladin   ? "  ✚ Heal"
-                         : gm.IsMixedArmy    ? "  🛡 −15% dmg"
+        string compBonus = gm.PackTacticsActive ? "  ⚔ Pack Tactics +15%"
+                         : gm.IsAllTank        ? "  ♦ Regen"
+                         : gm.IsAllBerserker   ? "  ⚡ Crit"
+                         : gm.IsAllPaladin     ? "  ✚ Heal"
+                         : gm.IsMixedArmy      ? "  🛡 −15% dmg"
                          : "";
         string furyTag = gm.IdleFuryStacks > 0 ? $"  | Idle Fury x{gm.IdleFuryStacks}" : "";
         soldierCountText.text = hasSoldiers

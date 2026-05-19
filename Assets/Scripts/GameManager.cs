@@ -127,13 +127,14 @@ public class GameManager : MonoBehaviour
                                        + PaladinCount   * (PaladinAttack   + EquipAttackBonus + VeteranAttackBonus))
                                        * (1f + PrestigeMilestoneDmgBonus) * MoraleBonusMult;
     public float EffectiveAttack     => TotalAttack
-                                       * (SurgeActive       ? SurgeMultiplier  : 1f)
-                                       * (WarCryActive      ? WarCryMult       : 1f)
+                                       * (SurgeActive        ? SurgeMultiplier   : 1f)
+                                       * (WarCryActive       ? WarCryMult        : 1f)
                                        * AdrenalineMult * IdleFuryMult
-                                       * (IsBloodyWave       ? BloodMoonAtkMult : 1f)
+                                       * (IsBloodyWave        ? BloodMoonAtkMult  : 1f)
                                        * (BloodEchoCount > 0  ? (1f + BloodEchoAtkBonus) : 1f)
-                                       * (DesperationActive   ? DesperationMult          : 1f)
-                                       * (LastStandActive     ? LastStandMult            : 1f);
+                                       * (DesperationActive   ? DesperationMult   : 1f)
+                                       * (LastStandActive     ? LastStandMult     : 1f)
+                                       * (PackTacticsActive   ? PackTacticsMult   : 1f);
     public int    BloodEchoCount     { get; private set; }
     public const int   BloodEchoWaves        = 5;
     public const int   TalentEchoWaves       = 8;
@@ -143,10 +144,12 @@ public class GameManager : MonoBehaviour
     public bool   DesperationActive  => SoldierHP > 0 && SoldierHP < FrontlineMaxHP * DesperationThreshold;
     public const int VeteranAttackCap = 10;
     public float VeteranAttackBonus { get; private set; }
-    public bool  IsAllTank       => TankCount > 0 && BerserkerCount == 0 && PaladinCount == 0;
-    public bool  IsAllBerserker  => BerserkerCount > 0 && TankCount == 0 && PaladinCount == 0;
-    public bool  IsAllPaladin    => PaladinCount > 0 && TankCount == 0 && BerserkerCount == 0;
-    public bool  IsMixedArmy     => SoldierCount > 0 && !IsAllTank && !IsAllBerserker && !IsAllPaladin;
+    public bool  IsAllTank          => TankCount > 0 && BerserkerCount == 0 && PaladinCount == 0;
+    public bool  IsAllBerserker     => BerserkerCount > 0 && TankCount == 0 && PaladinCount == 0;
+    public bool  IsAllPaladin       => PaladinCount > 0 && TankCount == 0 && BerserkerCount == 0;
+    public bool  IsMixedArmy        => SoldierCount > 0 && !IsAllTank && !IsAllBerserker && !IsAllPaladin;
+    public bool  PackTacticsActive  => TankCount > 0 && BerserkerCount > 0 && PaladinCount > 0;
+    public const float PackTacticsMult = 1.15f;
 
     public int MaxSoldiers { get; private set; } = 10;
     public const float  SoldierMaxHP        = 50f;
@@ -752,6 +755,7 @@ public class GameManager : MonoBehaviour
         _idleTimer += dt;
         if (_bloodStormTimer > 0f) { _bloodStormTimer -= dt; if (_bloodStormTimer < 0f) _bloodStormTimer = 0f; }
         float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f) * (WarCryActive ? WarCryMult : 1f) * AdrenalineMult * IdleFuryMult * (IsBloodyWave ? BloodMoonAtkMult : 1f) * (BloodEchoCount > 0 ? (1f + BloodEchoAtkBonus) : 1f) * (DesperationActive ? DesperationMult : 1f);
+        if (PackTacticsActive)   eff *= PackTacticsMult;
         if (CurrentEnemyModifier == EnemyModifier.Armored && !IsAllBerserker)
             eff *= IsAllTank ? EnemyArmoredDmgMult + 0.25f : EnemyArmoredDmgMult;
         if (CurrentEnemyModifier == EnemyModifier.Cursed && PaladinCount > 0) eff *= PaladinHolyBonus;
