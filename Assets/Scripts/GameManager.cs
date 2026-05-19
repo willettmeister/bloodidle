@@ -218,6 +218,13 @@ public class GameManager : MonoBehaviour
     public const float MeditationMult      = 3f;
     float _meditationTimer;
     public bool MeditationReady => _meditationTimer >= MeditationThreshold && SoldierCount > 0 && EnemyHP > 0;
+    public const float AdrenalineBonus    = 0.10f;
+    public const float AdrenalineDuration = 15f;
+    public const int   AdrenalineMaxStack = 3;
+    int   _adrenalineStacks;
+    float _adrenalineTimer;
+    public int   AdrenalineStacks => _adrenalineStacks;
+    public float AdrenalineMult   => 1f + _adrenalineStacks * AdrenalineBonus;
 
     // --- Prestige Talent Tree ---
     public TalentFlags   Talents              { get; private set; }
@@ -642,7 +649,8 @@ public class GameManager : MonoBehaviour
         if (_warCryTimer > 0f) { _warCryTimer -= dt; if (_warCryTimer < 0f) _warCryTimer = 0f; }
         if (_hexCurseTimer > 0f) { _hexCurseTimer -= dt; if (_hexCurseTimer < 0f) _hexCurseTimer = 0f; }
         if (SoldierCount > 0) _meditationTimer += dt;
-        float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f) * (WarCryActive ? WarCryMult : 1f);
+        if (_adrenalineTimer > 0f) { _adrenalineTimer -= dt; if (_adrenalineTimer <= 0f) _adrenalineStacks = 0; }
+        float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f) * (WarCryActive ? WarCryMult : 1f) * AdrenalineMult;
         if (CurrentEnemyModifier == EnemyModifier.Armored && !IsAllBerserker)
             eff *= IsAllTank ? EnemyArmoredDmgMult + 0.25f : EnemyArmoredDmgMult;
         if (CurrentEnemyModifier == EnemyModifier.Cursed && PaladinCount > 0) eff *= PaladinHolyBonus;
@@ -750,6 +758,7 @@ public class GameManager : MonoBehaviour
                 else if (FrontlineIsBerserker) BerserkerCount--;
                 else                           PaladinCount--;
                 TotalSoldiersLost++;
+                if (SoldierCount > 0 && _adrenalineStacks < AdrenalineMaxStack) { _adrenalineStacks++; _adrenalineTimer = AdrenalineDuration; }
                 SoldierHP  = SoldierCount > 0 ? FrontlineMaxHP : 0f;
                 WaveStreak = 0;
             }
