@@ -795,6 +795,7 @@ public class UIManager : MonoBehaviour
         TalentFlags.IronSkin     => "Iron Skin\n+15 max HP to frontline soldier",
         TalentFlags.BloodRush    => "Blood Rush\nBoss/challenge kill activates Blood Surge",
         TalentFlags.Glutton      => "Glutton\nBlood Rituals produce 25% more blood/s",
+        TalentFlags.EchoMastery  => "Echo Mastery\nBlood Echo lasts 8 waves instead of 5",
         _                        => "",
     };
 
@@ -807,6 +808,7 @@ public class UIManager : MonoBehaviour
         if ((talents & TalentFlags.IronSkin)       != 0) names.Add("IronSkin");
         if ((talents & TalentFlags.BloodRush)      != 0) names.Add("BloodRush");
         if ((talents & TalentFlags.Glutton)        != 0) names.Add("Glutton");
+        if ((talents & TalentFlags.EchoMastery)    != 0) names.Add("EchoMastery");
         return names.Count > 0 ? "Talents: " + string.Join(" | ", names) : "";
     }
 

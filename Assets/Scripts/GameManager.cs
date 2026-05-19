@@ -38,6 +38,7 @@ public enum TalentFlags
     IronSkin     = 1 << 3,  // +15 flat max HP to frontline soldier
     BloodRush    = 1 << 4,  // boss kill immediately activates Blood Surge
     Glutton      = 1 << 5,  // Blood Rituals produce 25% more blood/s
+    EchoMastery  = 1 << 6,  // Blood Echo lasts 8 waves instead of 5
 }
 
 public class GameManager : MonoBehaviour
@@ -133,6 +134,7 @@ public class GameManager : MonoBehaviour
                                        * (LastStandActive     ? LastStandMult            : 1f);
     public int    BloodEchoCount     { get; private set; }
     public const int   BloodEchoWaves        = 5;
+    public const int   TalentEchoWaves       = 8;
     public const float BloodEchoAtkBonus     = 0.25f;
     public const float DesperationThreshold  = 0.25f;
     public const float DesperationMult       = 1.50f;
@@ -789,7 +791,7 @@ public class GameManager : MonoBehaviour
             TotalEnemiesKilled++;
             if (wasBoss) TotalBossesKilled++;
             WaveStreak++;
-            if (wasBoss)          BloodEchoCount = BloodEchoWaves;
+            if (wasBoss)          BloodEchoCount = HasTalent(TalentFlags.EchoMastery) ? TalentEchoWaves : BloodEchoWaves;
             else if (BloodEchoCount > 0) BloodEchoCount--;
             if (SoulHarvestUnlocked) reward += Math.Floor(EnemyMaxHP * SoulHarvestPct);
             AddBlood(reward);
@@ -1444,6 +1446,7 @@ public class GameManager : MonoBehaviour
         {
             TalentFlags.BloodFrenzy, TalentFlags.Undying, TalentFlags.ShardHunter,
             TalentFlags.IronSkin,    TalentFlags.BloodRush, TalentFlags.Glutton,
+            TalentFlags.EchoMastery,
         };
         int availCount = 0;
         for (int k = 0; k < all.Length; k++)
