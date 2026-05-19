@@ -92,8 +92,11 @@ public class GameManager : MonoBehaviour
     public const float  PaladinHolyBonus   = 1.25f;
     public const float  TankRegenRate        = 2f;
     public const float  BetweenWaveRegenRate = 5f;
-    public const float  BerserkerCritChance = 0.2f;
-    public const float  BerserkerCritMult   = 2f;
+    public const float  BerserkerCritChance  = 0.2f;
+    public const float  BerserkerCritMult    = 2f;
+    public const float  BerserkerRageMult    = 1.5f;
+    public const float  BerserkerRageThresh  = 0.3f;
+    public bool         BerserkerRageActive  => FrontlineIsBerserker && SoldierHP < FrontlineMaxHP * BerserkerRageThresh;
     public const float  MixedArmyDmgReduction = 0.15f;
 
     // --- Equipment ---
@@ -569,6 +572,7 @@ public class GameManager : MonoBehaviour
         float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f);
         if (CurrentEnemyModifier == EnemyModifier.Armored) eff *= EnemyArmoredDmgMult;
         if (CurrentEnemyModifier == EnemyModifier.Cursed && PaladinCount > 0) eff *= PaladinHolyBonus;
+        if (BerserkerRageActive) eff *= BerserkerRageMult;
         if (BossShieldActive)
         {
             _bossShieldHP -= eff * dt;
