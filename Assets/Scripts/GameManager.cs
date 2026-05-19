@@ -100,6 +100,11 @@ public class GameManager : MonoBehaviour
                                        + BerserkerCount * (BerserkerAttack + EquipAttackBonus + VeteranAttackBonus)
                                        + PaladinCount   * (PaladinAttack   + EquipAttackBonus + VeteranAttackBonus))
                                        * (1f + PrestigeMilestoneDmgBonus) * MoraleBonusMult;
+    public float EffectiveAttack     => TotalAttack
+                                       * (SurgeActive  ? SurgeMultiplier  : 1f)
+                                       * (WarCryActive ? WarCryMult       : 1f)
+                                       * AdrenalineMult * IdleFuryMult
+                                       * (IsBloodyWave  ? BloodMoonAtkMult : 1f);
     public const int VeteranAttackCap = 10;
     public float VeteranAttackBonus { get; private set; }
     public bool  IsAllTank       => TankCount > 0 && BerserkerCount == 0 && PaladinCount == 0;
