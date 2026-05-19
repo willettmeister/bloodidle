@@ -354,6 +354,8 @@ public class GameManager : MonoBehaviour
     public const double SoulHarvestPct        = 0.01;
     public const int    SoulHarvestUnlockWave = 10;
     public bool SoulHarvestUnlocked => TotalEnemiesKilled >= 10;
+    public const float SacrificeDmgMult = 3f;
+    public bool SacrificeUnlocked       => Wave >= 3 && SoldierCount >= 2;
 
     public event Action OnStateChanged;
     public event Action<float, bool> OnDamageDealt;
@@ -873,6 +875,20 @@ public class GameManager : MonoBehaviour
         WavePreviewActive = true;
         _previewTimer     = WavePreviewDuration;
         _dmgTimer         = 0f;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    public bool UseSolderSacrifice()
+    {
+        if (!SacrificeUnlocked || EnemyHP <= 0) return false;
+        float burstDmg = FrontlineMaxHP * SacrificeDmgMult;
+        if (FrontlineIsTank)           TankCount--;
+        else if (FrontlineIsBerserker) BerserkerCount--;
+        else                           PaladinCount--;
+        TotalSoldiersLost++;
+        SoldierHP = SoldierCount > 0 ? FrontlineMaxHP : 0f;
+        EnemyHP   = Mathf.Max(0f, EnemyHP - burstDmg);
         OnStateChanged?.Invoke();
         return true;
     }
