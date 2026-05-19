@@ -64,6 +64,21 @@ public class GameManager : MonoBehaviour
     public double KillIncomePerSec      => TotalEnemiesKilled * KillIncomeRate;
     public bool   IsBloodyWave          => Wave > 0 && Wave % 10 == 0 && !IsBossWave;
     public const double BloodMoonMult   = 2.0;
+    public double WaveBloodPreview
+    {
+        get
+        {
+            double r = Math.Floor(25 * Math.Pow(1.4, Wave - 1) * PrestigeMultiplier * (1.0 + EquipTalismanBonus));
+            if (CurrentEnemyModifier == EnemyModifier.Cursed) r = Math.Floor(r * EnemyCursedRewardMult);
+            if (IsBloodyWave)  r = Math.Floor(r * BloodMoonMult);
+            if (_isBountyEnemy) r = Math.Floor(r * BountyRewardMult);
+            if (IsBossWave)    r *= 3;
+            if (HasTalent(TalentFlags.BloodFrenzy)) r = Math.Floor(r * (1.0 + TalentBloodFrenzyBonus));
+            r = Math.Floor(r * StreakMultiplier * KillStreakBonusMult);
+            if (SoulHarvestUnlocked) r += Math.Floor(EnemyMaxHP * SoulHarvestPct);
+            return r;
+        }
+    }
     public const float  BloodMoonAtkMult= 1.20f;
     public const float  BossVictoryHealPct = 0.25f;
     public bool   IsBountyWave          => Wave % 10 == 5 && !IsBossWave;

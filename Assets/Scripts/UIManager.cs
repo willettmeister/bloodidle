@@ -349,7 +349,7 @@ public class UIManager : MonoBehaviour
             bossTimerText.color = secs <= 10 ? new Color(1f, 0.2f, 0.2f) : new Color(1f, 0.6f, 0.1f);
         }
         enemyHPFill.fillAmount = gm.EnemyMaxHP > 0 ? gm.EnemyHP / gm.EnemyMaxHP : 0f;
-        enemyHPText.text = $"{GameManager.FormatHP(gm.EnemyHP)} / {GameManager.FormatHP(gm.EnemyMaxHP)}";
+        enemyHPText.text = $"{GameManager.FormatHP(gm.EnemyHP)} / {GameManager.FormatHP(gm.EnemyMaxHP)}  |  +{GameManager.FormatNumber(gm.WaveBloodPreview)} blood";
 
         // Army
         bool hasSoldiers = gm.SoldierCount > 0;
