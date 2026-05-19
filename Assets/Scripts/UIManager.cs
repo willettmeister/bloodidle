@@ -923,32 +923,40 @@ public class UIManager : MonoBehaviour
         var req = new UnityWebRequest(k_GhApi, "POST");
         req.uploadHandler   = new UploadHandlerRaw(bytes);
         req.downloadHandler = new DownloadHandlerBuffer();
+        req.timeout         = 15; // seconds — prevents indefinite hang on slow/no connection
         req.SetRequestHeader("Authorization",        "Bearer " + token);
         req.SetRequestHeader("Accept",               "application/vnd.github+json");
         req.SetRequestHeader("Content-Type",         "application/json");
         req.SetRequestHeader("X-GitHub-Api-Version", "2022-11-28");
         req.SetRequestHeader("User-Agent",           "BloodIdle/1.0");
+
         yield return req.SendWebRequest();
 
-        if (req.result == UnityWebRequest.Result.Success)
+        bool success = req.result == UnityWebRequest.Result.Success;
+        try
         {
-            // Stamp rate-limit timestamp
-            PlayerPrefs.SetString(k_RateLimitKey,
-                DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture));
-            PlayerPrefs.Save();
-
-            featureStatusText.text = "Submitted" + ParseIssueNumber(req.downloadHandler.text) +
-                                     "! Thank you.";
-            yield return new WaitForSeconds(2.5f);
-            HideFeaturePanel();
+            if (success)
+            {
+                PlayerPrefs.SetString(k_RateLimitKey,
+                    DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture));
+                PlayerPrefs.Save();
+                featureStatusText.text = "Submitted" + ParseIssueNumber(req.downloadHandler.text) +
+                                         "! Thank you.";
+                yield return new WaitForSeconds(2.5f);
+                HideFeaturePanel();
+            }
+            else
+            {
+                long code = req.responseCode;
+                featureStatusText.text = code == 422
+                    ? "Label 'feature request' missing — ask the dev to create it on GitHub."
+                    : $"Failed ({(code > 0 ? code.ToString() : req.error)}) — check your connection.";
+            }
         }
-        else
+        finally
         {
-            long code = req.responseCode;
-            featureStatusText.text = code == 422
-                ? "Label 'feature request' missing — ask the dev to create it on GitHub."
-                : $"Failed ({(code > 0 ? code.ToString() : req.error)}) — check your connection.";
-            featureSubmitButton.interactable = true;
+            if (!success) featureSubmitButton.interactable = true;
+            req.Dispose();
         }
     }
 
