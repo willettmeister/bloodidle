@@ -36,7 +36,7 @@ echo "[pre-push] Running EditMode tests with $UNITY ..."
   -runTests -testPlatform EditMode \
   -logFile "$LOG" 2>&1 || true
 
-if grep -q "Test run failed\|had errors" "$LOG" 2>/dev/null; then
+if grep -q "Test run failed\|had errors\|compiler errors\|Script compilation" "$LOG" 2>/dev/null; then
   echo "[pre-push] EditMode tests FAILED. See $LOG"
   tail -20 "$LOG"
   exit 1

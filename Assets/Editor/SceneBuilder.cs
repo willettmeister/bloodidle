@@ -104,7 +104,7 @@ public static class SceneBuilder
         {
             bgImg.sprite              = s_Background;
             bgImg.type                = Image.Type.Simple;
-            bgImg.preserveAspectRatio = false;
+            bgImg.preserveAspect = false;
             bgImg.color               = Color.white;
         }
         bgGO.Stretch();
