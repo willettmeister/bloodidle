@@ -46,7 +46,10 @@ public class GameManager : MonoBehaviour
     // --- Wood & Workers ---
     public double Wood { get; private set; }
     public int WorkerCount { get; private set; }
-    public double WoodPerSecond => WorkerCount * WorkerWoodPerSec;
+    public double WorkerEfficiencyMult => 1.0 + Math.Floor(WorkerCount / 5.0) * 0.1;
+    public const double KillIncomeRate  = 0.01;
+    public double KillIncomePerSec      => TotalEnemiesKilled * KillIncomeRate;
+    public double WoodPerSecond        => WorkerCount * WorkerWoodPerSec * WorkerEfficiencyMult;
     public const double WorkerCost = 50.0;
     public const double WorkerWoodPerSec = 0.5;
 
@@ -132,7 +135,7 @@ public class GameManager : MonoBehaviour
     public double BloodRitualCost  { get; private set; } = BloodRitualBaseCost;
     public double BloodPerSec      => BloodRitualCount * (BloodRitualBloodPerSec + PRitualEffLevel * 0.5) * PrestigeMultiplier
                                     * (HasTalent(TalentFlags.Glutton) ? TalentGluttonMult : 1f)
-                                    + BloodTithePerSec + BloodTapPerSec;
+                                    + BloodTithePerSec + BloodTapPerSec + KillIncomePerSec;
     public const double BloodRitualBaseCost       = 30.0;
     public const double BloodRitualBloodPerSec    = 1.0;
     public const double BloodRitualCostMultiplier = 2.0;
