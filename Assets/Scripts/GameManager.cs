@@ -42,6 +42,9 @@ public class GameManager : MonoBehaviour
     public double TotalBloodEarned { get; private set; }
     public const double BloodPerClick = 1.0;
     public double EffectiveBloodPerClick => (BloodPerClick + PClickBonusLevel * 0.5) * PrestigeMultiplier;
+    public const int    EchoTapInterval  = 5;
+    int _tapCount;
+    public bool NextTapIsEcho => (_tapCount + 1) % EchoTapInterval == 0;
 
     // --- Wood & Workers ---
     public double Wood { get; private set; }
@@ -821,7 +824,8 @@ public class GameManager : MonoBehaviour
 
     public void FarmBlood()
     {
-        double amount = EffectiveBloodPerClick;
+        _tapCount++;
+        double amount = EffectiveBloodPerClick * (_tapCount % EchoTapInterval == 0 ? 2.0 : 1.0);
         if (DailyBonusAvailable)
         {
             amount *= DailyBonusMultiplier;
