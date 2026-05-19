@@ -51,7 +51,9 @@ public class GameManager : MonoBehaviour
     public double KillIncomePerSec      => TotalEnemiesKilled * KillIncomeRate;
     public bool   IsBloodyWave          => Wave > 0 && Wave % 10 == 0 && !IsBossWave;
     public const double BloodMoonMult   = 2.0;
-    public double WoodPerSecond        => WorkerCount * WorkerWoodPerSec * WorkerEfficiencyMult;
+    public const double FortWoodPerSec  = 0.1;
+    public double WoodPerSecond        => WorkerCount * WorkerWoodPerSec * WorkerEfficiencyMult
+                                        + FortificationLevel * FortWoodPerSec;
     public const double WorkerCost = 50.0;
     public const double WorkerWoodPerSec = 0.5;
 
