@@ -1,3 +1,4 @@
 {
-	"name": "DOTween.Modules"
+	"name": "DOTween.Modules",
+	"autoReferenced": true
 }

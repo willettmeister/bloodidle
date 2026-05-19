@@ -1,7 +1,7 @@
 {
     "name": "GameAssembly",
     "rootNamespace": "",
-    "references": [],
+    "references": ["DOTween.Modules"],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
