@@ -283,14 +283,15 @@ public class UIManager : MonoBehaviour
         if (waveSubText != null)
         {
             string streakTag = gm.WaveStreak > 0 ? $"  🔥×{gm.StreakMultiplier:F1}" : "";
+            string echoTag   = gm.BloodEchoCount > 0 ? $"  ⚡×{gm.BloodEchoCount}" : "";
             if (gm.IsBossWave)
-                waveSubText.text = $"★ BOSS WAVE ★{streakTag}";
+                waveSubText.text = $"★ BOSS WAVE ★{streakTag}{echoTag}";
             else if (gm.IsBountyWave)
-                waveSubText.text = $"★ BOUNTY WAVE ★{streakTag}";
+                waveSubText.text = $"★ BOUNTY WAVE ★{streakTag}{echoTag}";
             else if (gm.IsEliteWave)
-                waveSubText.text = $"⚔ ELITE WAVE ⚔{streakTag}";
+                waveSubText.text = $"⚔ ELITE WAVE ⚔{streakTag}{echoTag}";
             else
-                waveSubText.text = $"Boss in {gm.WavesUntilBoss} wave{(gm.WavesUntilBoss == 1 ? "" : "s")}{streakTag}";
+                waveSubText.text = $"Boss in {gm.WavesUntilBoss} wave{(gm.WavesUntilBoss == 1 ? "" : "s")}{streakTag}{echoTag}";
         }
 
         if (enemyModifierText != null)

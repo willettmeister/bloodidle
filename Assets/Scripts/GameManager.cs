@@ -121,10 +121,14 @@ public class GameManager : MonoBehaviour
                                        + PaladinCount   * (PaladinAttack   + EquipAttackBonus + VeteranAttackBonus))
                                        * (1f + PrestigeMilestoneDmgBonus) * MoraleBonusMult;
     public float EffectiveAttack     => TotalAttack
-                                       * (SurgeActive  ? SurgeMultiplier  : 1f)
-                                       * (WarCryActive ? WarCryMult       : 1f)
+                                       * (SurgeActive       ? SurgeMultiplier  : 1f)
+                                       * (WarCryActive      ? WarCryMult       : 1f)
                                        * AdrenalineMult * IdleFuryMult
-                                       * (IsBloodyWave  ? BloodMoonAtkMult : 1f);
+                                       * (IsBloodyWave       ? BloodMoonAtkMult : 1f)
+                                       * (BloodEchoCount > 0 ? (1f + BloodEchoAtkBonus) : 1f);
+    public int    BloodEchoCount     { get; private set; }
+    public const int   BloodEchoWaves    = 5;
+    public const float BloodEchoAtkBonus = 0.25f;
     public const int VeteranAttackCap = 10;
     public float VeteranAttackBonus { get; private set; }
     public bool  IsAllTank       => TankCount > 0 && BerserkerCount == 0 && PaladinCount == 0;
@@ -717,7 +721,7 @@ public class GameManager : MonoBehaviour
         if (_adrenalineTimer > 0f) { _adrenalineTimer -= dt; if (_adrenalineTimer <= 0f) _adrenalineStacks = 0; }
         _idleTimer += dt;
         if (_bloodStormTimer > 0f) { _bloodStormTimer -= dt; if (_bloodStormTimer < 0f) _bloodStormTimer = 0f; }
-        float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f) * (WarCryActive ? WarCryMult : 1f) * AdrenalineMult * IdleFuryMult * (IsBloodyWave ? BloodMoonAtkMult : 1f);
+        float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f) * (WarCryActive ? WarCryMult : 1f) * AdrenalineMult * IdleFuryMult * (IsBloodyWave ? BloodMoonAtkMult : 1f) * (BloodEchoCount > 0 ? (1f + BloodEchoAtkBonus) : 1f);
         if (CurrentEnemyModifier == EnemyModifier.Armored && !IsAllBerserker)
             eff *= IsAllTank ? EnemyArmoredDmgMult + 0.25f : EnemyArmoredDmgMult;
         if (CurrentEnemyModifier == EnemyModifier.Cursed && PaladinCount > 0) eff *= PaladinHolyBonus;
@@ -772,6 +776,8 @@ public class GameManager : MonoBehaviour
             reward = Math.Floor(reward * StreakMultiplier * KillStreakBonusMult * (isFlawless ? 2.0 : 1.0));
             TotalEnemiesKilled++;
             WaveStreak++;
+            if (wasBoss)          BloodEchoCount = BloodEchoWaves;
+            else if (BloodEchoCount > 0) BloodEchoCount--;
             if (SoulHarvestUnlocked) reward += Math.Floor(EnemyMaxHP * SoulHarvestPct);
             AddBlood(reward);
             if (isFlawless) OnMilestoneChest?.Invoke("⚡ FLAWLESS! ×2 blood!");
