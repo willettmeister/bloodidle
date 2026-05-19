@@ -843,18 +843,40 @@ public class UIManager : MonoBehaviour
         featureSubmitButton.interactable = true;
     }
 
+    const int k_MinTitleLen = 10;
+
+    // Strip control characters (keep printable ASCII + common Unicode). Collapses runs of whitespace.
+    static string SanitizeInput(string raw)
+    {
+        if (raw == null) return "";
+        var sb = new System.Text.StringBuilder(raw.Length);
+        foreach (char c in raw)
+            if (c >= 32 && c != 127) sb.Append(c);  // drop DEL and all C0 controls
+        // collapse multiple spaces/tabs into one
+        return System.Text.RegularExpressions.Regex.Replace(sb.ToString().Trim(), @"\s{2,}", " ");
+    }
+
+    static bool HasMinLetters(string s, int min = 3)
+    {
+        int count = 0;
+        foreach (char c in s) if (char.IsLetter(c) && ++count >= min) return true;
+        return false;
+    }
+
     public void SubmitFeature()
     {
-        string title = featureTitleField.text.Trim();
-        if (title.Length == 0)      { featureStatusText.text = "Please enter a title."; return; }
+        string title = SanitizeInput(featureTitleField.text);
+        if (title.Length == 0)
+            { featureStatusText.text = "Please enter a title."; return; }
+        if (title.Length < k_MinTitleLen)
+            { featureStatusText.text = $"Title too short — at least {k_MinTitleLen} characters."; return; }
         if (title.Length > k_MaxTitleLen)
-        {
-            featureStatusText.text = $"Title too long ({title.Length}/{k_MaxTitleLen} chars).";
-            return;
-        }
+            { featureStatusText.text = $"Title too long ({title.Length}/{k_MaxTitleLen} chars)."; return; }
+        if (!HasMinLetters(title))
+            { featureStatusText.text = "Title must contain at least 3 letters."; return; }
         string rateLimitMsg = RateLimitStatus();
         if (rateLimitMsg.Length > 0) { featureStatusText.text = rateLimitMsg; return; }
-        StartCoroutine(PostIssue(title, featureDescField.text.Trim()));
+        StartCoroutine(PostIssue(title, SanitizeInput(featureDescField.text)));
     }
 
     // Returns a non-empty string when the player must wait before submitting again.
