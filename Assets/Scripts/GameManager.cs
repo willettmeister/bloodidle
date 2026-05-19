@@ -134,8 +134,6 @@ public class GameManager : MonoBehaviour
     public const float DesperationThreshold  = 0.25f;
     public const float DesperationMult       = 1.50f;
     public bool   DesperationActive  => SoldierHP > 0 && SoldierHP < FrontlineMaxHP * DesperationThreshold;
-    public const float LastStandMult         = 2.0f;
-    public bool   LastStandActive    => SoldierCount == 1 && EnemyHP > 0 && !WavePreviewActive;
     public const int VeteranAttackCap = 10;
     public float VeteranAttackBonus { get; private set; }
     public bool  IsAllTank       => TankCount > 0 && BerserkerCount == 0 && PaladinCount == 0;
@@ -259,7 +257,7 @@ public class GameManager : MonoBehaviour
     public float KillStreakBonusMult => 1f + Mathf.Min(WaveStreak, 5) * 0.05f;
     public float MoraleBonusMult     => WaveStreak >= 3 ? 1.15f : 1f;
     public bool  LastStandActive      => SoldierCount == 1;
-    public const float LastStandMult  = 1.20f;
+    public const float LastStandMult  = 2.00f;
     public const float DeathsDoorThresh = 0.15f;
     public const float DeathsDoorMult   = 1.50f;
     public bool  DeathsDoorActive     => LastStandActive && SoldierHP < FrontlineMaxHP * DeathsDoorThresh;
@@ -728,7 +726,7 @@ public class GameManager : MonoBehaviour
         if (_adrenalineTimer > 0f) { _adrenalineTimer -= dt; if (_adrenalineTimer <= 0f) _adrenalineStacks = 0; }
         _idleTimer += dt;
         if (_bloodStormTimer > 0f) { _bloodStormTimer -= dt; if (_bloodStormTimer < 0f) _bloodStormTimer = 0f; }
-        float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f) * (WarCryActive ? WarCryMult : 1f) * AdrenalineMult * IdleFuryMult * (IsBloodyWave ? BloodMoonAtkMult : 1f) * (BloodEchoCount > 0 ? (1f + BloodEchoAtkBonus) : 1f) * (DesperationActive ? DesperationMult : 1f) * (LastStandActive ? LastStandMult : 1f);
+        float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f) * (WarCryActive ? WarCryMult : 1f) * AdrenalineMult * IdleFuryMult * (IsBloodyWave ? BloodMoonAtkMult : 1f) * (BloodEchoCount > 0 ? (1f + BloodEchoAtkBonus) : 1f) * (DesperationActive ? DesperationMult : 1f);
         if (CurrentEnemyModifier == EnemyModifier.Armored && !IsAllBerserker)
             eff *= IsAllTank ? EnemyArmoredDmgMult + 0.25f : EnemyArmoredDmgMult;
         if (CurrentEnemyModifier == EnemyModifier.Cursed && PaladinCount > 0) eff *= PaladinHolyBonus;
