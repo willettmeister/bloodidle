@@ -20,7 +20,7 @@ public class NewFeaturesTests4
     public void TearDown()
     {
         PlayerPrefs.DeleteAll();
-        Object.DestroyImmediate(_gmGO);
+        UnityEngine.Object.DestroyImmediate(_gmGO);
         GameManager.ResetForTest();
     }
 
@@ -140,7 +140,7 @@ public class NewFeaturesTests4
         _gm.SetBloodBankAccruedForTest(12.5);
         _gm.SaveForTest();
 
-        Object.DestroyImmediate(_gmGO);
+        UnityEngine.Object.DestroyImmediate(_gmGO);
         GameManager.ResetForTest();
         _gmGO = new GameObject("GM2");
         _gm   = _gmGO.AddComponent<GameManager>();
@@ -184,7 +184,7 @@ public class NewFeaturesTests4
         _gm.SetWaveStreakForTest(7);
         _gm.SaveForTest();
 
-        Object.DestroyImmediate(_gmGO);
+        UnityEngine.Object.DestroyImmediate(_gmGO);
         GameManager.ResetForTest();
         _gmGO = new GameObject("GM2");
         _gm   = _gmGO.AddComponent<GameManager>();

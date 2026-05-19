@@ -20,7 +20,7 @@ public class NewFeaturesTests3
     public void TearDown()
     {
         PlayerPrefs.DeleteAll();
-        Object.DestroyImmediate(_gmGO);
+        UnityEngine.Object.DestroyImmediate(_gmGO);
         GameManager.ResetForTest();
     }
 
@@ -126,7 +126,7 @@ public class NewFeaturesTests3
         _gm.SetFortLevelForTest(4);
         _gm.SaveForTest();
 
-        Object.DestroyImmediate(_gmGO);
+        UnityEngine.Object.DestroyImmediate(_gmGO);
         GameManager.ResetForTest();
         _gmGO = new GameObject("GM2");
         _gm   = _gmGO.AddComponent<GameManager>();
@@ -265,7 +265,7 @@ public class NewFeaturesTests3
         _gm.UnlockSoulShardShopForTest();
         _gm.SaveForTest();
 
-        Object.DestroyImmediate(_gmGO);
+        UnityEngine.Object.DestroyImmediate(_gmGO);
         GameManager.ResetForTest();
         _gmGO = new GameObject("GM2");
         _gm   = _gmGO.AddComponent<GameManager>();
@@ -283,7 +283,7 @@ public class NewFeaturesTests3
         _gm.BuySSRollback();
         _gm.SaveForTest();
 
-        Object.DestroyImmediate(_gmGO);
+        UnityEngine.Object.DestroyImmediate(_gmGO);
         GameManager.ResetForTest();
         _gmGO = new GameObject("GM2");
         _gm   = _gmGO.AddComponent<GameManager>();
