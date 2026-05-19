@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+# pre-push hook: run Unity EditMode tests before pushing.
+# Skipped if UNITY_PATH is unset or Unity is not found.
+# Installed via: bash scripts/install-hooks.sh
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "[pre-push] Cannot resolve repo root — skipping tests."; exit 0; }
+
+# Resolve Unity binary: honour UNITY_PATH env var, or search common locations.
+find_unity() {
+  [[ -n "${UNITY_PATH:-}" ]] && { echo "$UNITY_PATH"; return; }
+  for candidate in \
+    /opt/unity/Editor/Unity \
+    /Applications/Unity/Hub/Editor/*/Unity.app/Contents/MacOS/Unity \
+    /home/"$USER"/Unity/Hub/Editor/*/Editor/Unity; do
+    # shellcheck disable=SC2086
+    match=$(ls $candidate 2>/dev/null | head -1 || true)
+    [[ -n "$match" ]] && { echo "$match"; return; }
+  done
+}
+
+UNITY=$(find_unity)
+
+if [[ -z "$UNITY" ]]; then
+  echo "[pre-push] Unity not found — skipping EditMode tests."
+  echo "           Set UNITY_PATH=/path/to/Unity to enable."
+  exit 0
+fi
+
+LOG="$REPO_ROOT/test.log"
+echo "[pre-push] Running EditMode tests with $UNITY ..."
+
+"$UNITY" \
+  -batchmode -quit \
+  -projectPath "$REPO_ROOT" \
+  -runTests -testPlatform EditMode \
+  -logFile "$LOG" 2>&1 || true
+
+if grep -q "Test run failed\|had errors" "$LOG" 2>/dev/null; then
+  echo "[pre-push] EditMode tests FAILED. See $LOG"
+  tail -20 "$LOG"
+  exit 1
+fi
+
+echo "[pre-push] EditMode tests passed."
