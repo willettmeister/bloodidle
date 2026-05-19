@@ -16,6 +16,10 @@ public enum AchievementFlags
     FullLegion    = 1 << 6,
     FirstRitual   = 1 << 7,
     FirstPrestige = 1 << 8,
+    Wave50        = 1 << 9,
+    Blood100K     = 1 << 10,
+    Untouchable   = 1 << 11,
+    Prestige3     = 1 << 12,
 }
 
 public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed }
@@ -455,6 +459,10 @@ public class GameManager : MonoBehaviour
         (AchievementFlags.FullLegion,    300.0, 0),
         (AchievementFlags.FirstRitual,   100.0, 0),
         (AchievementFlags.FirstPrestige, 0.0,   1),
+        (AchievementFlags.Wave50,        1000.0, 0),
+        (AchievementFlags.Blood100K,     1000.0, 0),
+        (AchievementFlags.Untouchable,   500.0,  0),
+        (AchievementFlags.Prestige3,     0.0,    1),
     };
 
 #if UNITY_INCLUDE_TESTS
@@ -754,6 +762,8 @@ public class GameManager : MonoBehaviour
             if (WaveStreak > BestStreak) BestStreak = WaveStreak;
             if (Wave >= 10) TryUnlock(AchievementFlags.Wave10);
             if (Wave >= 25) TryUnlock(AchievementFlags.Wave25);
+            if (Wave >= 50) TryUnlock(AchievementFlags.Wave50);
+            if (WaveStreak >= 10) TryUnlock(AchievementFlags.Untouchable);
 
             if (wasBoss) NextBossWave = Wave + UnityEngine.Random.Range(5, 11);
             WavePreviewActive = true;
@@ -956,8 +966,9 @@ public class GameManager : MonoBehaviour
         if (!BloodShieldUnlocked && TotalBloodEarned >= BloodShieldUnlockThreshold) BloodShieldUnlocked = true;
         if (!HealSelfUnlocked && TotalBloodEarned >= HealSelfUnlockThreshold) HealSelfUnlocked = true;
         if (!SurgeUnlocked    && TotalBloodEarned >= SurgeUnlockThreshold)    SurgeUnlocked    = true;
-        if (TotalBloodEarned >= 1_000)  TryUnlock(AchievementFlags.Blood1K);
-        if (TotalBloodEarned >= 10_000) TryUnlock(AchievementFlags.Blood10K);
+        if (TotalBloodEarned >= 1_000)   TryUnlock(AchievementFlags.Blood1K);
+        if (TotalBloodEarned >= 10_000)  TryUnlock(AchievementFlags.Blood10K);
+        if (TotalBloodEarned >= 100_000) TryUnlock(AchievementFlags.Blood100K);
     }
 
     void TryUnlock(AchievementFlags flag)
@@ -1475,6 +1486,7 @@ public class GameManager : MonoBehaviour
         ChallengeTimeRemaining = 0f;
         _undyingUsedThisWave   = false;
         TryUnlock(AchievementFlags.FirstPrestige);
+        if (PrestigeCount >= 3) TryUnlock(AchievementFlags.Prestige3);
         if (PrestigeMilestonesReached > milestonesBefore)
             OnMilestoneChest?.Invoke($"⭐ Prestige Milestone! +{PrestigeMilestoneDmgBonus * 100:F0}% attack!");
         Blood               = 0;
