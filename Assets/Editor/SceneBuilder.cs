@@ -657,6 +657,38 @@ public static class SceneBuilder
         dmgImg.raycastTarget = false;
         dmgLayerGO.Stretch();
 
+        // ── Tutorial panel (fixed bottom overlay, dismissable) ───────────────
+        var tutPanelGO = cv.CreateChild("TutorialPanel");
+        RImg(tutPanelGO, new Color(0.05f, 0.04f, 0.12f, 0.95f));
+        var tutPanelRT = tutPanelGO.GetComponent<RectTransform>();
+        tutPanelRT.anchorMin        = new Vector2(0f, 0f);
+        tutPanelRT.anchorMax        = new Vector2(1f, 0f);
+        tutPanelRT.pivot            = new Vector2(0.5f, 0f);
+        tutPanelRT.anchoredPosition = new Vector2(0f, 80f);
+        tutPanelRT.sizeDelta        = new Vector2(0f, 210f);
+
+        var tutBorderGO = tutPanelGO.CreateChild("TutBorder");
+        tutBorderGO.AddImage(HC("9A1A2A"));
+        var tutBorderRT = tutBorderGO.GetComponent<RectTransform>();
+        tutBorderRT.anchorMin = Vector2.zero; tutBorderRT.anchorMax = new Vector2(1f, 0f);
+        tutBorderRT.pivot = new Vector2(0.5f, 0f); tutBorderRT.anchoredPosition = new Vector2(0f, 0f);
+        tutBorderRT.sizeDelta = new Vector2(0f, 3f);
+
+        var tutTitleGO = Label(tutPanelGO, "TutorialTitleText", "Welcome!", 38, Gold, TextAnchor.MiddleLeft);
+        PT(tutTitleGO, 8, 48, -20, 760);
+
+        var tutBodyGO = Label(tutPanelGO, "TutorialBodyText",
+            "Tap Farm Blood to earn blood. Build an army and conquer endless waves!",
+            28, Color.white, TextAnchor.UpperLeft);
+        PT(tutBodyGO, 62, 88, -20, 720);
+        tutBodyGO.GetComponent<Text>().horizontalOverflow = HorizontalWrapMode.Wrap;
+        tutBodyGO.GetComponent<Text>().verticalOverflow   = VerticalWrapMode.Overflow;
+
+        var tutDismissGO = Btn(tutPanelGO, "TutorialDismissButton", "Got it!", 32, HC("1A4A1A"));
+        PT(tutDismissGO, 158, 46, 400, 180);
+
+        tutPanelGO.SetActive(false);
+
         // ── Achievement toast (bottom strip, always on canvas) ───────────────
         var toastGO = cv.CreateChild("AchievementToast");
         RImg(toastGO, new Color(0.8f, 0.55f, 0f, 0.96f));
@@ -993,6 +1025,9 @@ public static class SceneBuilder
         uim.upgradeBarracksButton   = upgradeBarracksGO.GetComponent<Button>();
         uim.barracksUpgradeCostText = upgradeBarracksGO.GetComponentInChildren<Text>();
         uim.damageLayer             = dmgLayerGO.GetComponent<RectTransform>();
+        uim.tutorialPanel           = tutPanelGO;
+        uim.tutorialTitleText       = tutTitleGO.GetComponent<Text>();
+        uim.tutorialBodyText        = tutBodyGO.GetComponent<Text>();
         uim.offlinePanel            = offlineOverlay;
         uim.offlineText             = offlineTextGO.GetComponent<Text>();
         uim.statsPanel              = statsOverlay;
@@ -1088,6 +1123,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(dailyChallengeBtnGO.GetComponent<Button>().onClick,     clk.OnStartDailyChallenge);
         UnityEventTools.AddPersistentListener(purifyBtnGO.GetComponent<Button>().onClick,             clk.OnPurify);
         UnityEventTools.AddPersistentListener(soulSacBtnGO.GetComponent<Button>().onClick,            clk.OnUseSoulSacrifice);
+        UnityEventTools.AddPersistentListener(tutDismissGO.GetComponent<Button>().onClick,            uim.DismissTutorial);
 
         const string scenePath = "Assets/Scenes/MainScene.unity";
         EditorSceneManager.SaveScene(scene, scenePath);

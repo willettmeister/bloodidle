@@ -491,6 +491,12 @@ public class GameManager : MonoBehaviour
     public const float SacrificeDmgMult = 3f;
     public bool SacrificeUnlocked       => Wave >= 3 && SoldierCount >= 2;
 
+    // --- Tutorial ---
+    public int    TutorialProgress { get; private set; }
+    public bool   TutorialActive   { get; private set; }
+    public string TutorialTitle    { get; private set; } = "";
+    public string TutorialBody     { get; private set; } = "";
+
     public event Action OnStateChanged;
     public event Action<float, bool> OnDamageDealt;
     public event Action<string> OnMilestoneChest;
@@ -615,7 +621,7 @@ public class GameManager : MonoBehaviour
         NextBossWave = UnityEngine.Random.Range(6, 13);
         SpawnEnemy(1);
         Load();
-
+        CheckTutorial();
     }
 
     void Update()
@@ -731,6 +737,7 @@ public class GameManager : MonoBehaviour
 
         if (changed)
             OnStateChanged?.Invoke();
+        CheckTutorial();
     }
 
     bool RunCombat(float dt)
@@ -937,6 +944,42 @@ public class GameManager : MonoBehaviour
                 break;
         }
         OnMilestoneChest?.Invoke(msg);
+    }
+
+    void CheckTutorial()
+    {
+        if (TutorialActive || TutorialProgress >= 10) return;
+        string title, body;
+        bool cond;
+        switch (TutorialProgress)
+        {
+            case 0:  cond = true;                          title = "Welcome to Blood Idle!";    body = "Tap Farm Blood to earn blood. Build an army and conquer endless waves!"; break;
+            case 1:  cond = Blood >= SoldierCost;          title = "First Soldier Available";   body = "You have enough blood! Buy a Tank to start fighting. Tanks have high HP and shield the army."; break;
+            case 2:  cond = SoldierCount >= 1;             title = "Combat Started!";           body = "Your soldier auto-attacks each wave. The enemy retaliates — keep soldiers alive to advance!"; break;
+            case 3:  cond = TotalEnemiesKilled >= 1;       title = "First Wave Cleared!";       body = "Blood rewards grow x1.4 each wave. Keep advancing for bigger rewards!"; break;
+            case 4:  cond = WorkerCount >= 1;              title = "Workers Online";            body = "Workers generate blood passively — even while away. Stack them for compounding income."; break;
+            case 5:  cond = HealSelfUnlocked;              title = "Heal Self Unlocked";        body = "Spend 25 blood to restore your frontline soldier's HP. Pair with Blood Shield for defence."; break;
+            case 6:  cond = SurgeUnlocked;                 title = "Blood Surge Unlocked";      body = "Blood Surge boosts attack by 2x for a short burst. Save it for boss waves!"; break;
+            case 7:  cond = Wave >= WarCryUnlockWave;      title = "War Cry Available";         body = "War Cry adds extra attack. Stack with Surge against tough enemies."; break;
+            case 8:  cond = Wave >= BloodStormUnlockWave;  title = "Blood Storm Unlocked";      body = "Blood Storm deals massive burst damage. Ideal for finishing a nearly-dead boss."; break;
+            case 9:  cond = Wave >= PrestigeWaveRequirement; title = "Prestige Ready!";         body = "You can Prestige now! Reset for permanent bonuses, Soul Shards, and new upgrade paths."; break;
+            default: return;
+        }
+        if (!cond) return;
+        TutorialTitle  = title;
+        TutorialBody   = body;
+        TutorialActive = true;
+        OnStateChanged?.Invoke();
+    }
+
+    public void DismissTutorial()
+    {
+        TutorialActive = false;
+        TutorialProgress++;
+        PlayerPrefs.SetInt("TutorialProgress", TutorialProgress);
+        PlayerPrefs.Save();
+        CheckTutorial();
+        OnStateChanged?.Invoke();
     }
 
     void SpawnEnemy(int wave)
@@ -1572,7 +1615,9 @@ public class GameManager : MonoBehaviour
         CorruptionLevel = 0; DailyChallengeActive = false; DailyChallengeAvailable = false; ChallengeTimeRemaining = 0f;
         WavePreviewActive = false; _flawlessTimer = 0f; _undyingUsedThisWave = false;
         Wave = 1; NextBossWave = UnityEngine.Random.Range(6, 13);
+        TutorialProgress = 0; TutorialActive = false;
         SpawnEnemy(1);
+        CheckTutorial();
         OnStateChanged?.Invoke();
     }
 
@@ -1815,6 +1860,7 @@ public class GameManager : MonoBehaviour
         }
 
         if (BestWave < Wave) BestWave = Wave;
+        TutorialProgress = PlayerPrefs.GetInt("TutorialProgress", 0);
     }
 
     public void ClearOfflineEarnings()

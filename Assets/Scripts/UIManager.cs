@@ -196,6 +196,11 @@ public class UIManager : MonoBehaviour
     [Header("Damage Numbers")]
     public RectTransform damageLayer;
 
+    [Header("Tutorial")]
+    public GameObject tutorialPanel;
+    public Text       tutorialTitleText;
+    public Text       tutorialBodyText;
+
     static readonly (AchievementFlags flag, string title, double bloodReward, int ppReward)[] k_AchievDefs =
     {
         (AchievementFlags.FirstKill,     "First Blood",         50.0,  0),
@@ -752,6 +757,17 @@ public class UIManager : MonoBehaviour
             if (!prestigeInfoText.text.Contains(talentLine))
                 prestigeInfoText.text += $"\n{talentLine}";
         }
+
+        // Tutorial panel
+        if (tutorialPanel != null)
+        {
+            tutorialPanel.SetActive(gm.TutorialActive);
+            if (gm.TutorialActive)
+            {
+                if (tutorialTitleText != null) tutorialTitleText.text = gm.TutorialTitle;
+                if (tutorialBodyText  != null) tutorialBodyText.text  = gm.TutorialBody;
+            }
+        }
     }
 
     static int NextPrestigeMilestone(int current)
@@ -909,6 +925,11 @@ public class UIManager : MonoBehaviour
     {
         if (offlinePanel != null) offlinePanel.SetActive(false);
         GameManager.Instance?.ClearOfflineEarnings();
+    }
+
+    public void DismissTutorial()
+    {
+        GameManager.Instance?.DismissTutorial();
     }
 
     // ── Damage Numbers ────────────────────────────────────────────────────────
