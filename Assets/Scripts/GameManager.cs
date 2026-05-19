@@ -353,7 +353,10 @@ public class GameManager : MonoBehaviour
     float _warCryTimer;
     public bool  WarCryActive    => _warCryTimer > 0f;
     public float WarCryTimeLeft  => _warCryTimer;
-    public bool  WarCryUnlocked  => Wave >= WarCryUnlockWave;
+    public bool  WarCryUnlocked      => Wave >= WarCryUnlockWave;
+    public const float SiphonRate    = 0.10f;
+    public const int   SiphonUnlockWave = 6;
+    public bool SiphonUnlocked       => Wave >= SiphonUnlockWave;
     public const double SoulHarvestPct        = 0.01;
     public const int    SoulHarvestUnlockWave = 10;
     public bool SoulHarvestUnlocked => TotalEnemiesKilled >= 10;
@@ -718,6 +721,8 @@ public class GameManager : MonoBehaviour
                 tickDmg *= BerserkerCritMult;
                 EnemyHP  = Mathf.Max(0f, EnemyHP - tickDmg);
             }
+            if (SiphonUnlocked && SoldierCount > 0)
+                SoldierHP = Mathf.Min(SoldierHP + tickDmg * SiphonRate, FrontlineMaxHP);
             OnDamageDealt?.Invoke(tickDmg, true);
             if (SoldierCount > 0)
                 OnDamageDealt?.Invoke(totalIncoming * DmgTickInterval, false);
