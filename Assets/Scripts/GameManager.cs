@@ -351,6 +351,9 @@ public class GameManager : MonoBehaviour
     public bool  WarCryActive    => _warCryTimer > 0f;
     public float WarCryTimeLeft  => _warCryTimer;
     public bool  WarCryUnlocked  => Wave >= WarCryUnlockWave;
+    public const double SoulHarvestPct        = 0.01;
+    public const int    SoulHarvestUnlockWave = 10;
+    public bool SoulHarvestUnlocked => TotalEnemiesKilled >= 10;
 
     public event Action OnStateChanged;
     public event Action<float, bool> OnDamageDealt;
@@ -637,6 +640,7 @@ public class GameManager : MonoBehaviour
             reward = Math.Floor(reward * StreakMultiplier * KillStreakBonusMult * (isFlawless ? 2.0 : 1.0));
             TotalEnemiesKilled++;
             WaveStreak++;
+            if (SoulHarvestUnlocked) reward += Math.Floor(EnemyMaxHP * SoulHarvestPct);
             AddBlood(reward);
             if (isFlawless) OnMilestoneChest?.Invoke("⚡ FLAWLESS! ×2 blood!");
             if ((wasBoss || wasChallenge) && HasTalent(TalentFlags.BloodRush) && !SurgeActive)
