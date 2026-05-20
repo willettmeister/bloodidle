@@ -213,7 +213,7 @@ public class GameManager : MonoBehaviour
     public double BloodPerSec      => (BloodRitualCount * (BloodRitualBloodPerSec + PRitualEffLevel * 0.5) * PrestigeMultiplier
                                     * (HasTalent(TalentFlags.Glutton) ? TalentGluttonMult : 1f)
                                     + BloodTithePerSec + BloodTapPerSec + KillIncomePerSec
-                                    + ShrineCount * ShrineBloodPerSec) * AchievementBloodIncomeMult;
+                                    + ShrineCount * ShrineBloodPerSec) * AchievementBloodIncomeMult * AdBoostMult;
     public const double ShrineWoodCost   = 20.0;
     public const double ShrineBloodPerSec = 0.5;
     public const int    ShrineMaxCount   = 3;
@@ -412,6 +412,15 @@ public class GameManager : MonoBehaviour
     public float BloodOathCooldownLeft => _bloodOathTimer;
     public bool  BloodOathUnlocked => Wave >= BloodOathUnlockWave;
     public bool  BloodOathCanCast  => BloodOathUnlocked && !BloodOathActive && BloodOathReady && Blood >= BloodOathCost && SoldierCount > 0 && EnemyHP > 0;
+
+    // --- Ad Boost & IAP ---
+    public const float  AdBoostDuration   = 300f;   // 5 minutes per rewarded ad
+    public const double AdBoostMultiplier = 2.0;
+    public bool  AdBoostActive        { get; private set; }
+    public float AdBoostTimeRemaining { get; private set; }
+    public bool  AdsRemoved           { get; private set; }
+    public bool  StarterPackOwned     { get; private set; }
+    public double AdBoostMult         => AdBoostActive ? AdBoostMultiplier : 1.0;
 
     // --- Enemy ---
     public int Wave { get; private set; } = 1;
@@ -756,6 +765,13 @@ public class GameManager : MonoBehaviour
             Wood    -= consumed;
             AddBlood(consumed * BloodWellBloodRatio);
             changed  = true;
+        }
+
+        if (AdBoostActive)
+        {
+            AdBoostTimeRemaining -= dt;
+            if (AdBoostTimeRemaining <= 0f) { AdBoostActive = false; AdBoostTimeRemaining = 0f; }
+            changed = true;
         }
 
         if (AutoBuySoldiers && SoldierCount < MaxSoldiers && Blood >= SoldierCost)
@@ -1296,6 +1312,48 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    // --- Ad / IAP rewards ---
+    public void GrantAdReward()
+    {
+        AdBoostActive        = true;
+        AdBoostTimeRemaining = Mathf.Max(AdBoostTimeRemaining, AdBoostDuration);
+        OnStateChanged?.Invoke();
+    }
+
+    public void SetAdsRemoved()
+    {
+        AdsRemoved = true;
+        PlayerPrefs.SetInt("AdsRemoved", 1);
+        PlayerPrefs.Save();
+        OnStateChanged?.Invoke();
+    }
+
+    public void SetStarterPackOwned()
+    {
+        if (StarterPackOwned) return;
+        StarterPackOwned = true;
+        AddBlood(5000);
+        SoulShards += 5;
+        PlayerPrefs.SetInt("StarterPackOwned", 1);
+        PlayerPrefs.Save();
+        OnStateChanged?.Invoke();
+    }
+
+    public void GrantBloodBoostSmall()
+    {
+        AdBoostActive        = true;
+        AdBoostTimeRemaining = Mathf.Max(AdBoostTimeRemaining, 1800f);  // 30 min
+        OnStateChanged?.Invoke();
+    }
+
+    public void GrantBloodBoostLarge()
+    {
+        AdBoostActive        = true;
+        AdBoostTimeRemaining = Mathf.Max(AdBoostTimeRemaining, 7200f);  // 2 hr
+        SoulShards += 10;
+        OnStateChanged?.Invoke();
+    }
+
     public bool BuyTank()
     {
         if (Blood < SoldierCost || SoldierCount >= MaxSoldiers) return false;
@@ -1722,6 +1780,9 @@ public class GameManager : MonoBehaviour
 
     public void ResetAllData()
     {
+        // Preserve permanent IAP purchases across resets
+        bool hadAdsRemoved    = AdsRemoved;
+        bool hadStarterPack   = StarterPackOwned;
         PlayerPrefs.DeleteAll();
         PlayerPrefs.Save();
         Blood = 0; TotalBloodEarned = 0; Wood = 0;
@@ -1748,6 +1809,10 @@ public class GameManager : MonoBehaviour
         WavePreviewActive = false; _flawlessTimer = 0f; _undyingUsedThisWave = false;
         Wave = 1; NextBossWave = UnityEngine.Random.Range(6, 13);
         TutorialProgress = 0; TutorialActive = false;
+        AdsRemoved    = hadAdsRemoved;
+        StarterPackOwned = hadStarterPack;
+        if (AdsRemoved)    { PlayerPrefs.SetInt("AdsRemoved",      1); PlayerPrefs.Save(); }
+        if (StarterPackOwned) { PlayerPrefs.SetInt("StarterPackOwned", 1); PlayerPrefs.Save(); }
         SpawnEnemy(1);
         CheckTutorial();
         OnStateChanged?.Invoke();
@@ -1883,6 +1948,8 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("Talents",             (int)Talents);
         PlayerPrefs.SetInt   ("CorruptionLevel",     CorruptionLevel);
         PlayerPrefs.SetString("SaveTime",            DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture));
+        PlayerPrefs.SetInt   ("AdsRemoved",           AdsRemoved      ? 1 : 0);
+        PlayerPrefs.SetInt   ("StarterPackOwned",     StarterPackOwned ? 1 : 0);
         PlayerPrefs.Save();
     }
 
@@ -1961,8 +2028,10 @@ public class GameManager : MonoBehaviour
         NextBossWave        = savedNext > 0 ? savedNext : Wave + UnityEngine.Random.Range(5, 11);
         BossTimeRemaining   = IsBossWave ? (BossTimeLimit + SSBossTimerLevel * 15f) : 0f;
 
-        Talents         = (TalentFlags)PlayerPrefs.GetInt("Talents",         0);
-        CorruptionLevel =              PlayerPrefs.GetInt("CorruptionLevel", 0);
+        Talents          = (TalentFlags)PlayerPrefs.GetInt("Talents",          0);
+        CorruptionLevel  =              PlayerPrefs.GetInt("CorruptionLevel",  0);
+        AdsRemoved       = PlayerPrefs.GetInt("AdsRemoved",       0) == 1;
+        StarterPackOwned = PlayerPrefs.GetInt("StarterPackOwned",  0) == 1;
 
         string today = DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         string savedDate      = PlayerPrefs.GetString("LastLoginDate",    "");

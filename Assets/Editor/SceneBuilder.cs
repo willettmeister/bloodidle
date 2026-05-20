@@ -26,8 +26,9 @@ using System.IO;
 // 2950–3115  Blood Bank card
 // 3125–3610  Prestige Shop card  (7 rows)
 // 3620–4000  Soul Shard Shop card  (5 rows incl. Shard Hunger)
-// 4010–4110  Bottom row  — Stats | Settings | Suggest
-// overlay    StatsPanel, SettingsPanel, FeatureRequestOverlay — modals
+// 4275–4345  Watch Ad row  — 2× Blood boost (hidden when ads removed)
+// 4350–4450  Bottom row  — Stats | Settings | Suggest | Shop
+// overlay    StatsPanel, SettingsPanel, IAPShopPanel, FeatureRequestOverlay — modals
 public static class SceneBuilder
 {
     const string OutSprites = "Assets/Resources/Sprites/";
@@ -112,6 +113,8 @@ public static class SceneBuilder
         // GameManager + components
         var gmGO = new GameObject("GameManager");
         gmGO.AddComponent<GameManager>();
+        gmGO.AddComponent<IAPManager>();
+        gmGO.AddComponent<AdsManager>();
         var uim = gmGO.AddComponent<UIManager>();
         var clk = gmGO.AddComponent<ClickManager>();
 
@@ -133,7 +136,7 @@ public static class SceneBuilder
         contentRT.anchorMax        = new Vector2(1f, 1f);
         contentRT.pivot            = new Vector2(0.5f, 1f);
         contentRT.anchoredPosition = Vector2.zero;
-        contentRT.sizeDelta        = new Vector2(0, 4375);
+        contentRT.sizeDelta        = new Vector2(0, 4500);
 
         var scroll = scrollGO.AddComponent<ScrollRect>();
         scroll.viewport          = viewportGO.GetComponent<RectTransform>();
@@ -650,16 +653,28 @@ public static class SceneBuilder
         soulShardShopPanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
-        // BOTTOM ROW  (y 3435–3535) — Stats | Settings | Suggest
+        // WATCH AD ROW  (y 4275–4345)
         // ════════════════════════════════════════════════════════════════════
-        var statsBtnGO = Btn(content, "StatsButton", "Statistics", 36, Teal);
-        PT(statsBtnGO, 4165, 100, -345, 310);
+        var adBoostRowGO = content.CreateChild("AdBoostRow");
+        adBoostRowGO.AddImage(HC("1A0A2E")); PF(adBoostRowGO, 4275, 65, 20);
 
-        var settingsBtnGO = Btn(content, "SettingsButton", "Settings", 36, HC("2A2A4A"));
-        PT(settingsBtnGO, 4165, 100, 0, 300);
+        var watchAdBtnGO = Btn(adBoostRowGO, "WatchAdButton", "Watch Ad  →  2× Blood (5 min)", 34, Purple);
+        watchAdBtnGO.Stretch();
 
-        var suggestBtnGO = Btn(content, "SuggestButton", "Suggest", 36, HC("1565C0"));
-        PT(suggestBtnGO, 4165, 100, +345, 300);
+        // ════════════════════════════════════════════════════════════════════
+        // BOTTOM ROW  (y 4350–4450) — Stats | Settings | Suggest | Shop
+        // ════════════════════════════════════════════════════════════════════
+        var statsBtnGO = Btn(content, "StatsButton", "Statistics", 32, Teal);
+        PT(statsBtnGO, 4350, 100, -394, 251);
+
+        var settingsBtnGO = Btn(content, "SettingsButton", "Settings", 32, HC("2A2A4A"));
+        PT(settingsBtnGO, 4350, 100, -132, 251);
+
+        var suggestBtnGO = Btn(content, "SuggestButton", "Suggest", 32, HC("1565C0"));
+        PT(suggestBtnGO, 4350, 100, +132, 251);
+
+        var shopBtnGO = Btn(content, "ShopButton", "Shop", 32, HC("8B0000"));
+        PT(shopBtnGO, 4350, 100, +394, 251);
 
         // ── Damage number layer ───────────────────────────────────────────────
         var dmgLayerGO = cv.CreateChild("DamageLayer");
@@ -798,6 +813,60 @@ public static class SceneBuilder
         PT(settingsCloseGO, 484, 70, 0, 400);
 
         settingsOverlay.SetActive(false);
+
+        // ════════════════════════════════════════════════════════════════════
+        // IAP SHOP OVERLAY
+        // ════════════════════════════════════════════════════════════════════
+        var iapOverlay = cv.CreateChild("IAPShopPanel");
+        iapOverlay.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.9f);
+        iapOverlay.Stretch();
+
+        var iapCard   = iapOverlay.CreateChild("Card");
+        RImg(iapCard, Surface1);
+        var iapCardRT = iapCard.GetComponent<RectTransform>();
+        iapCardRT.anchorMin        = new Vector2(0.5f, 0.5f);
+        iapCardRT.anchorMax        = new Vector2(0.5f, 0.5f);
+        iapCardRT.anchoredPosition = Vector2.zero;
+        iapCardRT.sizeDelta        = new Vector2(960, 800);
+
+        var iapTitleGO = Label(iapCard, "IAPTitle", "Blood Shop", 52, Crimson);
+        PT(iapTitleGO, 22, 62, 0, 920);
+
+        var iapDivGO = iapCard.CreateChild("IAPDiv");
+        iapDivGO.AddImage(HC("2D2D4A")); PT(iapDivGO, 88, 2, 0, 900);
+
+        // Row: Remove Ads
+        var removeAdsInfoGO = Label(iapCard, "RemoveAdsInfo",
+            "Remove Ads  —  no more interruptions forever", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(removeAdsInfoGO, 102, 48, -110, 620);
+        var removeAdsBtnGO = Btn(iapCard, "RemoveAdsButton", "$1.99", 30, HC("5D4037"));
+        PT(removeAdsBtnGO, 100, 54, +330, 200);
+
+        // Row: Starter Pack
+        var starterInfoGO = Label(iapCard, "StarterPackInfo",
+            "Starter Pack  —  5,000 Blood + 5 Soul Shards", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(starterInfoGO, 162, 48, -110, 620);
+        var starterBtnGO = Btn(iapCard, "StarterPackButton", "$0.99", 30, Gold);
+        PT(starterBtnGO, 160, 54, +330, 200);
+
+        // Row: Blood Boost Small
+        var boostSmallInfoGO = Label(iapCard, "BloodBoostSmallInfo",
+            "Blood Boost  —  2× income for 30 minutes", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(boostSmallInfoGO, 222, 48, -110, 620);
+        var boostSmallBtnGO = Btn(iapCard, "BloodBoostSmallButton", "$0.99", 30, Purple);
+        PT(boostSmallBtnGO, 220, 54, +330, 200);
+
+        // Row: Blood Boost Large
+        var boostLargeInfoGO = Label(iapCard, "BloodBoostLargeInfo",
+            "Mega Boost  —  2× income for 2 hours + 10 Shards", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(boostLargeInfoGO, 282, 48, -110, 620);
+        var boostLargeBtnGO = Btn(iapCard, "BloodBoostLargeButton", "$1.99", 30, Crimson);
+        PT(boostLargeBtnGO, 280, 54, +330, 200);
+
+        var iapCloseGO = Btn(iapCard, "IAPCloseButton", "Close", 42, HC("252440"));
+        PT(iapCloseGO, 680, 80, 0, 400);
+
+        iapOverlay.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
         // TALENT SELECTION OVERLAY
@@ -1076,6 +1145,16 @@ public static class SceneBuilder
         uim.desecrateButtonText     = desecrateBtnGO.GetComponentInChildren<Text>();
         uim.soulSacrificeButton     = soulSacBtnGO.GetComponent<Button>();
         uim.soulSacrificeInfoText   = soulSacInfoGO.GetComponent<Text>();
+        uim.adBoostRow              = adBoostRowGO;
+        uim.watchAdButton           = watchAdBtnGO.GetComponent<Button>();
+        uim.adBoostButtonText       = watchAdBtnGO.GetComponentInChildren<Text>();
+        uim.iapShopPanel            = iapOverlay;
+        uim.removeAdsButton         = removeAdsBtnGO.GetComponent<Button>();
+        uim.removeAdsButtonText     = removeAdsBtnGO.GetComponentInChildren<Text>();
+        uim.starterPackButton       = starterBtnGO.GetComponent<Button>();
+        uim.starterPackButtonText   = starterBtnGO.GetComponentInChildren<Text>();
+        uim.bloodBoostSmallButton   = boostSmallBtnGO.GetComponent<Button>();
+        uim.bloodBoostLargeButton   = boostLargeBtnGO.GetComponent<Button>();
         clk.uiManager               = uim;
 
         // Wire buttons
@@ -1118,6 +1197,13 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(statsBtnGO.GetComponent<Button>().onClick,              clk.OnOpenStats);
         UnityEventTools.AddPersistentListener(settingsBtnGO.GetComponent<Button>().onClick,           clk.OnOpenSettings);
         UnityEventTools.AddPersistentListener(suggestBtnGO.GetComponent<Button>().onClick,            clk.OnOpenSuggest);
+        UnityEventTools.AddPersistentListener(shopBtnGO.GetComponent<Button>().onClick,               clk.OnOpenShop);
+        UnityEventTools.AddPersistentListener(watchAdBtnGO.GetComponent<Button>().onClick,            clk.OnWatchAd);
+        UnityEventTools.AddPersistentListener(removeAdsBtnGO.GetComponent<Button>().onClick,          clk.OnBuyRemoveAds);
+        UnityEventTools.AddPersistentListener(starterBtnGO.GetComponent<Button>().onClick,            clk.OnBuyStarterPack);
+        UnityEventTools.AddPersistentListener(boostSmallBtnGO.GetComponent<Button>().onClick,         clk.OnBuyBloodBoostSmall);
+        UnityEventTools.AddPersistentListener(boostLargeBtnGO.GetComponent<Button>().onClick,         clk.OnBuyBloodBoostLarge);
+        UnityEventTools.AddPersistentListener(iapCloseGO.GetComponent<Button>().onClick,              clk.OnCloseShop);
         UnityEventTools.AddPersistentListener(statsCloseGO.GetComponent<Button>().onClick,            uim.HideStatsPanel);
         UnityEventTools.AddPersistentListener(settingsCloseGO.GetComponent<Button>().onClick,         uim.HideSettingsPanel);
         UnityEventTools.AddPersistentListener(soundToggleGO.GetComponent<Button>().onClick,           clk.OnToggleSound);

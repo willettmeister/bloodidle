@@ -56,4 +56,11 @@ public class ClickManager : MonoBehaviour
     public void OnToggleSound()            => GameManager.Instance.ToggleSound();
     public void OnToggleNotifications()    => GameManager.Instance.ToggleNotifications();
     public void OnResetData()              => GameManager.Instance.ResetAllData();
+    public void OnWatchAd()                => AdsManager.Instance?.ShowRewardedAd(GameManager.Instance.GrantAdReward);
+    public void OnOpenShop()               => uiManager.ShowIAPPanel();
+    public void OnCloseShop()              => uiManager.HideIAPPanel();
+    public void OnBuyRemoveAds()           => IAPManager.Instance?.BuyRemoveAds();
+    public void OnBuyStarterPack()         => IAPManager.Instance?.BuyStarterPack();
+    public void OnBuyBloodBoostSmall()     => IAPManager.Instance?.BuyBoostSmall();
+    public void OnBuyBloodBoostLarge()     => IAPManager.Instance?.BuyBoostLarge();
 }

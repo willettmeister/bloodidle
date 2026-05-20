@@ -206,6 +206,18 @@ public class UIManager : MonoBehaviour
     public Button soulSacrificeButton;
     public Text   soulSacrificeInfoText;
 
+    [Header("Ads & IAP")]
+    public GameObject adBoostRow;
+    public Button     watchAdButton;
+    public Text       adBoostButtonText;
+    public GameObject iapShopPanel;
+    public Button     removeAdsButton;
+    public Text       removeAdsButtonText;
+    public Button     starterPackButton;
+    public Text       starterPackButtonText;
+    public Button     bloodBoostSmallButton;
+    public Button     bloodBoostLargeButton;
+
     [Header("Damage Numbers")]
     public RectTransform damageLayer;
 
@@ -844,6 +856,27 @@ public class UIManager : MonoBehaviour
                 prestigeInfoText.text += $"\n{talentLine}";
         }
 
+        // Ad Boost row
+        if (adBoostRow != null)
+        {
+            bool showAds = !gm.AdsRemoved;
+            adBoostRow.SetActive(showAds);
+            if (showAds && adBoostButtonText != null)
+            {
+                if (gm.AdBoostActive)
+                {
+                    int secs = Mathf.CeilToInt(gm.AdBoostTimeRemaining);
+                    adBoostButtonText.text     = $"2× Blood Active  {secs / 60}:{secs % 60:D2}";
+                    if (watchAdButton != null) watchAdButton.interactable = false;
+                }
+                else
+                {
+                    adBoostButtonText.text     = "Watch Ad  →  2× Blood (5 min)";
+                    if (watchAdButton != null) watchAdButton.interactable = true;
+                }
+            }
+        }
+
         // Tutorial panel — fade in on first show, instant hide on dismiss
         if (tutorialPanel != null)
         {
@@ -890,6 +923,22 @@ public class UIManager : MonoBehaviour
     public void HideStatsPanel()
     {
         if (statsPanel != null) statsPanel.SetActive(false);
+    }
+
+    // ── IAP Shop Panel ────────────────────────────────────────────────────────
+
+    public void ShowIAPPanel()
+    {
+        if (iapShopPanel == null) return;
+        var gm = GameManager.Instance;
+        if (removeAdsButton    != null) removeAdsButton.gameObject.SetActive(!gm.AdsRemoved);
+        if (starterPackButton  != null) starterPackButton.gameObject.SetActive(!gm.StarterPackOwned);
+        iapShopPanel.SetActive(true);
+    }
+
+    public void HideIAPPanel()
+    {
+        if (iapShopPanel != null) iapShopPanel.SetActive(false);
     }
 
     // ── Settings Panel ────────────────────────────────────────────────────────
