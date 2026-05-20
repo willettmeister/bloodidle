@@ -37,7 +37,10 @@ jobs:
         run: pip install secator
 
       - name: Install secator tools (nuclei, gitleaks, trivy)
-        run: secator install tools nuclei gitleaks trivy
+        run: |
+          secator install tools nuclei
+          secator install tools gitleaks
+          secator install tools trivy
 
       # code_scan workflow combines nuclei (secret/exposure templates) + gitleaks
       - name: code_scan — source tree + git history secrets
@@ -143,7 +146,9 @@ jobs:
         run: pip install secator
 
       - name: Install secator tools (httpx, nuclei)
-        run: secator install tools httpx nuclei
+        run: |
+          secator install tools httpx
+          secator install tools nuclei
 
       # httpx: probe status, response time, server headers, redirect chain
       - name: httpx — probe app API endpoint
