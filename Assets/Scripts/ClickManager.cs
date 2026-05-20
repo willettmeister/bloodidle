@@ -31,6 +31,7 @@ public class ClickManager : MonoBehaviour
     public void OnUseSoulSacrifice()       => GameManager.Instance.UseSoulSacrifice();
     public void OnStartDailyChallenge()    => GameManager.Instance.StartDailyChallenge();
     public void OnPurify()                 => GameManager.Instance.Purify();
+    public void OnUseDesecrate()           => GameManager.Instance.UseDesecrate();
     public void OnBuyPSoldierCap()         => GameManager.Instance.BuyPSoldierCap();
     public void OnBuyPClickBonus()         => GameManager.Instance.BuyPClickBonus();
     public void OnBuyPRitualEff()          => GameManager.Instance.BuyPRitualEff();

@@ -345,6 +345,16 @@ public class GameManager : MonoBehaviour
     public const float  CorruptionHPPenalty = 5f;
     public const double PurifyCost          = 3.0;
 
+    // --- Desecrate spell ---
+    public const double DesecrateBloodCost = 100.0;
+    public const float  DesecrateDmgPct    = 0.50f;
+    public const float  DesecrateCooldown  = 30f;
+    float _desecrateTimer;
+    public bool  DesecrateReady    => _desecrateTimer <= 0f;
+    public float DesecrateCooldownLeft => _desecrateTimer;
+    public bool  DesecrateUnlocked => PrestigeCount >= 1;
+    public bool  DesecrateCanCast  => DesecrateUnlocked && CorruptionLevel > 0 && Blood >= DesecrateBloodCost && DesecrateReady && EnemyHP > 0;
+
     // --- Boss Ability ---
     public BossAbility CurrentBossAbility { get; private set; }
     public bool        BossShieldActive   { get; private set; }
@@ -772,7 +782,8 @@ public class GameManager : MonoBehaviour
         if (SoldierCount > 0) _meditationTimer += dt;
         if (_adrenalineTimer > 0f) { _adrenalineTimer -= dt; if (_adrenalineTimer <= 0f) _adrenalineStacks = 0; }
         _idleTimer += dt;
-        if (_bloodStormTimer > 0f) { _bloodStormTimer -= dt; if (_bloodStormTimer < 0f) _bloodStormTimer = 0f; }
+        if (_bloodStormTimer  > 0f) { _bloodStormTimer  -= dt; if (_bloodStormTimer  < 0f) _bloodStormTimer  = 0f; }
+        if (_desecrateTimer   > 0f) { _desecrateTimer   -= dt; if (_desecrateTimer   < 0f) _desecrateTimer   = 0f; }
         float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f) * (WarCryActive ? WarCryMult : 1f) * AdrenalineMult * IdleFuryMult * (IsBloodyWave ? BloodMoonAtkMult : 1f) * (BloodEchoCount > 0 ? (1f + BloodEchoAtkBonus) : 1f) * (DesperationActive ? DesperationMult : 1f);
         if (PackTacticsActive)   eff *= PackTacticsMult;
         if (CurrentEnemyModifier == EnemyModifier.Armored && !IsAllBerserker)
@@ -1193,6 +1204,19 @@ public class GameManager : MonoBehaviour
         float dmg = BloodStormBaseDmg + (Wave - 1) * BloodStormDmgPerWave;
         EnemyHP = Mathf.Max(float.Epsilon, EnemyHP - dmg);
         _bloodStormTimer = BloodStormCooldown;
+        OnDamageDealt?.Invoke(dmg, true);
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    public bool UseDesecrate()
+    {
+        if (!DesecrateCanCast) return false;
+        Blood -= DesecrateBloodCost;
+        CorruptionLevel--;
+        float dmg = EnemyMaxHP * DesecrateDmgPct;
+        EnemyHP = Mathf.Max(float.Epsilon, EnemyHP - dmg);
+        _desecrateTimer = DesecrateCooldown;
         OnDamageDealt?.Invoke(dmg, true);
         OnStateChanged?.Invoke();
         return true;

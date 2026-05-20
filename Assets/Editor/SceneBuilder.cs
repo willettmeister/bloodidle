@@ -246,6 +246,10 @@ public static class SceneBuilder
         PT(purifyBtnGO, 797, 38, +232, 280);
         purifyBtnGO.SetActive(false);
 
+        var desecrateBtnGO = Btn(content, "DesecrateButton", "Desecrate\n(-1 corrupt +50% burst)", 26, HC("3A006A"));
+        PT(desecrateBtnGO, 797, 38, 0, 300);
+        desecrateBtnGO.SetActive(false);
+
         // Daily challenge row (visible when DailyChallengeAvailable or Active)
         var dailyChallengeRowGO = content.CreateChild("DailyChallengeRow");
         dailyChallengeRowGO.AddImage(HC("0A1A00")); PF(dailyChallengeRowGO, 855, 60, 20);
@@ -1068,6 +1072,8 @@ public static class SceneBuilder
         uim.corruptionText          = corruptionTextGO.GetComponent<Text>();
         uim.purifyButton            = purifyBtnGO.GetComponent<Button>();
         uim.purifyButtonText        = purifyBtnGO.GetComponentInChildren<Text>();
+        uim.desecrateButton         = desecrateBtnGO.GetComponent<Button>();
+        uim.desecrateButtonText     = desecrateBtnGO.GetComponentInChildren<Text>();
         uim.soulSacrificeButton     = soulSacBtnGO.GetComponent<Button>();
         uim.soulSacrificeInfoText   = soulSacInfoGO.GetComponent<Text>();
         clk.uiManager               = uim;
@@ -1132,6 +1138,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(talentCancelGO.GetComponent<Button>().onClick,          clk.OnCancelPrestige);
         UnityEventTools.AddPersistentListener(dailyChallengeBtnGO.GetComponent<Button>().onClick,     clk.OnStartDailyChallenge);
         UnityEventTools.AddPersistentListener(purifyBtnGO.GetComponent<Button>().onClick,             clk.OnPurify);
+        UnityEventTools.AddPersistentListener(desecrateBtnGO.GetComponent<Button>().onClick,          clk.OnUseDesecrate);
         UnityEventTools.AddPersistentListener(soulSacBtnGO.GetComponent<Button>().onClick,            clk.OnUseSoulSacrifice);
         UnityEventTools.AddPersistentListener(tutDismissGO.GetComponent<Button>().onClick,            uim.DismissTutorial);
 

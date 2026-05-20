@@ -195,6 +195,8 @@ public class UIManager : MonoBehaviour
     public Text   corruptionText;
     public Button purifyButton;
     public Text   purifyButtonText;
+    public Button desecrateButton;
+    public Text   desecrateButtonText;
 
     [Header("Soul Sacrifice")]
     public Button soulSacrificeButton;
@@ -733,6 +735,20 @@ public class UIManager : MonoBehaviour
             purifyButton.interactable = gm.SoulShards >= GameManager.PurifyCost;
             if (purifyButtonText != null)
                 purifyButtonText.text = $"Purify\n({GameManager.PurifyCost:F0} shards)";
+        }
+        if (desecrateButton != null)
+        {
+            bool showDesecrate = gm.DesecrateUnlocked && gm.CorruptionLevel > 0;
+            desecrateButton.gameObject.SetActive(showDesecrate);
+            if (showDesecrate)
+            {
+                desecrateButton.interactable = gm.DesecrateCanCast;
+                if (desecrateButtonText != null)
+                {
+                    string cdStr = !gm.DesecrateReady ? $"  ({Mathf.CeilToInt(gm.DesecrateCooldownLeft)}s)" : "";
+                    desecrateButtonText.text = $"Desecrate\n(-1 corrupt +50% burst{cdStr})";
+                }
+            }
         }
 
         // Daily Challenge
