@@ -683,7 +683,10 @@ public class UIManager : MonoBehaviour
 
         // Workers + Blood Pact
         if (workersPanel != null) workersPanel.SetActive(gm.WorkersUnlocked);
-        workerInfoText.text          = $"Workers: {gm.WorkerCount}";
+        string effBonus = gm.WorkerEfficiencyMult > 1.0
+            ? $"  (+{(gm.WorkerEfficiencyMult - 1.0) * 100:F0}% eff)"
+            : "";
+        workerInfoText.text = $"Workers: {gm.WorkerCount}{effBonus}";
         buyWorkerButton.interactable = gm.Blood >= GameManager.WorkerCost;
         if (bloodPactButton != null)
         {
@@ -710,9 +713,15 @@ public class UIManager : MonoBehaviour
         }
         if (bloodWellInfoText != null)
         {
-            bloodWellInfoText.text = gm.BloodWellUnlocked
-                ? $"Blood Well  {gm.BloodWellCount}/{GameManager.BloodWellMaxCount}  ({gm.BloodWellBloodPerSec:F1}/s blood)"
-                : $"Blood Well  (need 3 workers + wave 8)";
+            if (gm.BloodWellUnlocked && gm.BloodWellCount > 0)
+            {
+                double woodConsumed = gm.BloodWellCount * GameManager.BloodWellWoodPerSec;
+                bloodWellInfoText.text = $"Blood Well  {gm.BloodWellCount}/{GameManager.BloodWellMaxCount}  (+{gm.BloodWellBloodPerSec:F1}/s blood, −{woodConsumed:F1}/s wood)";
+            }
+            else
+                bloodWellInfoText.text = gm.BloodWellUnlocked
+                    ? $"Blood Well  0/{GameManager.BloodWellMaxCount}  (consumes {GameManager.BloodWellWoodPerSec:F1} wood/s each)"
+                    : $"Blood Well  (need 3 workers + wave 8)";
         }
         if (buyBloodWellButton != null)
         {
