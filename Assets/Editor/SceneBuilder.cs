@@ -19,8 +19,8 @@ using System.IO;
 //  425–805   Army card  [Formation, MixedBonus, UpgradeHeal, Corruption]
 //  815–1025  Farm Blood
 // 1035–1165  Action row — Tank | Berserker | Paladin | Heal Self
-// 1175–1995  Blood Surge card (Surge + SoulSac + Storm + Oath + WarCry + HexCurse + BloodShield)
-// battleContent height: 2020
+// 1175–2085  Blood Surge card (Surge + SoulSac + Storm + Oath + WarCry + HexCurse + BloodShield + SoldierSac)
+// battleContent height: 2110
 //
 // ── BUILD TAB (y in buildContent) ───────────────────────────────────────────
 //   10–215   Barracks card (+ Auto-Buy toggle)
@@ -194,7 +194,7 @@ public static class SceneBuilder
             return (sg, cnt);
         }
 
-        var (battleScrollGO,   battleContent)   = MakeTabScroll(tabAreaGO, "BattleTab",   2020f);
+        var (battleScrollGO,   battleContent)   = MakeTabScroll(tabAreaGO, "BattleTab",   2110f);
         var (buildScrollGO,    buildContent)    = MakeTabScroll(tabAreaGO, "BuildTab",    1580f);
         var (progressScrollGO, progressContent) = MakeTabScroll(tabAreaGO, "ProgressTab", 1200f);
         var (settingsScrollGO, settingsContent) = MakeTabScroll(tabAreaGO, "SettingsTab", 400f);
@@ -356,9 +356,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var bloodSurgePanel = content.CreateChild("BloodSurgePanel");
         bloodSurgePanel.AddImage(Color.clear);
-        PF(bloodSurgePanel, 1175, 820);
+        PF(bloodSurgePanel, 1175, 910);
 
-        Panel(bloodSurgePanel, "BloodSurgeCardBg", 0, 820, Surface1, 24);
+        Panel(bloodSurgePanel, "BloodSurgeCardBg", 0, 910, Surface1, 24);
         { var a = bloodSurgePanel.CreateChild("SurgeAccent"); a.AddImage(Crimson); PF(a, 0, 4, 24); }
 
         var bloodSurgeInfoGO = Label(bloodSurgePanel, "BloodSurgeInfoText",
@@ -445,6 +445,18 @@ public static class SceneBuilder
         var bloodShieldBtnGO = Btn(bloodSurgePanel, "BloodShieldButton",
             "Shield! (30 blood)", 30, HC("003A5A"));
         PT(bloodShieldBtnGO, 764, 42, 0, 680);
+
+        var soldierSacDivGO = bloodSurgePanel.CreateChild("SoldierSacDiv");
+        soldierSacDivGO.AddImage(HC("2D2D4A")); PT(soldierSacDivGO, 806, 2, 0, 640);
+
+        var soldierSacInfoGO = Label(bloodSurgePanel, "SoldierSacInfoText",
+            "Soldier Sacrifice  —  Unlocks at wave 3  (2+ soldiers)",
+            30, new Color(0.9f, 0.5f, 0.5f), TextAnchor.MiddleLeft);
+        PT(soldierSacInfoGO, 814, 44, -140, 620);
+
+        var soldierSacBtnGO = Btn(bloodSurgePanel, "SoldierSacButton",
+            "Sacrifice! (3× HP burst)", 30, HC("4A0A0A"));
+        PT(soldierSacBtnGO, 864, 42, 0, 680);
 
         bloodSurgePanel.SetActive(false);
 
@@ -1375,6 +1387,8 @@ public static class SceneBuilder
         uim.desecrateButtonText     = desecrateBtnGO.GetComponentInChildren<Text>();
         uim.soulSacrificeButton     = soulSacBtnGO.GetComponent<Button>();
         uim.soulSacrificeInfoText   = soulSacInfoGO.GetComponent<Text>();
+        uim.soldierSacrificeButton  = soldierSacBtnGO.GetComponent<Button>();
+        uim.soldierSacrificeInfoText = soldierSacInfoGO.GetComponent<Text>();
         uim.questsPanel             = questsOverlay;
         uim.questInfoText0          = questInfo0GO.GetComponent<Text>();
         uim.questInfoText1          = questInfo1GO.GetComponent<Text>();
@@ -1414,6 +1428,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(hexCurseBtnGO.GetComponent<Button>().onClick,           clk.OnUseHexCurse);
         UnityEventTools.AddPersistentListener(bloodShieldBtnGO.GetComponent<Button>().onClick,        clk.OnUseBloodShield);
         UnityEventTools.AddPersistentListener(truceBtnGO.GetComponent<Button>().onClick,              clk.OnUseTruce);
+        UnityEventTools.AddPersistentListener(soldierSacBtnGO.GetComponent<Button>().onClick,         clk.OnUseSoldierSacrifice);
         UnityEventTools.AddPersistentListener(bloodPactGO.GetComponent<Button>().onClick,             clk.OnUseBloodPact);
         UnityEventTools.AddPersistentListener(buyWorkerGO.GetComponent<Button>().onClick,             clk.OnBuyWorker);
         UnityEventTools.AddPersistentListener(buyShrineGO.GetComponent<Button>().onClick,            clk.OnBuyShrine);

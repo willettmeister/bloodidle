@@ -222,6 +222,10 @@ public class UIManager : MonoBehaviour
     public Button soulSacrificeButton;
     public Text   soulSacrificeInfoText;
 
+    [Header("Soldier Sacrifice")]
+    public Button soldierSacrificeButton;
+    public Text   soldierSacrificeInfoText;
+
     [Header("Daily Quests")]
     public GameObject questsPanel;
     public Text       questInfoText0, questInfoText1, questInfoText2;
@@ -914,6 +918,17 @@ public class UIManager : MonoBehaviour
                 if (soulSacrificeInfoText != null)
                     soulSacrificeInfoText.text = $"Soul Sacrifice  —  lose 1 soldier → ×{GameManager.SoulSacrificeBloodMult:F0} blood";
             }
+        }
+
+        // Soldier Sacrifice
+        if (soldierSacrificeButton != null)
+        {
+            bool sacUnlocked = gm.SacrificeUnlocked;
+            soldierSacrificeButton.interactable = sacUnlocked && gm.EnemyHP > 0;
+            if (soldierSacrificeInfoText != null)
+                soldierSacrificeInfoText.text = sacUnlocked
+                    ? $"Soldier Sacrifice  —  lose 1 soldier → {GameManager.SacrificeDmgMult:F0}× HP burst"
+                    : "Soldier Sacrifice  —  Unlocks at wave 3 (2+ soldiers)";
         }
 
         // Prestige Talent Selection overlay
