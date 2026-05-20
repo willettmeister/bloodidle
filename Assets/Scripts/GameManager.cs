@@ -2032,6 +2032,9 @@ public class GameManager : MonoBehaviour
         BloodBankDeposit = 0; BloodBankAccrued = 0; WaveStreak = 0;
         SurgeUpgradeLevel = 0; HealUpgradeLevel = 0;
         TotalEnemiesKilled = 0; TimePlayed = 0; Achievements = AchievementFlags.None;
+        AutoBuySoldiers = false; AutoSurge = false; AutoHeal = false; AutoStorm = false;
+        AutoDesecrate = false; AutoBuyRituals = false; AutoBankDeposit = false;
+        AutoWarCry = false; AutoHexCurse = false; AutoBloodOath = false; AutoBloodShield = false;
         SoundEnabled = true; NotificationsEnabled = true;
         DailyBonusAvailable = false; OfflineWoodEarned = 0; OfflineBloodEarned = 0;
         Talents = TalentFlags.None; PendingPrestige = false; PendingTalentChoices = new TalentFlags[0];
