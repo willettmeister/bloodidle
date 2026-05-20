@@ -240,6 +240,12 @@ public class UIManager : MonoBehaviour
     public Text       tutorialTitleText;
     public Text       tutorialBodyText;
 
+    [Header("Tab System")]
+    public GameObject battleTabPanel;
+    public GameObject buildTabPanel;
+    public GameObject progressTabPanel;
+    public GameObject settingsTabPanel;
+
     double _lastBloodDisplay;
     bool   _tutorialWasActive;
 
@@ -960,6 +966,21 @@ public class UIManager : MonoBehaviour
         int[] ms = { 5, 10, 20, 50 };
         foreach (int m in ms) if (current < m) return m;
         return -1;
+    }
+
+    // ── Tab System ────────────────────────────────────────────────────────────
+
+    public void ShowBattleTab()   => ShowTab(0);
+    public void ShowBuildTab()    => ShowTab(1);
+    public void ShowProgressTab() => ShowTab(2);
+    public void ShowSettingsTab() => ShowTab(3);
+
+    void ShowTab(int i)
+    {
+        if (battleTabPanel   != null) battleTabPanel.SetActive(i == 0);
+        if (buildTabPanel    != null) buildTabPanel.SetActive(i == 1);
+        if (progressTabPanel != null) progressTabPanel.SetActive(i == 2);
+        if (settingsTabPanel != null) settingsTabPanel.SetActive(i == 3);
     }
 
     // ── Stats Panel ───────────────────────────────────────────────────────────

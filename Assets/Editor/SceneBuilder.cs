@@ -7,29 +7,44 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.IO;
 
-// All y coordinates: y=0 at TOP of canvas, increasing downward.
+// All y coordinates: y=0 at TOP of each tab's scroll content, increasing downward.
 // Canvas reference: 1080 × 1920 portrait.
+// Fixed header: 0–110 (blood/wave/wood) — anchored to canvas top
+// Tab content area: 110–1820 (1710px visible)
+// Fixed tab bar: 1820–1920 — 4 tabs (Battle | Build | Progress | Settings)
 //
-// Section map (y in px from top):
-//    0–110   Header      — Blood | Wave | Wood(+Shards)
-//  120–455   Enemy card  [EnemyModifierText y=393, WavePreviewBanner overlay]
-//  465–775   Army card   [Formation y=618, MixedBonus y=660, UpgradeHeal y=697]
-//  785–995   Farm Blood
-// 1005–1140  Action row  — Tank | Berserker | Paladin | Heal Self
-// 1150–1530  Workers card  (Worker row + Shrine row + Click Power row)
-// 1540–1705  Barracks card
-// 1715–1880  Fortifications card
-// 1890–2135  Equipment card
-// 2145–2360  Blood Ritual + Blood Pact card
-// 2370–2510  Prestige card
-// 2785–3505  Blood Surge card  (Surge + BloodOath + WarCry + HexCurse)
-// 3515–3680  Blood Bank card
-// 3690–4175  Prestige Shop card  (7 rows)
-// 4185–4565  Soul Shard Shop card  (5 rows incl. Shard Hunger)
-// 4500–4565  Daily Quests row  — opens DailyQuests overlay
-// 4575–4645  Watch Ad row  — 2× Blood boost (hidden when ads removed)
-// 4650–4750  Bottom row  — Stats | Settings | Suggest | Shop
-// overlay    StatsPanel, SettingsPanel, IAPShopPanel, QuestsPanel, FeatureRequestOverlay — modals
+// ── BATTLE TAB (y in battleContent) ─────────────────────────────────────────
+//   10–345   Enemy card
+//  355–415   Daily Challenge row
+//  425–805   Army card  [Formation, MixedBonus, UpgradeHeal, Corruption]
+//  815–1025  Farm Blood
+// 1035–1165  Action row — Tank | Berserker | Paladin | Heal Self
+// 1175–1895  Blood Surge card (Surge + SoulSac + Storm + Oath + WarCry + HexCurse)
+// battleContent height: 1920
+//
+// ── BUILD TAB (y in buildContent) ───────────────────────────────────────────
+//   10–175   Barracks card
+//  185–350   Fortifications card
+//  360–865   Workers card (hidden until WorkersUnlocked)
+//  875–1120  Equipment card (hidden until WorkersUnlocked)
+// 1130–1345  Blood Ritual + Blood Pact (hidden until WorkersUnlocked)
+// 1355–1520  Blood Bank card
+// buildContent height: 1540
+//
+// ── PROGRESS TAB (y in progressContent) ─────────────────────────────────────
+//   10–150   Prestige card (hidden until wave 20)
+//  160–645   Prestige Shop (hidden until prestige 1)
+//  655–1035  Soul Shard Shop (hidden until first boss)
+// 1045–1110  Daily Quests row
+// 1120–1185  Watch Ad row
+// progressContent height: 1200
+//
+// ── SETTINGS TAB (y in settingsContent) ─────────────────────────────────────
+//   10–240   Utility buttons (Stats | Settings row, Suggest | Shop row)
+//  250–330   blank / future
+// settingsContent height: 400
+//
+// overlay  StatsPanel, SettingsPanel, IAPShopPanel, QuestsPanel, FeatureRequestOverlay
 public static class SceneBuilder
 {
     const string OutSprites = "Assets/Resources/Sprites/";
@@ -119,75 +134,115 @@ public static class SceneBuilder
         var uim = gmGO.AddComponent<UIManager>();
         var clk = gmGO.AddComponent<ClickManager>();
 
-        // ── Scrollable content wrapper ───────────────────────────────────────
-        var scrollGO = cv.CreateChild("ScrollView");
-        scrollGO.AddComponent<Image>().color = Color.clear;
-        scrollGO.Stretch();
+        // ── Fixed header (blood / wave / wood) ──────────────────────────────
+        var headerFixedBg = cv.CreateChild("HeaderBg");
+        headerFixedBg.AddImage(HC("0F0E1E"));
+        {
+            var rt = headerFixedBg.GetComponent<RectTransform>();
+            rt.anchorMin        = new Vector2(0f, 1f);
+            rt.anchorMax        = new Vector2(1f, 1f);
+            rt.pivot            = new Vector2(0.5f, 1f);
+            rt.anchoredPosition = Vector2.zero;
+            rt.sizeDelta        = new Vector2(0f, 110f);
+        }
 
-        var viewportGO = scrollGO.CreateChild("Viewport");
-        viewportGO.AddComponent<RectMask2D>();
-        viewportGO.Stretch();
+        // ── Tab content area (fills between header and tab bar) ──────────────
+        var tabAreaGO = cv.CreateChild("TabArea");
+        tabAreaGO.AddComponent<Image>().color = Color.clear;
+        {
+            var rt          = tabAreaGO.GetComponent<RectTransform>();
+            rt.anchorMin    = Vector2.zero;
+            rt.anchorMax    = Vector2.one;
+            rt.pivot        = new Vector2(0.5f, 0.5f);
+            rt.offsetMin    = new Vector2(0f, 100f);   // above tab bar
+            rt.offsetMax    = new Vector2(0f, -110f);  // below header
+        }
 
-        var content    = viewportGO.CreateChild("Content");
-        var contentImg = content.AddComponent<Image>();
-        contentImg.color = Color.clear;
-        contentImg.raycastTarget = false;
-        var contentRT = content.GetComponent<RectTransform>();
-        contentRT.anchorMin        = new Vector2(0f, 1f);
-        contentRT.anchorMax        = new Vector2(1f, 1f);
-        contentRT.pivot            = new Vector2(0.5f, 1f);
-        contentRT.anchoredPosition = Vector2.zero;
-        contentRT.sizeDelta        = new Vector2(0, 4800);
+        // Helper: create a ScrollView inside tabArea, return its content GO
+        static (GameObject scrollGO, GameObject content) MakeTabScroll(
+            GameObject parent, string name, float contentHeight)
+        {
+            var sg = parent.CreateChild(name);
+            sg.AddComponent<Image>().color = Color.clear;
+            sg.Stretch();
 
-        var scroll = scrollGO.AddComponent<ScrollRect>();
-        scroll.viewport          = viewportGO.GetComponent<RectTransform>();
-        scroll.content           = contentRT;
-        scroll.horizontal        = false;
-        scroll.vertical          = true;
-        scroll.scrollSensitivity = 10f;
-        scroll.movementType      = ScrollRect.MovementType.Clamped;
-        scroll.inertia           = true;
-        scroll.decelerationRate  = 0.135f;
+            var vp = sg.CreateChild("Viewport");
+            vp.AddComponent<RectMask2D>();
+            vp.Stretch();
+
+            var cnt    = vp.CreateChild("Content");
+            var cntImg = cnt.AddComponent<Image>();
+            cntImg.color = Color.clear;
+            cntImg.raycastTarget = false;
+            var cntRT          = cnt.GetComponent<RectTransform>();
+            cntRT.anchorMin        = new Vector2(0f, 1f);
+            cntRT.anchorMax        = new Vector2(1f, 1f);
+            cntRT.pivot            = new Vector2(0.5f, 1f);
+            cntRT.anchoredPosition = Vector2.zero;
+            cntRT.sizeDelta        = new Vector2(0f, contentHeight);
+
+            var sr               = sg.AddComponent<ScrollRect>();
+            sr.viewport          = vp.GetComponent<RectTransform>();
+            sr.content           = cntRT;
+            sr.horizontal        = false;
+            sr.vertical          = true;
+            sr.scrollSensitivity = 10f;
+            sr.movementType      = ScrollRect.MovementType.Clamped;
+            sr.inertia           = true;
+            sr.decelerationRate  = 0.135f;
+
+            return (sg, cnt);
+        }
+
+        var (battleScrollGO,   battleContent)   = MakeTabScroll(tabAreaGO, "BattleTab",   1920f);
+        var (buildScrollGO,    buildContent)    = MakeTabScroll(tabAreaGO, "BuildTab",    1540f);
+        var (progressScrollGO, progressContent) = MakeTabScroll(tabAreaGO, "ProgressTab", 1200f);
+        var (settingsScrollGO, settingsContent) = MakeTabScroll(tabAreaGO, "SettingsTab", 400f);
+
+        buildScrollGO.SetActive(false);
+        progressScrollGO.SetActive(false);
+        settingsScrollGO.SetActive(false);
+
+        // Convenience alias so all the section code below can use "content" for the
+        // correct tab. We switch this alias as we move between tabs.
+        GameObject content = battleContent;
 
         // ════════════════════════════════════════════════════════════════════
-        // HEADER  (y 0–110)
+        // HEADER  (fixed on canvas, 0–110)
         // ════════════════════════════════════════════════════════════════════
-        var headerBg = content.CreateChild("HeaderBg");
-        headerBg.AddImage(HC("0F0E1E")); PF(headerBg, 0, 110);
-
-        var bloodTextGO = Label(content, "BloodText",  "Blood: 0", 42, Crimson, TextAnchor.MiddleLeft);
-        var waveTextGO  = Label(content, "WaveText",   "Wave 1",   56, Gold,    TextAnchor.MiddleCenter);
-        var woodTextGO  = Label(content, "WoodText",   "Wood: 0",  38, HC("B8963E"), TextAnchor.MiddleRight);
+        var bloodTextGO = Label(headerFixedBg, "BloodText",  "Blood: 0", 42, Crimson, TextAnchor.MiddleLeft);
+        var waveTextGO  = Label(headerFixedBg, "WaveText",   "Wave 1",   56, Gold,    TextAnchor.MiddleCenter);
+        var woodTextGO  = Label(headerFixedBg, "WoodText",   "Wood: 0",  38, HC("B8963E"), TextAnchor.MiddleRight);
         PT(bloodTextGO, 8, 94, -295, 370);
         PT(waveTextGO,  8, 94,    0, 300);
         PT(woodTextGO,  8, 94, +310, 370);
 
-        var hDivGO = content.CreateChild("HeaderDiv");
-        hDivGO.AddImage(HC("2D2D4A")); PF(hDivGO, 110, 2);
+        var hDivGO = headerFixedBg.CreateChild("HeaderDiv");
+        hDivGO.AddImage(HC("2D2D4A")); PF(hDivGO, 108, 2);
 
         // ════════════════════════════════════════════════════════════════════
-        // ENEMY CARD  (y 120–455)
+        // ENEMY CARD  (battleContent y 10–345)
         // ════════════════════════════════════════════════════════════════════
-        Panel(content, "EnemyCardBg", 120, 335, Surface1, 24);
-        { var a = content.CreateChild("EnemyCardAccent"); a.AddImage(HC("8B0000")); PF(a, 120, 4, 24); }
+        Panel(content, "EnemyCardBg", 10, 335, Surface1, 24);
+        { var a = content.CreateChild("EnemyCardAccent"); a.AddImage(HC("8B0000")); PF(a, 10, 4, 24); }
 
         var enemyImgGO = content.CreateChild("EnemyImage");
         var enemyImg   = enemyImgGO.AddComponent<Image>();
         enemyImg.color = Color.clear; enemyImg.preserveAspect = true;
-        PT(enemyImgGO, 138, 148, -390, 162);
+        PT(enemyImgGO, 28, 148, -390, 162);
 
         var enemyNameGO = Label(content, "EnemyNameText", "Goblin", 58, Color.white, TextAnchor.MiddleLeft);
         var waveSubGO   = Label(content, "WaveSubText",   "Wave 1", 32, TextSec,     TextAnchor.MiddleLeft);
-        PT(enemyNameGO, 138, 68, +72, 680);
-        PT(waveSubGO,   210, 38, +72, 680);
+        PT(enemyNameGO, 28, 68, +72, 680);
+        PT(waveSubGO,   100, 38, +72, 680);
 
-        var (_, enemyHPFill) = HPBar(content, "EnemyHP", 274, 30, EHPBg, EHPFill);
+        var (_, enemyHPFill) = HPBar(content, "EnemyHP", 164, 30, EHPBg, EHPFill);
         var enemyHPTextGO    = Label(content, "EnemyHPText", "100 / 100", 28, TextSec);
-        PT(enemyHPTextGO, 310, 34, 0, 660);
+        PT(enemyHPTextGO, 200, 34, 0, 660);
 
         var bossTimerRowGO = content.CreateChild("BossTimerRow");
         bossTimerRowGO.AddComponent<RectTransform>();
-        PF(bossTimerRowGO, 350, 38, 0);
+        PF(bossTimerRowGO, 240, 38, 0);
         var bossTimerTextGO = Label(bossTimerRowGO, "BossTimerText",
             "⏱ 90s — defeat the boss or face the penalty!", 26,
             new Color(1f, 0.6f, 0.1f), TextAnchor.MiddleCenter);
@@ -196,31 +251,43 @@ public static class SceneBuilder
 
         var enemyModifierTextGO = Label(content, "EnemyModifierText", "", 30,
             new Color(1f, 0.65f, 0.1f), TextAnchor.MiddleCenter);
-        PF(enemyModifierTextGO, 393, 38, 60);
+        PF(enemyModifierTextGO, 283, 38, 60);
         enemyModifierTextGO.SetActive(false);
 
         // Wave preview overlay — sits on top of enemy card, hidden until preview starts
         var wavePreviewBannerGO = content.CreateChild("WavePreviewBanner");
         var wpImg = wavePreviewBannerGO.AddComponent<Image>();
         wpImg.color = new Color(0f, 0f, 0f, 0.84f);
-        PF(wavePreviewBannerGO, 120, 335, 30);
+        PF(wavePreviewBannerGO, 10, 335, 30);
         var wavePreviewTextGO = Label(wavePreviewBannerGO, "WavePreviewText",
             "Wave 2 incoming...", 48, Gold, TextAnchor.MiddleCenter);
         wavePreviewTextGO.Stretch();
         wavePreviewBannerGO.SetActive(false);
 
+        // Daily challenge row  (battleContent y 355–415)
+        var dailyChallengeRowGO = content.CreateChild("DailyChallengeRow");
+        dailyChallengeRowGO.AddImage(HC("0A1A00")); PF(dailyChallengeRowGO, 355, 60, 20);
+
+        var dailyChallengeInfoGO = Label(dailyChallengeRowGO, "DailyChallengeInfoText",
+            "Daily Challenge: 5× HP enemy  —  ×5 blood!", 30, Gold, TextAnchor.MiddleLeft);
+        PT(dailyChallengeInfoGO, 4, 52, -100, 640);
+
+        var dailyChallengeBtnGO = Btn(dailyChallengeRowGO, "DailyChallengeButton", "Start!", 32, Amber);
+        PT(dailyChallengeBtnGO, 4, 52, +400, 140);
+        dailyChallengeRowGO.SetActive(false);
+
         // ════════════════════════════════════════════════════════════════════
-        // ARMY CARD  (y 465–715)
+        // ARMY CARD  (battleContent y 425–805)
         // ════════════════════════════════════════════════════════════════════
-        Panel(content, "ArmyCardBg", 465, 380, Surface1, 24);
-        { var a = content.CreateChild("ArmyCardAccent"); a.AddImage(HC("1B5E20")); PF(a, 465, 4, 24); }
+        Panel(content, "ArmyCardBg", 425, 380, Surface1, 24);
+        { var a = content.CreateChild("ArmyCardAccent"); a.AddImage(HC("1B5E20")); PF(a, 425, 4, 24); }
 
         var soldierCountGO = Label(content, "SoldierCountText",
             "No soldiers — buy one!  (max 10)", 34, TextSec);
-        PF(soldierCountGO, 475, 48, 50);
+        PF(soldierCountGO, 435, 48, 50);
 
         var soldierHPRowGO = content.CreateChild("SoldierHPRow");
-        soldierHPRowGO.AddImage(Color.clear); PF(soldierHPRowGO, 527, 80, 40);
+        soldierHPRowGO.AddImage(Color.clear); PF(soldierHPRowGO, 487, 80, 40);
 
         var (_, soldierHPFill) = HPBar(soldierHPRowGO, "SoldierHPBar", 0, 28, SHPBg, SHPFill, stretch: true);
 
@@ -232,73 +299,151 @@ public static class SceneBuilder
         soldierHPRowGO.SetActive(false);
 
         var formationBtnGO = Btn(content, "FormationButton", "Formation: Tank Front", 28, HC("1A1A3A"));
-        PF(formationBtnGO, 618, 38, 40);
+        PF(formationBtnGO, 578, 38, 40);
 
         var mixedBonusGO = Label(content, "MixedBonusText",
             "Mixed Formation: −15% incoming damage", 26, new Color(0.6f, 0.9f, 0.6f), TextAnchor.MiddleCenter);
-        PF(mixedBonusGO, 660, 34, 50);
+        PF(mixedBonusGO, 620, 34, 50);
         mixedBonusGO.SetActive(false);
 
         var upgradeHealBtnGO = Btn(content, "UpgradeHealSelfButton", "Upgrade Heal\n(40 blood)", 28, Purple);
-        PF(upgradeHealBtnGO, 697, 64, 40);
+        PF(upgradeHealBtnGO, 657, 64, 40);
 
         var corruptionTextGO = Label(content, "CorruptionText", "", 28, new Color(0.8f, 0.2f, 0.2f), TextAnchor.MiddleLeft);
-        PF(corruptionTextGO, 765, 30, 50);
+        PF(corruptionTextGO, 725, 30, 50);
         corruptionTextGO.SetActive(false);
 
         var purifyBtnGO = Btn(content, "PurifyButton", "Purify\n(3 shards)", 28, HC("4A0A0A"));
-        PT(purifyBtnGO, 797, 38, +232, 280);
+        PT(purifyBtnGO, 757, 38, +232, 280);
         purifyBtnGO.SetActive(false);
 
         var desecrateBtnGO = Btn(content, "DesecrateButton", "Desecrate\n(-1 corrupt +50% burst)", 26, HC("3A006A"));
-        PT(desecrateBtnGO, 797, 38, 0, 300);
+        PT(desecrateBtnGO, 757, 38, 0, 300);
         desecrateBtnGO.SetActive(false);
 
-        // Daily challenge row (visible when DailyChallengeAvailable or Active)
-        var dailyChallengeRowGO = content.CreateChild("DailyChallengeRow");
-        dailyChallengeRowGO.AddImage(HC("0A1A00")); PF(dailyChallengeRowGO, 855, 60, 20);
-
-        var dailyChallengeInfoGO = Label(dailyChallengeRowGO, "DailyChallengeInfoText",
-            "Daily Challenge: 5× HP enemy  —  ×5 blood!", 30, Gold, TextAnchor.MiddleLeft);
-        PT(dailyChallengeInfoGO, 4, 52, -100, 640);
-
-        var dailyChallengeBtnGO = Btn(dailyChallengeRowGO, "DailyChallengeButton", "Start!", 32, Amber);
-        PT(dailyChallengeBtnGO, 4, 52, +400, 140);
-        dailyChallengeRowGO.SetActive(false);
-
         // ════════════════════════════════════════════════════════════════════
-        // FARM BLOOD  (y 925–1135)
+        // FARM BLOOD  (battleContent y 815–1025)
         // ════════════════════════════════════════════════════════════════════
         var farmBtnGO = Btn(content, "FarmBloodButton", "FARM BLOOD", 90, Crimson);
-        PT(farmBtnGO, 925, 210, 0, 680);
+        PT(farmBtnGO, 815, 210, 0, 680);
 
         // ════════════════════════════════════════════════════════════════════
-        // ACTION ROW  (y 1005–1140) — Tank | Berserker | Paladin | Heal Self
+        // ACTION ROW  (battleContent y 1035–1165) — Tank | Berserker | Paladin | Heal Self
         // ════════════════════════════════════════════════════════════════════
         var buyTankGO = Btn(content, "BuyTankButton",
             "Tank\n50HP  5atk\n10 blood", 28, Blue);
-        PT(buyTankGO, 1145, 130, -393, 230);
+        PT(buyTankGO, 1035, 130, -393, 230);
 
         var buyBerserkerGO = Btn(content, "BuyBerserkerButton",
             "Berserker\n25HP  12atk\n10 blood", 24, DeepOrange);
-        PT(buyBerserkerGO, 1145, 130, -131, 230);
+        PT(buyBerserkerGO, 1035, 130, -131, 230);
 
         var buyPaladinGO = Btn(content, "BuyPaladinButton",
             "Paladin\n20HP  3atk\nHealer\n10 blood", 24, HC("00695C"));
-        PT(buyPaladinGO, 1145, 130, +131, 230);
+        PT(buyPaladinGO, 1035, 130, +131, 230);
 
         var healPanelGO = content.CreateChild("HealSelfPanel");
-        healPanelGO.AddImage(Color.clear); PT(healPanelGO, 1145, 130, +393, 230);
+        healPanelGO.AddImage(Color.clear); PT(healPanelGO, 1035, 130, +393, 230);
 
         var healBtnGO = Btn(healPanelGO, "HealSelfButton", "Heal Self  +20 HP\n25 blood", 30, Purple);
         healBtnGO.Stretch(); healPanelGO.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
-        // WORKERS CARD  (y 1090–1255) — hidden until 200 blood earned
+        // BLOOD SURGE CARD  (battleContent y 1175–1895) — shown after 500 blood earned
+        // ════════════════════════════════════════════════════════════════════
+        var bloodSurgePanel = content.CreateChild("BloodSurgePanel");
+        bloodSurgePanel.AddImage(Color.clear);
+        PF(bloodSurgePanel, 1175, 720);
+
+        Panel(bloodSurgePanel, "BloodSurgeCardBg", 0, 720, Surface1, 24);
+        { var a = bloodSurgePanel.CreateChild("SurgeAccent"); a.AddImage(Crimson); PF(a, 0, 4, 24); }
+
+        var bloodSurgeInfoGO = Label(bloodSurgePanel, "BloodSurgeInfoText",
+            "Blood Surge  —  2× attack for 10s",
+            32, Color.white, TextAnchor.MiddleLeft);
+        PT(bloodSurgeInfoGO, 18, 52, -175, 500);
+
+        var surgeBtnGO = Btn(bloodSurgePanel, "BloodSurgeButton",
+            "Surge!\n(50 blood)", 34, Crimson);
+        PT(surgeBtnGO, 10, 110, +232, 370);
+
+        var upgradeSurgeBtnGO = Btn(bloodSurgePanel, "UpgradeSurgeButton",
+            "Upgrade Surge\n(60 blood)", 28, HC("8E2424"));
+        PF(upgradeSurgeBtnGO, 128, 64, 40);
+
+        var surgeDivGO = bloodSurgePanel.CreateChild("SurgeDiv");
+        surgeDivGO.AddImage(HC("2D2D4A")); PT(surgeDivGO, 202, 2, 0, 640);
+
+        var soulSacInfoGO = Label(bloodSurgePanel, "SoulSacrificeInfoText",
+            "Soul Sacrifice  —  lose 1 soldier → ×10 blood",
+            30, new Color(0.9f, 0.5f, 0.1f), TextAnchor.MiddleLeft);
+        PT(soulSacInfoGO, 212, 48, -140, 620);
+
+        var soulSacBtnGO = Btn(bloodSurgePanel, "SoulSacrificeButton",
+            "Sacrifice!", 32, HC("4A1A00"));
+        PT(soulSacBtnGO, 268, 28, 0, 680);
+
+        var stormDivGO = bloodSurgePanel.CreateChild("BloodStormDiv");
+        stormDivGO.AddImage(HC("2D2D4A")); PT(stormDivGO, 306, 2, 0, 640);
+
+        var bloodStormInfoGO = Label(bloodSurgePanel, "BloodStormInfoText",
+            "Blood Storm  —  Unlocks at wave 8",
+            30, new Color(0.55f, 0.8f, 1f), TextAnchor.MiddleLeft);
+        PT(bloodStormInfoGO, 314, 44, -140, 620);
+
+        var bloodStormBtnGO = Btn(bloodSurgePanel, "BloodStormButton",
+            "Storm! (50 blood)", 30, HC("0D3A6E"));
+        PT(bloodStormBtnGO, 364, 42, 0, 680);
+
+        var bloodOathDivGO = bloodSurgePanel.CreateChild("BloodOathDiv");
+        bloodOathDivGO.AddImage(HC("2D2D4A")); PT(bloodOathDivGO, 406, 2, 0, 640);
+
+        var bloodOathInfoGO = Label(bloodSurgePanel, "BloodOathInfoText",
+            "Blood Oath  —  Unlocks at wave 15",
+            30, new Color(0.85f, 0.5f, 1f), TextAnchor.MiddleLeft);
+        PT(bloodOathInfoGO, 414, 44, -140, 620);
+
+        var bloodOathBtnGO = Btn(bloodSurgePanel, "BloodOathButton",
+            "Oath! (200 blood)", 30, HC("3A006A"));
+        PT(bloodOathBtnGO, 464, 42, 0, 680);
+
+        var warCryDivGO = bloodSurgePanel.CreateChild("WarCryDiv");
+        warCryDivGO.AddImage(HC("2D2D4A")); PT(warCryDivGO, 506, 2, 0, 640);
+
+        var warCryInfoGO = Label(bloodSurgePanel, "WarCryInfoText",
+            "War Cry  —  Unlocks at wave 5",
+            30, new Color(1f, 0.7f, 0.3f), TextAnchor.MiddleLeft);
+        PT(warCryInfoGO, 514, 44, -140, 620);
+
+        var warCryBtnGO = Btn(bloodSurgePanel, "WarCryButton",
+            "War Cry! (30 blood)", 30, HC("4A2800"));
+        PT(warCryBtnGO, 564, 42, 0, 680);
+
+        var hexCurseDivGO = bloodSurgePanel.CreateChild("HexCurseDiv");
+        hexCurseDivGO.AddImage(HC("2D2D4A")); PT(hexCurseDivGO, 606, 2, 0, 640);
+
+        var hexCurseInfoGO = Label(bloodSurgePanel, "HexCurseInfoText",
+            "Hex Curse  —  Unlocks at wave 4",
+            30, new Color(0.3f, 0.85f, 0.4f), TextAnchor.MiddleLeft);
+        PT(hexCurseInfoGO, 614, 44, -140, 620);
+
+        var hexCurseBtnGO = Btn(bloodSurgePanel, "HexCurseButton",
+            "Hex! (20 blood)", 30, HC("003A10"));
+        PT(hexCurseBtnGO, 664, 42, 0, 680);
+
+        bloodSurgePanel.SetActive(false);
+
+        // ════════════════════════════════════════════════════════════════════
+        // Switch to BUILD tab content
+        // ════════════════════════════════════════════════════════════════════
+        content = buildContent;
+
+        // ════════════════════════════════════════════════════════════════════
+        // WORKERS CARD  (buildContent y 360–865) — hidden until 200 blood earned
         // ════════════════════════════════════════════════════════════════════
         var workersPanel = content.CreateChild("WorkersPanel");
         workersPanel.AddImage(Color.clear);
-        PF(workersPanel, 1290, 505);
+        PF(workersPanel, 360, 505);
 
         Panel(workersPanel, "WorkersCardBg", 0, 505, Surface1, 24);
         { var a = workersPanel.CreateChild("WorkersAccent"); a.AddImage(Amber); PF(a, 0, 4, 24); }
@@ -334,39 +479,39 @@ public static class SceneBuilder
         workersPanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
-        // BARRACKS CARD  (y 1805–1970)
+        // BARRACKS CARD  (buildContent y 10–175)
         // ════════════════════════════════════════════════════════════════════
-        Panel(content, "BarracksCardBg", 1805, 165, Surface1, 24);
-        { var a = content.CreateChild("BarracksCardAccent"); a.AddImage(Brown); PF(a, 1805, 4, 24); }
+        Panel(content, "BarracksCardBg", 10, 165, Surface1, 24);
+        { var a = content.CreateChild("BarracksCardAccent"); a.AddImage(Brown); PF(a, 10, 4, 24); }
 
         var barracksInfoGO = Label(content, "BarracksInfoText",
             "Barracks  Lv.1  —  Max 10 soldiers",
             34, Color.white, TextAnchor.MiddleLeft);
-        PT(barracksInfoGO, 1828, 52, -175, 540);
+        PT(barracksInfoGO, 33, 52, -175, 540);
 
         var upgradeBarracksGO = Btn(content, "UpgradeBarracksButton", "Upgrade\n(20 wood)", 34, Brown);
-        PT(upgradeBarracksGO, 1818, 110, +232, 370);
+        PT(upgradeBarracksGO, 23, 110, +232, 370);
 
         // ════════════════════════════════════════════════════════════════════
-        // FORTIFICATIONS CARD  (y 1855–2020) — always visible
+        // FORTIFICATIONS CARD  (buildContent y 185–350)
         // ════════════════════════════════════════════════════════════════════
-        Panel(content, "FortificationsCardBg", 1980, 165, Surface1, 24);
-        { var a = content.CreateChild("FortCardAccent"); a.AddImage(HC("4A3728")); PF(a, 1980, 4, 24); }
+        Panel(content, "FortificationsCardBg", 185, 165, Surface1, 24);
+        { var a = content.CreateChild("FortCardAccent"); a.AddImage(HC("4A3728")); PF(a, 185, 4, 24); }
 
         var fortInfoGO = Label(content, "FortificationsInfoText",
             "Fortifications  Lv.0/10  (−0% enemy HP)",
             34, Color.white, TextAnchor.MiddleLeft);
-        PT(fortInfoGO, 2003, 52, -175, 540);
+        PT(fortInfoGO, 208, 52, -175, 540);
 
         var upgradeFortGO = Btn(content, "UpgradeFortificationButton", "Fortify\n(50 wood)", 34, Brown);
-        PT(upgradeFortGO, 1993, 110, +232, 370);
+        PT(upgradeFortGO, 198, 110, +232, 370);
 
         // ════════════════════════════════════════════════════════════════════
-        // EQUIPMENT CARD  (y 2030–2275) — same unlock as workers
+        // EQUIPMENT CARD  (buildContent y 875–1120) — same unlock as workers
         // ════════════════════════════════════════════════════════════════════
         var equipmentPanel = content.CreateChild("EquipmentPanel");
         equipmentPanel.AddImage(Color.clear);
-        PF(equipmentPanel, 2155, 245);
+        PF(equipmentPanel, 875, 245);
 
         Panel(equipmentPanel, "EquipmentCardBg", 0, 245, Surface1, 24);
         { var a = equipmentPanel.CreateChild("EquipAccent"); a.AddImage(Blue); PF(a, 0, 4, 24); }
@@ -401,11 +546,11 @@ public static class SceneBuilder
         equipmentPanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
-        // BLOOD RITUAL + BLOOD PACT CARD  (y 2285–2500) — same unlock as workers
+        // BLOOD RITUAL + BLOOD PACT CARD  (buildContent y 1130–1345)
         // ════════════════════════════════════════════════════════════════════
         var bloodRitualPanel = content.CreateChild("BloodRitualPanel");
         bloodRitualPanel.AddImage(Color.clear);
-        PF(bloodRitualPanel, 2410, 215);
+        PF(bloodRitualPanel, 1130, 215);
 
         Panel(bloodRitualPanel, "BloodRitualCardBg", 0, 215, Surface1, 24);
         { var a = bloodRitualPanel.CreateChild("RitualAccent"); a.AddImage(Purple); PF(a, 0, 4, 24); }
@@ -434,121 +579,11 @@ public static class SceneBuilder
         bloodRitualPanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
-        // PRESTIGE CARD  (y 2095–2235) — visible at wave 20+
-        // ════════════════════════════════════════════════════════════════════
-        var prestigePanel = content.CreateChild("PrestigePanel");
-        prestigePanel.AddImage(Color.clear);
-        PF(prestigePanel, 2635, 140);
-
-        Panel(prestigePanel, "PrestigeCardBg", 0, 140, HC("1A0A00"), 24);
-
-        var prestigeInfoGO = Label(prestigePanel, "PrestigeInfoText",
-            "Prestige  —  reset for a blood bonus",
-            32, Gold, TextAnchor.MiddleLeft);
-        PT(prestigeInfoGO, 18, 52, -175, 500);
-
-        var prestigeBtnGO = Btn(prestigePanel, "PrestigeButton",
-            "PRESTIGE\n(reset progress)", 32, Amber);
-        PT(prestigeBtnGO, 10, 110, +232, 370);
-
-        prestigePanel.SetActive(false);
-
-        // ════════════════════════════════════════════════════════════════════
-        // BLOOD SURGE CARD  (y 2245–2385) — visible after 500 blood earned
-        // ════════════════════════════════════════════════════════════════════
-        var bloodSurgePanel = content.CreateChild("BloodSurgePanel");
-        bloodSurgePanel.AddImage(Color.clear);
-        PF(bloodSurgePanel, 2785, 720);
-
-        Panel(bloodSurgePanel, "BloodSurgeCardBg", 0, 720, Surface1, 24);
-        { var a = bloodSurgePanel.CreateChild("SurgeAccent"); a.AddImage(Crimson); PF(a, 0, 4, 24); }
-
-        var bloodSurgeInfoGO = Label(bloodSurgePanel, "BloodSurgeInfoText",
-            "Blood Surge  —  2× attack for 10s",
-            32, Color.white, TextAnchor.MiddleLeft);
-        PT(bloodSurgeInfoGO, 18, 52, -175, 500);
-
-        var surgeBtnGO = Btn(bloodSurgePanel, "BloodSurgeButton",
-            "Surge!\n(50 blood)", 34, Crimson);
-        PT(surgeBtnGO, 10, 110, +232, 370);
-
-        var upgradeSurgeBtnGO = Btn(bloodSurgePanel, "UpgradeSurgeButton",
-            "Upgrade Surge\n(60 blood)", 28, HC("8E2424"));
-        PF(upgradeSurgeBtnGO, 128, 64, 40);
-
-        // Soul Sacrifice (unlocked after first prestige)
-        var surgeDivGO = bloodSurgePanel.CreateChild("SurgeDiv");
-        surgeDivGO.AddImage(HC("2D2D4A")); PT(surgeDivGO, 202, 2, 0, 640);
-
-        var soulSacInfoGO = Label(bloodSurgePanel, "SoulSacrificeInfoText",
-            "Soul Sacrifice  —  lose 1 soldier → ×10 blood",
-            30, new Color(0.9f, 0.5f, 0.1f), TextAnchor.MiddleLeft);
-        PT(soulSacInfoGO, 212, 48, -140, 620);
-
-        var soulSacBtnGO = Btn(bloodSurgePanel, "SoulSacrificeButton",
-            "Sacrifice!", 32, HC("4A1A00"));
-        PT(soulSacBtnGO, 268, 28, 0, 680);
-
-        // Blood Storm section (inside the blood surge card)
-        var stormDivGO = bloodSurgePanel.CreateChild("BloodStormDiv");
-        stormDivGO.AddImage(HC("2D2D4A")); PT(stormDivGO, 306, 2, 0, 640);
-
-        var bloodStormInfoGO = Label(bloodSurgePanel, "BloodStormInfoText",
-            "Blood Storm  —  Unlocks at wave 8",
-            30, new Color(0.55f, 0.8f, 1f), TextAnchor.MiddleLeft);
-        PT(bloodStormInfoGO, 314, 44, -140, 620);
-
-        var bloodStormBtnGO = Btn(bloodSurgePanel, "BloodStormButton",
-            "Storm! (50 blood)", 30, HC("0D3A6E"));
-        PT(bloodStormBtnGO, 364, 42, 0, 680);
-
-        // Blood Oath section (unlocks at wave 15)
-        var bloodOathDivGO = bloodSurgePanel.CreateChild("BloodOathDiv");
-        bloodOathDivGO.AddImage(HC("2D2D4A")); PT(bloodOathDivGO, 406, 2, 0, 640);
-
-        var bloodOathInfoGO = Label(bloodSurgePanel, "BloodOathInfoText",
-            "Blood Oath  —  Unlocks at wave 15",
-            30, new Color(0.85f, 0.5f, 1f), TextAnchor.MiddleLeft);
-        PT(bloodOathInfoGO, 414, 44, -140, 620);
-
-        var bloodOathBtnGO = Btn(bloodSurgePanel, "BloodOathButton",
-            "Oath! (200 blood)", 30, HC("3A006A"));
-        PT(bloodOathBtnGO, 464, 42, 0, 680);
-
-        // War Cry section (unlocks at wave 5)
-        var warCryDivGO = bloodSurgePanel.CreateChild("WarCryDiv");
-        warCryDivGO.AddImage(HC("2D2D4A")); PT(warCryDivGO, 506, 2, 0, 640);
-
-        var warCryInfoGO = Label(bloodSurgePanel, "WarCryInfoText",
-            "War Cry  —  Unlocks at wave 5",
-            30, new Color(1f, 0.7f, 0.3f), TextAnchor.MiddleLeft);
-        PT(warCryInfoGO, 514, 44, -140, 620);
-
-        var warCryBtnGO = Btn(bloodSurgePanel, "WarCryButton",
-            "War Cry! (30 blood)", 30, HC("4A2800"));
-        PT(warCryBtnGO, 564, 42, 0, 680);
-
-        // Hex Curse section (unlocks at wave 4)
-        var hexCurseDivGO = bloodSurgePanel.CreateChild("HexCurseDiv");
-        hexCurseDivGO.AddImage(HC("2D2D4A")); PT(hexCurseDivGO, 606, 2, 0, 640);
-
-        var hexCurseInfoGO = Label(bloodSurgePanel, "HexCurseInfoText",
-            "Hex Curse  —  Unlocks at wave 4",
-            30, new Color(0.3f, 0.85f, 0.4f), TextAnchor.MiddleLeft);
-        PT(hexCurseInfoGO, 614, 44, -140, 620);
-
-        var hexCurseBtnGO = Btn(bloodSurgePanel, "HexCurseButton",
-            "Hex! (20 blood)", 30, HC("003A10"));
-        PT(hexCurseBtnGO, 664, 42, 0, 680);
-
-        bloodSurgePanel.SetActive(false);
-
-        // ════════════════════════════════════════════════════════════════════
-        // BLOOD BANK CARD  (y 2875–3040) — always visible
+        // BLOOD BANK CARD  (buildContent y 1355–1520)
         // ════════════════════════════════════════════════════════════════════
         var bloodBankPanel = content.CreateChild("BloodBankPanel");
         bloodBankPanel.AddImage(Color.clear);
-        PF(bloodBankPanel, 3515, 165);
+        PF(bloodBankPanel, 1355, 165);
 
         Panel(bloodBankPanel, "BloodBankCardBg", 0, 165, Surface1, 24);
         { var a = bloodBankPanel.CreateChild("BankAccent"); a.AddImage(Gold); PF(a, 0, 4, 24); }
@@ -571,11 +606,36 @@ public static class SceneBuilder
         PT(withdrawBtnGO, 52, 100, +380, 210);
 
         // ════════════════════════════════════════════════════════════════════
-        // PRESTIGE SHOP CARD  (y 2560–2975) — visible after first prestige
+        // Switch to PROGRESS tab content
+        // ════════════════════════════════════════════════════════════════════
+        content = progressContent;
+
+        // ════════════════════════════════════════════════════════════════════
+        // PRESTIGE CARD  (progressContent y 10–150) — visible at wave 20+
+        // ════════════════════════════════════════════════════════════════════
+        var prestigePanel = content.CreateChild("PrestigePanel");
+        prestigePanel.AddImage(Color.clear);
+        PF(prestigePanel, 10, 140);
+
+        Panel(prestigePanel, "PrestigeCardBg", 0, 140, HC("1A0A00"), 24);
+
+        var prestigeInfoGO = Label(prestigePanel, "PrestigeInfoText",
+            "Prestige  —  reset for a blood bonus",
+            32, Gold, TextAnchor.MiddleLeft);
+        PT(prestigeInfoGO, 18, 52, -175, 500);
+
+        var prestigeBtnGO = Btn(prestigePanel, "PrestigeButton",
+            "PRESTIGE\n(reset progress)", 32, Amber);
+        PT(prestigeBtnGO, 10, 110, +232, 370);
+
+        prestigePanel.SetActive(false);
+
+        // ════════════════════════════════════════════════════════════════════
+        // PRESTIGE SHOP CARD  (progressContent y 160–645) — visible after first prestige
         // ════════════════════════════════════════════════════════════════════
         var prestigeShopPanel = content.CreateChild("PrestigeShopPanel");
         prestigeShopPanel.AddImage(Color.clear);
-        PF(prestigeShopPanel, 3690, 485);
+        PF(prestigeShopPanel, 160, 485);
 
         Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 485, HC("150A30"), 24);
 
@@ -643,7 +703,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var soulShardShopPanel = content.CreateChild("SoulShardShopPanel");
         soulShardShopPanel.AddImage(Color.clear);
-        PF(soulShardShopPanel, 4185, 380);
+        PF(soulShardShopPanel, 655, 380);
 
         Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 380, HC("0A1A30"), 24);
 
@@ -696,7 +756,7 @@ public static class SceneBuilder
         // DAILY QUESTS BUTTON ROW  (y 4200–4265)
         // ════════════════════════════════════════════════════════════════════
         var questsRowGO = content.CreateChild("DailyQuestsRow");
-        questsRowGO.AddImage(HC("0A1A0A")); PF(questsRowGO, 4500, 65, 20);
+        questsRowGO.AddImage(HC("0A1A0A")); PF(questsRowGO, 1045, 65, 20);
 
         var openQuestsBtnGO = Btn(questsRowGO, "OpenQuestsButton", "Daily Quests", 34, HC("1B5E20"));
         openQuestsBtnGO.Stretch();
@@ -705,25 +765,62 @@ public static class SceneBuilder
         // WATCH AD ROW  (y 4275–4345)
         // ════════════════════════════════════════════════════════════════════
         var adBoostRowGO = content.CreateChild("AdBoostRow");
-        adBoostRowGO.AddImage(HC("1A0A2E")); PF(adBoostRowGO, 4575, 65, 20);
+        adBoostRowGO.AddImage(HC("1A0A2E")); PF(adBoostRowGO, 1120, 65, 20);
 
         var watchAdBtnGO = Btn(adBoostRowGO, "WatchAdButton", "Watch Ad  →  2× Blood (5 min)", 34, Purple);
         watchAdBtnGO.Stretch();
 
         // ════════════════════════════════════════════════════════════════════
-        // BOTTOM ROW  (y 4350–4450) — Stats | Settings | Suggest | Shop
+        // Switch to SETTINGS tab content
+        // ════════════════════════════════════════════════════════════════════
+        content = settingsContent;
+
+        // ════════════════════════════════════════════════════════════════════
+        // SETTINGS CONTENT  (settingsContent y 10–240) — 2×2 utility button grid
         // ════════════════════════════════════════════════════════════════════
         var statsBtnGO = Btn(content, "StatsButton", "Statistics", 32, Teal);
-        PT(statsBtnGO, 4650, 100, -394, 251);
+        PT(statsBtnGO, 10, 110, -265, 508);
 
         var settingsBtnGO = Btn(content, "SettingsButton", "Settings", 32, HC("2A2A4A"));
-        PT(settingsBtnGO, 4650, 100, -132, 251);
+        PT(settingsBtnGO, 10, 110, +265, 508);
 
         var suggestBtnGO = Btn(content, "SuggestButton", "Suggest", 32, HC("1565C0"));
-        PT(suggestBtnGO, 4650, 100, +132, 251);
+        PT(suggestBtnGO, 130, 110, -265, 508);
 
         var shopBtnGO = Btn(content, "ShopButton", "Shop", 32, HC("8B0000"));
-        PT(shopBtnGO, 4650, 100, +394, 251);
+        PT(shopBtnGO, 130, 110, +265, 508);
+
+        // ════════════════════════════════════════════════════════════════════
+        // FIXED TAB BAR  (canvas bottom 100px)
+        // ════════════════════════════════════════════════════════════════════
+        var tabBarGO = cv.CreateChild("TabBar");
+        tabBarGO.AddImage(HC("0F0E1E"));
+        {
+            var rt              = tabBarGO.GetComponent<RectTransform>();
+            rt.anchorMin        = new Vector2(0f, 0f);
+            rt.anchorMax        = new Vector2(1f, 0f);
+            rt.pivot            = new Vector2(0.5f, 0f);
+            rt.anchoredPosition = Vector2.zero;
+            rt.sizeDelta        = new Vector2(0f, 100f);
+        }
+        var tabTopDivGO = tabBarGO.CreateChild("TabTopDiv");
+        tabTopDivGO.AddImage(HC("2D2D4A"));
+        {
+            var rt              = tabTopDivGO.GetComponent<RectTransform>();
+            rt.anchorMin        = Vector2.zero;
+            rt.anchorMax        = new Vector2(1f, 0f);
+            rt.pivot            = new Vector2(0.5f, 0f);
+            rt.anchoredPosition = new Vector2(0f, 98f);
+            rt.sizeDelta        = new Vector2(0f, 2f);
+        }
+        var tabBattleBtnGO   = Btn(tabBarGO, "TabBattleButton",   "Battle",   28, Color.clear);
+        var tabBuildBtnGO    = Btn(tabBarGO, "TabBuildButton",    "Build",    28, Color.clear);
+        var tabProgressBtnGO = Btn(tabBarGO, "TabProgressButton", "Progress", 28, Color.clear);
+        var tabSettingsBtnGO = Btn(tabBarGO, "TabSettingsButton", "Settings", 28, Color.clear);
+        PT(tabBattleBtnGO,   0, 100, -405, 250);
+        PT(tabBuildBtnGO,    0, 100, -135, 250);
+        PT(tabProgressBtnGO, 0, 100, +135, 250);
+        PT(tabSettingsBtnGO, 0, 100, +405, 250);
 
         // ── Damage number layer ───────────────────────────────────────────────
         var dmgLayerGO = cv.CreateChild("DamageLayer");
@@ -1274,6 +1371,10 @@ public static class SceneBuilder
         uim.starterPackButtonText   = starterBtnGO.GetComponentInChildren<Text>();
         uim.bloodBoostSmallButton   = boostSmallBtnGO.GetComponent<Button>();
         uim.bloodBoostLargeButton   = boostLargeBtnGO.GetComponent<Button>();
+        uim.battleTabPanel          = battleScrollGO;
+        uim.buildTabPanel           = buildScrollGO;
+        uim.progressTabPanel        = progressScrollGO;
+        uim.settingsTabPanel        = settingsScrollGO;
         clk.uiManager               = uim;
 
         // Wire buttons
@@ -1354,6 +1455,10 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(desecrateBtnGO.GetComponent<Button>().onClick,          clk.OnUseDesecrate);
         UnityEventTools.AddPersistentListener(soulSacBtnGO.GetComponent<Button>().onClick,            clk.OnUseSoulSacrifice);
         UnityEventTools.AddPersistentListener(tutDismissGO.GetComponent<Button>().onClick,            uim.DismissTutorial);
+        UnityEventTools.AddPersistentListener(tabBattleBtnGO.GetComponent<Button>().onClick,          clk.OnSelectBattleTab);
+        UnityEventTools.AddPersistentListener(tabBuildBtnGO.GetComponent<Button>().onClick,           clk.OnSelectBuildTab);
+        UnityEventTools.AddPersistentListener(tabProgressBtnGO.GetComponent<Button>().onClick,        clk.OnSelectProgressTab);
+        UnityEventTools.AddPersistentListener(tabSettingsBtnGO.GetComponent<Button>().onClick,        clk.OnSelectSettingsTab);
 
         const string scenePath = "Assets/Scenes/MainScene.unity";
         EditorSceneManager.SaveScene(scene, scenePath);

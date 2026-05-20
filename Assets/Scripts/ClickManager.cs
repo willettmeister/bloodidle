@@ -52,6 +52,10 @@ public class ClickManager : MonoBehaviour
     public void OnBuyPaladin()             => GameManager.Instance.BuyPaladin();
     public void OnUpgradeSurge()           => GameManager.Instance.UpgradeSurge();
     public void OnUpgradeHealSelf()        => GameManager.Instance.UpgradeHealSelf();
+    public void OnSelectBattleTab()        => uiManager.ShowBattleTab();
+    public void OnSelectBuildTab()         => uiManager.ShowBuildTab();
+    public void OnSelectProgressTab()      => uiManager.ShowProgressTab();
+    public void OnSelectSettingsTab()      => uiManager.ShowSettingsTab();
     public void OnOpenStats()              => uiManager.ShowStatsPanel();
     public void OnOpenSettings()           => uiManager.ShowSettingsPanel();
     public void OnOpenSuggest()            => uiManager.ShowFeaturePanel();
