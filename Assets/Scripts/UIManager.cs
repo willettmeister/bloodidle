@@ -70,6 +70,8 @@ public class UIManager : MonoBehaviour
     public Button bloodOathButton;
     public Button autoBloodOathButton;
     public Text   autoBloodOathButtonText;
+    public Button upgradeBloodOathButton;
+    public Text   bloodOathUpgradeCostText;
 
     [Header("War Cry")]
     public Text   warCryInfoText;
@@ -635,15 +637,29 @@ public class UIManager : MonoBehaviour
                 bloodOathInfoText.text = gm.BloodOathActive
                     ? $"Blood Oath  —  ×4 atk + reflect  {Mathf.CeilToInt(gm.BloodOathTimeRemaining)}s"
                     : gm.BloodOathReady
-                        ? $"Blood Oath  —  ×4 atk, 50% reflect  ({GameManager.FormatNumber(GameManager.BloodOathCost)} blood)"
+                        ? $"Blood Oath  —  ×4 atk, 50% reflect for {gm.BloodOathDurationEffective:F0}s  ({GameManager.FormatNumber(GameManager.BloodOathCost)} blood)"
                         : $"Blood Oath  —  Cooldown: {Mathf.CeilToInt(gm.BloodOathCooldownLeft)}s";
                 if (bloodOathButton != null)
                     bloodOathButton.interactable = gm.BloodOathCanCast;
+                if (upgradeBloodOathButton != null)
+                    upgradeBloodOathButton.interactable = gm.BloodOathUpgradeLevel < GameManager.MaxSpellUpgradeLevel
+                        && gm.Blood >= gm.BloodOathUpgradeCost;
+                if (bloodOathUpgradeCostText != null)
+                {
+                    if (gm.BloodOathUpgradeLevel < GameManager.MaxSpellUpgradeLevel)
+                    {
+                        float nextDur = GameManager.BloodOathDuration + (gm.BloodOathUpgradeLevel + 1) * 5f;
+                        bloodOathUpgradeCostText.text = $"Upgrade Blood Oath\nLv.{gm.BloodOathUpgradeLevel}→{gm.BloodOathUpgradeLevel + 1}  {gm.BloodOathDurationEffective:F0}s→{nextDur:F0}s\n({GameManager.FormatNumber(gm.BloodOathUpgradeCost)} blood)";
+                    }
+                    else
+                        bloodOathUpgradeCostText.text = "Blood Oath MAX";
+                }
             }
             else
             {
                 bloodOathInfoText.text = $"Blood Oath  —  Unlocks at wave {GameManager.BloodOathUnlockWave}";
                 if (bloodOathButton != null) bloodOathButton.interactable = false;
+                if (upgradeBloodOathButton != null) upgradeBloodOathButton.gameObject.SetActive(false);
             }
             if (autoBloodOathButton != null)
             {
