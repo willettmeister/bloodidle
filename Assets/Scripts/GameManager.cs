@@ -623,7 +623,8 @@ public class GameManager : MonoBehaviour
     float _dmgTimer;
     const float DmgTickInterval = 0.4f;
 
-    // Audio removed — UnityEngine.AudioModule not available in this assembly config
+    AudioSource _audio;
+    AudioClip   _clipFarm, _clipKill, _clipBossKill;
 
     static readonly (AchievementFlags flag, double blood, int pp)[] k_AchievRewards =
     {
@@ -740,6 +741,12 @@ public class GameManager : MonoBehaviour
         NextBossWave = UnityEngine.Random.Range(6, 13);
         SpawnEnemy(1);
         Load();
+
+        _audio = gameObject.AddComponent<AudioSource>();
+        _audio.playOnAwake = false;
+        _clipFarm     = Resources.Load<AudioClip>("Audio/blood_farm");
+        _clipKill     = Resources.Load<AudioClip>("Audio/enemy_kill");
+        _clipBossKill = Resources.Load<AudioClip>("Audio/boss_kill");
         CheckTutorial();
     }
 
@@ -1005,6 +1012,7 @@ public class GameManager : MonoBehaviour
             WavePreviewActive = true;
             _previewTimer = WavePreviewDuration;
             _dmgTimer = 0f;
+            PlaySound(wasBoss ? _clipBossKill : _clipKill);
 
             if (isMilestone) GrantMilestoneChest(Wave - 1);
             return true;
@@ -1247,6 +1255,7 @@ public class GameManager : MonoBehaviour
             PlayerPrefs.Save();
         }
         AddBlood(amount);
+        PlaySound(_clipFarm);
         CheckQuestProgress(QuestTrackType.Farms);
         OnStateChanged?.Invoke();
     }
@@ -1279,7 +1288,10 @@ public class GameManager : MonoBehaviour
         OnAchievementUnlocked?.Invoke(flag);
     }
 
-    void PlaySound(object clip) { } // stub — audio module unavailable in this assembly
+    void PlaySound(AudioClip clip)
+    {
+        if (SoundEnabled && clip != null && _audio != null) _audio.PlayOneShot(clip, 0.7f);
+    }
 
     public bool BuySoldier() => BuyTank();
     public void ToggleAutoBuySoldiers() { AutoBuySoldiers = !AutoBuySoldiers; OnStateChanged?.Invoke(); }
