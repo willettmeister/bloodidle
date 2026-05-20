@@ -22,13 +22,13 @@ using System.IO;
 // 1890–2135  Equipment card
 // 2145–2360  Blood Ritual + Blood Pact card
 // 2370–2510  Prestige card
-// 2520–2940  Blood Surge card  (UpgradeSurge row at bottom)
-// 2950–3115  Blood Bank card
-// 3125–3610  Prestige Shop card  (7 rows)
-// 3620–4000  Soul Shard Shop card  (5 rows incl. Shard Hunger)
-// 4200–4265  Daily Quests row  — opens DailyQuests overlay
-// 4275–4345  Watch Ad row  — 2× Blood boost (hidden when ads removed)
-// 4350–4450  Bottom row  — Stats | Settings | Suggest | Shop
+// 2785–3505  Blood Surge card  (Surge + BloodOath + WarCry + HexCurse)
+// 3515–3680  Blood Bank card
+// 3690–4175  Prestige Shop card  (7 rows)
+// 4185–4565  Soul Shard Shop card  (5 rows incl. Shard Hunger)
+// 4500–4565  Daily Quests row  — opens DailyQuests overlay
+// 4575–4645  Watch Ad row  — 2× Blood boost (hidden when ads removed)
+// 4650–4750  Bottom row  — Stats | Settings | Suggest | Shop
 // overlay    StatsPanel, SettingsPanel, IAPShopPanel, QuestsPanel, FeatureRequestOverlay — modals
 public static class SceneBuilder
 {
@@ -137,7 +137,7 @@ public static class SceneBuilder
         contentRT.anchorMax        = new Vector2(1f, 1f);
         contentRT.pivot            = new Vector2(0.5f, 1f);
         contentRT.anchoredPosition = Vector2.zero;
-        contentRT.sizeDelta        = new Vector2(0, 4500);
+        contentRT.sizeDelta        = new Vector2(0, 4800);
 
         var scroll = scrollGO.AddComponent<ScrollRect>();
         scroll.viewport          = viewportGO.GetComponent<RectTransform>();
@@ -458,9 +458,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var bloodSurgePanel = content.CreateChild("BloodSurgePanel");
         bloodSurgePanel.AddImage(Color.clear);
-        PF(bloodSurgePanel, 2785, 420);
+        PF(bloodSurgePanel, 2785, 720);
 
-        Panel(bloodSurgePanel, "BloodSurgeCardBg", 0, 420, Surface1, 24);
+        Panel(bloodSurgePanel, "BloodSurgeCardBg", 0, 720, Surface1, 24);
         { var a = bloodSurgePanel.CreateChild("SurgeAccent"); a.AddImage(Crimson); PF(a, 0, 4, 24); }
 
         var bloodSurgeInfoGO = Label(bloodSurgePanel, "BloodSurgeInfoText",
@@ -502,6 +502,45 @@ public static class SceneBuilder
             "Storm! (50 blood)", 30, HC("0D3A6E"));
         PT(bloodStormBtnGO, 364, 42, 0, 680);
 
+        // Blood Oath section (unlocks at wave 15)
+        var bloodOathDivGO = bloodSurgePanel.CreateChild("BloodOathDiv");
+        bloodOathDivGO.AddImage(HC("2D2D4A")); PT(bloodOathDivGO, 406, 2, 0, 640);
+
+        var bloodOathInfoGO = Label(bloodSurgePanel, "BloodOathInfoText",
+            "Blood Oath  —  Unlocks at wave 15",
+            30, new Color(0.85f, 0.5f, 1f), TextAnchor.MiddleLeft);
+        PT(bloodOathInfoGO, 414, 44, -140, 620);
+
+        var bloodOathBtnGO = Btn(bloodSurgePanel, "BloodOathButton",
+            "Oath! (200 blood)", 30, HC("3A006A"));
+        PT(bloodOathBtnGO, 464, 42, 0, 680);
+
+        // War Cry section (unlocks at wave 5)
+        var warCryDivGO = bloodSurgePanel.CreateChild("WarCryDiv");
+        warCryDivGO.AddImage(HC("2D2D4A")); PT(warCryDivGO, 506, 2, 0, 640);
+
+        var warCryInfoGO = Label(bloodSurgePanel, "WarCryInfoText",
+            "War Cry  —  Unlocks at wave 5",
+            30, new Color(1f, 0.7f, 0.3f), TextAnchor.MiddleLeft);
+        PT(warCryInfoGO, 514, 44, -140, 620);
+
+        var warCryBtnGO = Btn(bloodSurgePanel, "WarCryButton",
+            "War Cry! (30 blood)", 30, HC("4A2800"));
+        PT(warCryBtnGO, 564, 42, 0, 680);
+
+        // Hex Curse section (unlocks at wave 4)
+        var hexCurseDivGO = bloodSurgePanel.CreateChild("HexCurseDiv");
+        hexCurseDivGO.AddImage(HC("2D2D4A")); PT(hexCurseDivGO, 606, 2, 0, 640);
+
+        var hexCurseInfoGO = Label(bloodSurgePanel, "HexCurseInfoText",
+            "Hex Curse  —  Unlocks at wave 4",
+            30, new Color(0.3f, 0.85f, 0.4f), TextAnchor.MiddleLeft);
+        PT(hexCurseInfoGO, 614, 44, -140, 620);
+
+        var hexCurseBtnGO = Btn(bloodSurgePanel, "HexCurseButton",
+            "Hex! (20 blood)", 30, HC("003A10"));
+        PT(hexCurseBtnGO, 664, 42, 0, 680);
+
         bloodSurgePanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
@@ -509,7 +548,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var bloodBankPanel = content.CreateChild("BloodBankPanel");
         bloodBankPanel.AddImage(Color.clear);
-        PF(bloodBankPanel, 3215, 165);
+        PF(bloodBankPanel, 3515, 165);
 
         Panel(bloodBankPanel, "BloodBankCardBg", 0, 165, Surface1, 24);
         { var a = bloodBankPanel.CreateChild("BankAccent"); a.AddImage(Gold); PF(a, 0, 4, 24); }
@@ -536,7 +575,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var prestigeShopPanel = content.CreateChild("PrestigeShopPanel");
         prestigeShopPanel.AddImage(Color.clear);
-        PF(prestigeShopPanel, 3390, 485);
+        PF(prestigeShopPanel, 3690, 485);
 
         Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 485, HC("150A30"), 24);
 
@@ -604,7 +643,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var soulShardShopPanel = content.CreateChild("SoulShardShopPanel");
         soulShardShopPanel.AddImage(Color.clear);
-        PF(soulShardShopPanel, 3885, 380);
+        PF(soulShardShopPanel, 4185, 380);
 
         Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 380, HC("0A1A30"), 24);
 
@@ -657,7 +696,7 @@ public static class SceneBuilder
         // DAILY QUESTS BUTTON ROW  (y 4200–4265)
         // ════════════════════════════════════════════════════════════════════
         var questsRowGO = content.CreateChild("DailyQuestsRow");
-        questsRowGO.AddImage(HC("0A1A0A")); PF(questsRowGO, 4200, 65, 20);
+        questsRowGO.AddImage(HC("0A1A0A")); PF(questsRowGO, 4500, 65, 20);
 
         var openQuestsBtnGO = Btn(questsRowGO, "OpenQuestsButton", "Daily Quests", 34, HC("1B5E20"));
         openQuestsBtnGO.Stretch();
@@ -666,7 +705,7 @@ public static class SceneBuilder
         // WATCH AD ROW  (y 4275–4345)
         // ════════════════════════════════════════════════════════════════════
         var adBoostRowGO = content.CreateChild("AdBoostRow");
-        adBoostRowGO.AddImage(HC("1A0A2E")); PF(adBoostRowGO, 4275, 65, 20);
+        adBoostRowGO.AddImage(HC("1A0A2E")); PF(adBoostRowGO, 4575, 65, 20);
 
         var watchAdBtnGO = Btn(adBoostRowGO, "WatchAdButton", "Watch Ad  →  2× Blood (5 min)", 34, Purple);
         watchAdBtnGO.Stretch();
@@ -675,16 +714,16 @@ public static class SceneBuilder
         // BOTTOM ROW  (y 4350–4450) — Stats | Settings | Suggest | Shop
         // ════════════════════════════════════════════════════════════════════
         var statsBtnGO = Btn(content, "StatsButton", "Statistics", 32, Teal);
-        PT(statsBtnGO, 4350, 100, -394, 251);
+        PT(statsBtnGO, 4650, 100, -394, 251);
 
         var settingsBtnGO = Btn(content, "SettingsButton", "Settings", 32, HC("2A2A4A"));
-        PT(settingsBtnGO, 4350, 100, -132, 251);
+        PT(settingsBtnGO, 4650, 100, -132, 251);
 
         var suggestBtnGO = Btn(content, "SuggestButton", "Suggest", 32, HC("1565C0"));
-        PT(suggestBtnGO, 4350, 100, +132, 251);
+        PT(suggestBtnGO, 4650, 100, +132, 251);
 
         var shopBtnGO = Btn(content, "ShopButton", "Shop", 32, HC("8B0000"));
-        PT(shopBtnGO, 4350, 100, +394, 251);
+        PT(shopBtnGO, 4650, 100, +394, 251);
 
         // ── Damage number layer ───────────────────────────────────────────────
         var dmgLayerGO = cv.CreateChild("DamageLayer");
@@ -1129,6 +1168,12 @@ public static class SceneBuilder
         uim.surgeCostText           = upgradeSurgeBtnGO.GetComponentInChildren<Text>();
         uim.bloodStormInfoText      = bloodStormInfoGO.GetComponent<Text>();
         uim.bloodStormButton        = bloodStormBtnGO.GetComponent<Button>();
+        uim.bloodOathInfoText       = bloodOathInfoGO.GetComponent<Text>();
+        uim.bloodOathButton         = bloodOathBtnGO.GetComponent<Button>();
+        uim.warCryInfoText          = warCryInfoGO.GetComponent<Text>();
+        uim.warCryButton            = warCryBtnGO.GetComponent<Button>();
+        uim.hexCurseInfoText        = hexCurseInfoGO.GetComponent<Text>();
+        uim.hexCurseButton          = hexCurseBtnGO.GetComponent<Button>();
         uim.upgradeHealSelfButton   = upgradeHealBtnGO.GetComponent<Button>();
         uim.healCostText            = upgradeHealBtnGO.GetComponentInChildren<Text>();
         uim.prestigeShopPanel       = prestigeShopPanel;
@@ -1239,6 +1284,9 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(healBtnGO.GetComponent<Button>().onClick,               clk.OnHealSelf);
         UnityEventTools.AddPersistentListener(surgeBtnGO.GetComponent<Button>().onClick,              clk.OnUseSurge);
         UnityEventTools.AddPersistentListener(bloodStormBtnGO.GetComponent<Button>().onClick,         clk.OnUseBloodStorm);
+        UnityEventTools.AddPersistentListener(bloodOathBtnGO.GetComponent<Button>().onClick,          clk.OnUseBloodOath);
+        UnityEventTools.AddPersistentListener(warCryBtnGO.GetComponent<Button>().onClick,             clk.OnUseWarCry);
+        UnityEventTools.AddPersistentListener(hexCurseBtnGO.GetComponent<Button>().onClick,           clk.OnUseHexCurse);
         UnityEventTools.AddPersistentListener(bloodPactGO.GetComponent<Button>().onClick,             clk.OnUseBloodPact);
         UnityEventTools.AddPersistentListener(buyWorkerGO.GetComponent<Button>().onClick,             clk.OnBuyWorker);
         UnityEventTools.AddPersistentListener(buyShrineGO.GetComponent<Button>().onClick,            clk.OnBuyShrine);

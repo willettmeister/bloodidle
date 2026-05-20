@@ -33,6 +33,8 @@ public class ClickManager : MonoBehaviour
     public void OnPurify()                 => GameManager.Instance.Purify();
     public void OnUseDesecrate()           => GameManager.Instance.UseDesecrate();
     public void OnUseBloodOath()           => GameManager.Instance.UseBloodOath();
+    public void OnUseWarCry()              => GameManager.Instance.UseWarCry();
+    public void OnUseHexCurse()            => GameManager.Instance.UseHexCurse();
     public void OnBuyPSoldierCap()         => GameManager.Instance.BuyPSoldierCap();
     public void OnBuyPClickBonus()         => GameManager.Instance.BuyPClickBonus();
     public void OnBuyPRitualEff()          => GameManager.Instance.BuyPRitualEff();

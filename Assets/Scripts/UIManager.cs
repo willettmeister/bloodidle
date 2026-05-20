@@ -58,6 +58,14 @@ public class UIManager : MonoBehaviour
     public Text   bloodOathInfoText;
     public Button bloodOathButton;
 
+    [Header("War Cry")]
+    public Text   warCryInfoText;
+    public Button warCryButton;
+
+    [Header("Hex Curse")]
+    public Text   hexCurseInfoText;
+    public Button hexCurseButton;
+
     [Header("Workers")]
     public GameObject workersPanel;
     public Text workerInfoText;
@@ -519,6 +527,39 @@ public class UIManager : MonoBehaviour
             {
                 bloodOathInfoText.text = $"Blood Oath  —  Unlocks at wave {GameManager.BloodOathUnlockWave}";
                 if (bloodOathButton != null) bloodOathButton.interactable = false;
+            }
+        }
+
+        if (warCryInfoText != null)
+        {
+            if (gm.WarCryUnlocked)
+            {
+                warCryInfoText.text = gm.WarCryActive
+                    ? $"War Cry  —  ×2 attack  {Mathf.CeilToInt(gm.WarCryTimeLeft)}s"
+                    : $"War Cry  —  ×2 attack for {GameManager.WarCryDuration:F0}s  ({GameManager.FormatNumber(GameManager.WarCryCost)} blood)";
+                if (warCryButton != null)
+                    warCryButton.interactable = !gm.WarCryActive && gm.Blood >= GameManager.WarCryCost;
+            }
+            else
+            {
+                warCryInfoText.text = $"War Cry  —  Unlocks at wave {GameManager.WarCryUnlockWave}";
+                if (warCryButton != null) warCryButton.interactable = false;
+            }
+        }
+        if (hexCurseInfoText != null)
+        {
+            if (gm.HexCurseUnlocked)
+            {
+                hexCurseInfoText.text = gm.HexCurseActive
+                    ? $"Hex Curse  —  −{GameManager.HexCurseAtkReduction * 100:F0}% enemy atk  {Mathf.CeilToInt(gm.HexCurseTimeLeft)}s"
+                    : $"Hex Curse  —  −{GameManager.HexCurseAtkReduction * 100:F0}% enemy atk for {GameManager.HexCurseDuration:F0}s  ({GameManager.FormatNumber(GameManager.HexCurseCost)} blood)";
+                if (hexCurseButton != null)
+                    hexCurseButton.interactable = !gm.HexCurseActive && gm.Blood >= GameManager.HexCurseCost && gm.EnemyHP > 0;
+            }
+            else
+            {
+                hexCurseInfoText.text = $"Hex Curse  —  Unlocks at wave {GameManager.HexCurseUnlockWave}";
+                if (hexCurseButton != null) hexCurseButton.interactable = false;
             }
         }
 

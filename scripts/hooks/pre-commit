@@ -1,21 +1,62 @@
 #!/usr/bin/env bash
-# Pre-commit hook: regenerate Mermaid SVGs whenever docs/*.md files are staged.
+# Pre-commit hook: diagram regen, conflict markers, meta consistency, secret detection.
 # Installed via: bash scripts/install-hooks.sh
 set -euo pipefail
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
+staged=$(git diff --cached --name-only)
+fail=0
 
-# Collect staged docs .md files (excluding the diagrams dir itself)
-staged_docs=$(git diff --cached --name-only | grep -E '^docs/[^/]+\.md$' || true)
+# ── 1. Conflict markers ──────────────────────────────────────────────────────
+conflict_files=$(echo "$staged" | grep -E '\.(cs|md|json|asmdef)$' || true)
+if [[ -n "$conflict_files" ]]; then
+  while IFS= read -r f; do
+    [[ -f "$REPO_ROOT/$f" ]] || continue
+    if grep -qE '^(<{7}|>{7}|={7})' "$REPO_ROOT/$f"; then
+      echo "[pre-commit] Conflict marker in: $f"
+      fail=1
+    fi
+  done <<< "$conflict_files"
+fi
 
-[[ -z "$staged_docs" ]] && exit 0
+# ── 2. Secret detection ──────────────────────────────────────────────────────
+secret_patterns='ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{82}|AIza[0-9A-Za-z_-]{35}'
+while IFS= read -r f; do
+  [[ -f "$REPO_ROOT/$f" ]] || continue
+  if git show ":$f" | grep -qE "$secret_patterns"; then
+    echo "[pre-commit] Possible secret in: $f"
+    fail=1
+  fi
+done <<< "$staged"
 
-echo "[pre-commit] Docs changed — regenerating diagrams..."
+# ── 3. Unity .meta consistency ───────────────────────────────────────────────
+while IFS= read -r f; do
+  # Asset staged without its .meta
+  if [[ "$f" != *.meta ]] && echo "$f" | grep -qE '^Assets/'; then
+    meta="$f.meta"
+    if [[ -f "$REPO_ROOT/$meta" ]] && ! git diff --cached --name-only | grep -qF "$meta"; then
+      echo "[pre-commit] Asset staged without .meta: $f"
+      fail=1
+    fi
+  fi
+  # .meta staged without its asset
+  if [[ "$f" == *.meta ]]; then
+    asset="${f%.meta}"
+    if [[ -f "$REPO_ROOT/$asset" ]] && ! git diff --cached --name-only | grep -qF "$asset"; then
+      echo "[pre-commit] .meta staged without asset: $f"
+      fail=1
+    fi
+  fi
+done <<< "$staged"
 
-cd "$REPO_ROOT"
-bash scripts/gen-diagrams.sh $staged_docs
+[[ $fail -ne 0 ]] && exit 1
 
-# Stage any updated or newly created SVGs
-git add docs/diagrams/*.svg 2>/dev/null || true
-
-echo "[pre-commit] Diagrams staged."
+# ── 4. Diagram regen ─────────────────────────────────────────────────────────
+staged_docs=$(echo "$staged" | grep -E '^docs/[^/]+\.md$' || true)
+if [[ -n "$staged_docs" ]]; then
+  echo "[pre-commit] Docs changed — regenerating diagrams..."
+  cd "$REPO_ROOT"
+  bash scripts/gen-diagrams.sh $staged_docs
+  git add docs/diagrams/*.svg 2>/dev/null || true
+  echo "[pre-commit] Diagrams staged."
+fi
