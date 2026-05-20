@@ -70,6 +70,8 @@ public class UIManager : MonoBehaviour
     [Header("War Cry")]
     public Text   warCryInfoText;
     public Button warCryButton;
+    public Button autoWarCryButton;
+    public Text   autoWarCryButtonText;
 
     [Header("Hex Curse")]
     public Text   hexCurseInfoText;
@@ -614,6 +616,12 @@ public class UIManager : MonoBehaviour
             {
                 warCryInfoText.text = $"War Cry  —  Unlocks at wave {GameManager.WarCryUnlockWave}";
                 if (warCryButton != null) warCryButton.interactable = false;
+            }
+            if (autoWarCryButton != null)
+            {
+                autoWarCryButton.gameObject.SetActive(gm.WarCryUnlocked);
+                if (gm.WarCryUnlocked && autoWarCryButtonText != null)
+                    autoWarCryButtonText.text = gm.AutoWarCry ? "Auto-Cry: ON" : "Auto-Cry: OFF";
             }
         }
         if (hexCurseInfoText != null)

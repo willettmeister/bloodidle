@@ -31,6 +31,7 @@ public class ClickManager : MonoBehaviour
     public void OnToggleAutoDesecrate()    => GameManager.Instance.ToggleAutoDesecrate();
     public void OnToggleAutoRitual()       => GameManager.Instance.ToggleAutoRituals();
     public void OnToggleAutoBank()         => GameManager.Instance.ToggleAutoBankDeposit();
+    public void OnToggleAutoWarCry()       => GameManager.Instance.ToggleAutoWarCry();
     public void OnPrestige()               => GameManager.Instance.RequestPrestige();
     public void OnConfirmTalent0()         => GameManager.Instance.ConfirmPrestige(0);
     public void OnConfirmTalent1()         => GameManager.Instance.ConfirmPrestige(1);

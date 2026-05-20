@@ -592,6 +592,7 @@ public class GameManager : MonoBehaviour
     public bool   AutoDesecrate       { get; private set; }
     public bool   AutoBuyRituals      { get; private set; }
     public bool   AutoBankDeposit     { get; private set; }
+    public bool   AutoWarCry          { get; private set; }
     public const double TruceCost        = 100.0;
     public const double WarCryCost         = 30.0;
     public const float  WarCryDuration     = 10f;
@@ -890,6 +891,12 @@ public class GameManager : MonoBehaviour
         if (AutoBankDeposit && BloodBankDeposit < BankMaxDeposit && Blood > 0)
         {
             DepositToBank(Math.Floor(Blood * 0.1));
+            changed = true;
+        }
+
+        if (AutoWarCry && WarCryUnlocked && !WarCryActive && Blood >= WarCryCost && SoldierCount > 0 && EnemyHP > 0)
+        {
+            UseWarCry();
             changed = true;
         }
 
@@ -1357,6 +1364,7 @@ public class GameManager : MonoBehaviour
     public void ToggleAutoDesecrate()   { AutoDesecrate   = !AutoDesecrate;   OnStateChanged?.Invoke(); }
     public void ToggleAutoRituals()     { AutoBuyRituals  = !AutoBuyRituals;  OnStateChanged?.Invoke(); }
     public void ToggleAutoBankDeposit() { AutoBankDeposit = !AutoBankDeposit; OnStateChanged?.Invoke(); }
+    public void ToggleAutoWarCry()      { AutoWarCry      = !AutoWarCry;      OnStateChanged?.Invoke(); }
 
     public bool UseTruce()
     {
@@ -2097,6 +2105,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("AutoDesecrate",       AutoDesecrate   ? 1 : 0);
         PlayerPrefs.SetInt   ("AutoBuyRituals",      AutoBuyRituals  ? 1 : 0);
         PlayerPrefs.SetInt   ("AutoBankDeposit",     AutoBankDeposit ? 1 : 0);
+        PlayerPrefs.SetInt   ("AutoWarCry",          AutoWarCry      ? 1 : 0);
         PlayerPrefs.SetInt   ("BloodShieldUnlocked", BloodShieldUnlocked ? 1 : 0);
         PlayerPrefs.SetFloat ("BloodShieldHP",       BloodShieldHP);
         PlayerPrefs.SetInt   ("TotalEnemiesKilled",  TotalEnemiesKilled);
@@ -2192,6 +2201,7 @@ public class GameManager : MonoBehaviour
         AutoDesecrate       = PlayerPrefs.GetInt   ("AutoDesecrate",       0) == 1;
         AutoBuyRituals      = PlayerPrefs.GetInt   ("AutoBuyRituals",      0) == 1;
         AutoBankDeposit     = PlayerPrefs.GetInt   ("AutoBankDeposit",     0) == 1;
+        AutoWarCry          = PlayerPrefs.GetInt   ("AutoWarCry",          0) == 1;
         BloodShieldUnlocked = PlayerPrefs.GetInt   ("BloodShieldUnlocked", 0) == 1;
         BloodShieldHP       = PlayerPrefs.GetFloat ("BloodShieldHP",       0f);
         TotalEnemiesKilled  = PlayerPrefs.GetInt   ("TotalEnemiesKilled",  0);

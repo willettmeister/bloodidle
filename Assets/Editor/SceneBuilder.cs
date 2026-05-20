@@ -437,7 +437,10 @@ public static class SceneBuilder
 
         var warCryBtnGO = Btn(bloodSurgePanel, "WarCryButton",
             "War Cry! (30 blood)", 30, HC("4A2800"));
-        PT(warCryBtnGO, 564, 42, 0, 680);
+        PT(warCryBtnGO, 564, 42, -165, 400);
+
+        var autoWarCryBtnGO = Btn(bloodSurgePanel, "AutoWarCryButton", "Auto-Cry: OFF", 26, HC("2A1200"));
+        PT(autoWarCryBtnGO, 564, 42, +245, 260);
 
         var hexCurseDivGO = bloodSurgePanel.CreateChild("HexCurseDiv");
         hexCurseDivGO.AddImage(HC("2D2D4A")); PT(hexCurseDivGO, 606, 2, 0, 640);
@@ -1354,6 +1357,8 @@ public static class SceneBuilder
         uim.bloodOathButton         = bloodOathBtnGO.GetComponent<Button>();
         uim.warCryInfoText          = warCryInfoGO.GetComponent<Text>();
         uim.warCryButton            = warCryBtnGO.GetComponent<Button>();
+        uim.autoWarCryButton        = autoWarCryBtnGO.GetComponent<Button>();
+        uim.autoWarCryButtonText    = autoWarCryBtnGO.GetComponentInChildren<Text>();
         uim.hexCurseInfoText        = hexCurseInfoGO.GetComponent<Text>();
         uim.hexCurseButton          = hexCurseBtnGO.GetComponent<Button>();
         uim.bloodShieldInfoText     = bloodShieldInfoGO.GetComponent<Text>();
@@ -1488,6 +1493,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(autoStormBtnGO.GetComponent<Button>().onClick,          clk.OnToggleAutoStorm);
         UnityEventTools.AddPersistentListener(bloodOathBtnGO.GetComponent<Button>().onClick,          clk.OnUseBloodOath);
         UnityEventTools.AddPersistentListener(warCryBtnGO.GetComponent<Button>().onClick,             clk.OnUseWarCry);
+        UnityEventTools.AddPersistentListener(autoWarCryBtnGO.GetComponent<Button>().onClick,        clk.OnToggleAutoWarCry);
         UnityEventTools.AddPersistentListener(hexCurseBtnGO.GetComponent<Button>().onClick,           clk.OnUseHexCurse);
         UnityEventTools.AddPersistentListener(bloodShieldBtnGO.GetComponent<Button>().onClick,        clk.OnUseBloodShield);
         UnityEventTools.AddPersistentListener(truceBtnGO.GetComponent<Button>().onClick,              clk.OnUseTruce);
