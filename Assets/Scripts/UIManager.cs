@@ -383,7 +383,8 @@ public class UIManager : MonoBehaviour
         waveText.text = $"Wave {gm.Wave}";
         if (waveSubText != null)
         {
-            string streakTag = gm.WaveStreak > 0 ? $"  🔥×{gm.StreakMultiplier:F1}" : "";
+            string moraleBonus = gm.WaveStreak >= 3 ? "+15%⚔" : "";
+            string streakTag = gm.WaveStreak > 0 ? $"  🔥×{gm.StreakMultiplier:F1}{moraleBonus}" : "";
             string echoTag   = gm.BloodEchoCount > 0 ? $"  ⚡×{gm.BloodEchoCount}" : "";
             if (gm.IsBossWave)
                 waveSubText.text = $"★ BOSS WAVE ★{streakTag}{echoTag}";
