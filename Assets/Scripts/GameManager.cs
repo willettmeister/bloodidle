@@ -57,6 +57,15 @@ public class GameManager : MonoBehaviour
     public int    ClickPowerLevel { get; private set; }
     public double ClickPowerCost  { get; private set; } = ClickPowerBaseCost;
     public bool   ClickPowerUnlocked => WorkerCount > 0;
+
+    // --- Click Combo ---
+    public const float  ComboWindowSecs    = 0.5f;
+    public const float  ComboBonusPerStack = 0.20f;
+    public const int    ComboMaxStacks     = 10;
+    float _comboTimer;
+    public int   ComboStacks { get; private set; }
+    public float ComboMult   => 1f + ComboStacks * ComboBonusPerStack;
+
     public const int    EchoTapInterval  = 5;
     int _tapCount;
     public bool NextTapIsEcho => (_tapCount + 1) % EchoTapInterval == 0;
@@ -784,6 +793,11 @@ public class GameManager : MonoBehaviour
         _idleTimer += dt;
         if (_bloodStormTimer  > 0f) { _bloodStormTimer  -= dt; if (_bloodStormTimer  < 0f) _bloodStormTimer  = 0f; }
         if (_desecrateTimer   > 0f) { _desecrateTimer   -= dt; if (_desecrateTimer   < 0f) _desecrateTimer   = 0f; }
+        if (_comboTimer > 0f)
+        {
+            _comboTimer -= dt;
+            if (_comboTimer <= 0f) { _comboTimer = 0f; ComboStacks = 0; changed = true; }
+        }
         float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f) * (WarCryActive ? WarCryMult : 1f) * AdrenalineMult * IdleFuryMult * (IsBloodyWave ? BloodMoonAtkMult : 1f) * (BloodEchoCount > 0 ? (1f + BloodEchoAtkBonus) : 1f) * (DesperationActive ? DesperationMult : 1f);
         if (PackTacticsActive)   eff *= PackTacticsMult;
         if (CurrentEnemyModifier == EnemyModifier.Armored && !IsAllBerserker)
@@ -1104,7 +1118,9 @@ public class GameManager : MonoBehaviour
         _tapCount++;
         _idleTimer = 0f;
         if (SoldierCount > 0 && EnemyHP > 0) _crimsonPactCharged = true;
-        double amount = EffectiveBloodPerClick * (_tapCount % EchoTapInterval == 0 ? 2.0 : 1.0);
+        double amount = EffectiveBloodPerClick * ComboMult * (_tapCount % EchoTapInterval == 0 ? 2.0 : 1.0);
+        if (ComboStacks < ComboMaxStacks) ComboStacks++;
+        _comboTimer = ComboWindowSecs;
         if (DailyBonusAvailable)
         {
             amount *= DailyBonusMultiplier;

@@ -273,9 +273,10 @@ public class UIManager : MonoBehaviour
 
         // Header
         string dailyTag = gm.DailyBonusAvailable ? "  ★ DAILY ×10" : "";
+        string comboTag = gm.ComboStacks > 0 ? $"  🔥×{gm.ComboMult:F1}" : "";
         bloodText.text = gm.BloodPerSec > 0
-            ? $"Blood: {GameManager.FormatNumber(gm.Blood)}  +{gm.BloodPerSec:F1}/s{dailyTag}"
-            : $"Blood: {GameManager.FormatNumber(gm.Blood)}{dailyTag}";
+            ? $"Blood: {GameManager.FormatNumber(gm.Blood)}  +{gm.BloodPerSec:F1}/s{dailyTag}{comboTag}"
+            : $"Blood: {GameManager.FormatNumber(gm.Blood)}{dailyTag}{comboTag}";
 #if DOTWEEN
         if (gm.Blood > _lastBloodDisplay && bloodText != null)
         {
