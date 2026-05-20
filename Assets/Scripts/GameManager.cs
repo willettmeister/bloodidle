@@ -25,6 +25,8 @@ public enum AchievementFlags
     BossSlayer    = 1 << 15,
     BloodBillion  = 1 << 16,
     Wave200       = 1 << 17,
+    SpellCaster   = 1 << 18,  // cast 50 spells lifetime
+    GrandWizard   = 1 << 19,  // cast 500 spells lifetime
 }
 
 public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral }
@@ -255,6 +257,7 @@ public class GameManager : MonoBehaviour
     public int TotalEnemiesKilled { get; private set; }
     public int TotalSoldiersLost  { get; private set; }
     public int TotalBossesKilled  { get; private set; }
+    public int TotalSpellsCast    { get; private set; }
 
     public int    PrestigeCount      { get; private set; }
     public double PrestigeMultiplier => 1.0 + 0.5 * PrestigeCount;
@@ -683,6 +686,8 @@ public class GameManager : MonoBehaviour
         (AchievementFlags.BossSlayer,    0.0,    1),
         (AchievementFlags.BloodBillion,  5000.0, 1),
         (AchievementFlags.Wave200,       5000.0, 1),
+        (AchievementFlags.SpellCaster,   300.0,  0),
+        (AchievementFlags.GrandWizard,   2000.0, 1),
     };
 
 #if UNITY_INCLUDE_TESTS
@@ -1470,6 +1475,9 @@ public class GameManager : MonoBehaviour
         EnemyHP = Mathf.Max(float.Epsilon, EnemyHP - dmg);
         _bloodStormTimer = BloodStormCooldownEffective;
         _dailySpellCount++;
+        TotalSpellsCast++;
+        if (TotalSpellsCast >= 50)  TryUnlock(AchievementFlags.SpellCaster);
+        if (TotalSpellsCast >= 500) TryUnlock(AchievementFlags.GrandWizard);
         CheckQuestProgress(QuestTrackType.Spells);
         OnDamageDealt?.Invoke(dmg, true);
         OnStateChanged?.Invoke();
@@ -1485,6 +1493,9 @@ public class GameManager : MonoBehaviour
         EnemyHP = Mathf.Max(float.Epsilon, EnemyHP - dmg);
         _desecrateTimer = DesecrateCooldown;
         _dailySpellCount++;
+        TotalSpellsCast++;
+        if (TotalSpellsCast >= 50)  TryUnlock(AchievementFlags.SpellCaster);
+        if (TotalSpellsCast >= 500) TryUnlock(AchievementFlags.GrandWizard);
         CheckQuestProgress(QuestTrackType.Spells);
         OnDamageDealt?.Invoke(dmg, true);
         OnStateChanged?.Invoke();
@@ -1500,6 +1511,9 @@ public class GameManager : MonoBehaviour
         BloodOathTimeRemaining = BloodOathDuration;
         _bloodOathTimer = BloodOathCooldown;
         _dailySpellCount++;
+        TotalSpellsCast++;
+        if (TotalSpellsCast >= 50)  TryUnlock(AchievementFlags.SpellCaster);
+        if (TotalSpellsCast >= 500) TryUnlock(AchievementFlags.GrandWizard);
         CheckQuestProgress(QuestTrackType.Spells);
         OnStateChanged?.Invoke();
         return true;
@@ -1721,6 +1735,9 @@ public class GameManager : MonoBehaviour
         SurgeActive = true;
         SurgeTimeRemaining = SurgeDurationEffective;
         _dailySpellCount++;
+        TotalSpellsCast++;
+        if (TotalSpellsCast >= 50)  TryUnlock(AchievementFlags.SpellCaster);
+        if (TotalSpellsCast >= 500) TryUnlock(AchievementFlags.GrandWizard);
         CheckQuestProgress(QuestTrackType.Spells);
         OnStateChanged?.Invoke();
         return true;
@@ -2067,7 +2084,7 @@ public class GameManager : MonoBehaviour
         SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0;
         BloodBankDeposit = 0; BloodBankAccrued = 0; WaveStreak = 0;
         SurgeUpgradeLevel = 0; HealUpgradeLevel = 0; BloodStormUpgradeLevel = 0;
-        TotalEnemiesKilled = 0; TimePlayed = 0; Achievements = AchievementFlags.None;
+        TotalEnemiesKilled = 0; TotalSpellsCast = 0; TimePlayed = 0; Achievements = AchievementFlags.None;
         AutoBuySoldiers = false; AutoSurge = false; AutoHeal = false; AutoStorm = false;
         AutoDesecrate = false; AutoBuyRituals = false; AutoBankDeposit = false;
         AutoWarCry = false; AutoHexCurse = false; AutoBloodOath = false; AutoBloodShield = false;
@@ -2179,6 +2196,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("TotalEnemiesKilled",  TotalEnemiesKilled);
         PlayerPrefs.SetInt   ("TotalSoldiersLost",   TotalSoldiersLost);
         PlayerPrefs.SetInt   ("TotalBossesKilled",   TotalBossesKilled);
+        PlayerPrefs.SetInt   ("TotalSpellsCast",     TotalSpellsCast);
         PlayerPrefs.SetInt   ("HealSelfUnlocked",    HealSelfUnlocked ? 1 : 0);
         PlayerPrefs.SetInt   ("PrestigeCount",       PrestigeCount);
         PlayerPrefs.SetInt   ("PrestigePoints",      PrestigePoints);
@@ -2218,6 +2236,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("BestWave",            BestWave);
         PlayerPrefs.SetInt   ("BestStreak",          BestStreak);
         PlayerPrefs.SetInt   ("TotalEnemiesKilled",  TotalEnemiesKilled);
+        PlayerPrefs.SetInt   ("TotalSpellsCast",     TotalSpellsCast);
         PlayerPrefs.SetString("TimePlayed",          TimePlayed.ToString("R", ic));
         PlayerPrefs.SetInt   ("Achievements",        (int)Achievements);
         PlayerPrefs.SetFloat ("EnemyHP",             EnemyHP);
@@ -2279,6 +2298,7 @@ public class GameManager : MonoBehaviour
         TotalEnemiesKilled  = PlayerPrefs.GetInt   ("TotalEnemiesKilled",  0);
         TotalSoldiersLost   = PlayerPrefs.GetInt   ("TotalSoldiersLost",   0);
         TotalBossesKilled   = PlayerPrefs.GetInt   ("TotalBossesKilled",   0);
+        TotalSpellsCast     = PlayerPrefs.GetInt   ("TotalSpellsCast",     0);
         HealSelfUnlocked    = PlayerPrefs.GetInt   ("HealSelfUnlocked",    0) == 1;
         PrestigeCount       = PlayerPrefs.GetInt   ("PrestigeCount",       0);
         PrestigePoints      = PlayerPrefs.GetInt   ("PrestigePoints",      0);
@@ -2319,6 +2339,7 @@ public class GameManager : MonoBehaviour
         BestStreak          = PlayerPrefs.GetInt   ("BestStreak",          0);
         SurgeUnlocked       = TotalBloodEarned >= SurgeUnlockThreshold;
         TotalEnemiesKilled  = PlayerPrefs.GetInt   ("TotalEnemiesKilled",  0);
+        TotalSpellsCast     = PlayerPrefs.GetInt   ("TotalSpellsCast",     0);
         TimePlayed          = double.Parse(PlayerPrefs.GetString("TimePlayed", "0"), ic);
         Achievements        = (AchievementFlags)PlayerPrefs.GetInt("Achievements", 0);
         EnemyHP             = PlayerPrefs.GetFloat ("EnemyHP",             100f);

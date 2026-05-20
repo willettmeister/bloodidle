@@ -310,6 +310,8 @@ public class UIManager : MonoBehaviour
         (AchievementFlags.BossSlayer,    "Boss Slayer (×25)",     0.0,    1),
         (AchievementFlags.BloodBillion,  "Blood Billionaire (1B)", 5000.0, 1),
         (AchievementFlags.Wave200,       "Legend (Wave 200)",     5000.0, 1),
+        (AchievementFlags.SpellCaster,   "Spell Caster (50)",      300.0,  0),
+        (AchievementFlags.GrandWizard,   "Grand Wizard (500)",    2000.0,  1),
     };
 
     void Start()
@@ -1331,6 +1333,7 @@ public class UIManager : MonoBehaviour
         var sb = new StringBuilder();
         sb.AppendLine($"Enemies Defeated:  {gm.TotalEnemiesKilled}");
         sb.AppendLine($"Bosses Killed:     {gm.TotalBossesKilled}");
+        sb.AppendLine($"Spells Cast:       {gm.TotalSpellsCast}");
         sb.AppendLine($"Soldiers Lost:     {gm.TotalSoldiersLost}");
         sb.AppendLine($"Blood Earned:      {GameManager.FormatNumber(gm.TotalBloodEarned)}");
         sb.AppendLine($"Blood Bank:        {GameManager.FormatNumber(gm.BloodBankDeposit)} (+{GameManager.FormatNumber(gm.BloodBankAccrued)})");
