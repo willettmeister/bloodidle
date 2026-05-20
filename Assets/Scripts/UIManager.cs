@@ -176,6 +176,8 @@ public class UIManager : MonoBehaviour
     public Text barracksInfoText;
     public Button upgradeBarracksButton;
     public Text barracksUpgradeCostText;
+    public Button autoBuyButton;
+    public Text   autoBuyButtonText;
 
     [Header("Feature Request")]
     public GameObject featureRequestPanel;
@@ -826,6 +828,8 @@ public class UIManager : MonoBehaviour
         barracksInfoText.text        = $"Barracks  Lv.{gm.BarracksLevel}  —  Max {gm.MaxSoldiers} soldiers";
         barracksUpgradeCostText.text = $"Upgrade\n({GameManager.FormatNumber(gm.BarracksUpgradeCost)} wood)";
         upgradeBarracksButton.interactable = gm.Wood >= gm.BarracksUpgradeCost;
+        if (autoBuyButtonText != null)
+            autoBuyButtonText.text = gm.AutoBuySoldiers ? "Auto-Buy: ON" : "Auto-Buy: OFF";
 
         // Corruption
         if (corruptionText != null)

@@ -23,13 +23,13 @@ using System.IO;
 // battleContent height: 2020
 //
 // ── BUILD TAB (y in buildContent) ───────────────────────────────────────────
-//   10–175   Barracks card
-//  185–350   Fortifications card
-//  360–865   Workers card (hidden until WorkersUnlocked)
-//  875–1120  Equipment card (hidden until WorkersUnlocked)
-// 1130–1345  Blood Ritual + Blood Pact (hidden until WorkersUnlocked)
-// 1355–1520  Blood Bank card
-// buildContent height: 1540
+//   10–215   Barracks card (+ Auto-Buy toggle)
+//  225–390   Fortifications card
+//  400–905   Workers card (hidden until WorkersUnlocked)
+//  915–1160  Equipment card (hidden until WorkersUnlocked)
+// 1170–1385  Blood Ritual + Blood Pact (hidden until WorkersUnlocked)
+// 1395–1560  Blood Bank card
+// buildContent height: 1580
 //
 // ── PROGRESS TAB (y in progressContent) ─────────────────────────────────────
 //   10–150   Prestige card (hidden until wave 20)
@@ -195,7 +195,7 @@ public static class SceneBuilder
         }
 
         var (battleScrollGO,   battleContent)   = MakeTabScroll(tabAreaGO, "BattleTab",   2020f);
-        var (buildScrollGO,    buildContent)    = MakeTabScroll(tabAreaGO, "BuildTab",    1540f);
+        var (buildScrollGO,    buildContent)    = MakeTabScroll(tabAreaGO, "BuildTab",    1580f);
         var (progressScrollGO, progressContent) = MakeTabScroll(tabAreaGO, "ProgressTab", 1200f);
         var (settingsScrollGO, settingsContent) = MakeTabScroll(tabAreaGO, "SettingsTab", 400f);
 
@@ -455,7 +455,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var workersPanel = content.CreateChild("WorkersPanel");
         workersPanel.AddImage(Color.clear);
-        PF(workersPanel, 360, 505);
+        PF(workersPanel, 400, 505);
 
         Panel(workersPanel, "WorkersCardBg", 0, 505, Surface1, 24);
         { var a = workersPanel.CreateChild("WorkersAccent"); a.AddImage(Amber); PF(a, 0, 4, 24); }
@@ -491,9 +491,9 @@ public static class SceneBuilder
         workersPanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
-        // BARRACKS CARD  (buildContent y 10–175)
+        // BARRACKS CARD  (buildContent y 10–215)
         // ════════════════════════════════════════════════════════════════════
-        Panel(content, "BarracksCardBg", 10, 165, Surface1, 24);
+        Panel(content, "BarracksCardBg", 10, 205, Surface1, 24);
         { var a = content.CreateChild("BarracksCardAccent"); a.AddImage(Brown); PF(a, 10, 4, 24); }
 
         var barracksInfoGO = Label(content, "BarracksInfoText",
@@ -504,26 +504,29 @@ public static class SceneBuilder
         var upgradeBarracksGO = Btn(content, "UpgradeBarracksButton", "Upgrade\n(20 wood)", 34, Brown);
         PT(upgradeBarracksGO, 23, 110, +232, 370);
 
+        var autoBuyBtnGO = Btn(content, "AutoBuyButton", "Auto-Buy: OFF", 30, HC("1A2A1A"));
+        PF(autoBuyBtnGO, 140, 60, 40);
+
         // ════════════════════════════════════════════════════════════════════
-        // FORTIFICATIONS CARD  (buildContent y 185–350)
+        // FORTIFICATIONS CARD  (buildContent y 225–390)
         // ════════════════════════════════════════════════════════════════════
-        Panel(content, "FortificationsCardBg", 185, 165, Surface1, 24);
-        { var a = content.CreateChild("FortCardAccent"); a.AddImage(HC("4A3728")); PF(a, 185, 4, 24); }
+        Panel(content, "FortificationsCardBg", 225, 165, Surface1, 24);
+        { var a = content.CreateChild("FortCardAccent"); a.AddImage(HC("4A3728")); PF(a, 225, 4, 24); }
 
         var fortInfoGO = Label(content, "FortificationsInfoText",
             "Fortifications  Lv.0/10  (−0% enemy HP)",
             34, Color.white, TextAnchor.MiddleLeft);
-        PT(fortInfoGO, 208, 52, -175, 540);
+        PT(fortInfoGO, 248, 52, -175, 540);
 
         var upgradeFortGO = Btn(content, "UpgradeFortificationButton", "Fortify\n(50 wood)", 34, Brown);
-        PT(upgradeFortGO, 198, 110, +232, 370);
+        PT(upgradeFortGO, 238, 110, +232, 370);
 
         // ════════════════════════════════════════════════════════════════════
         // EQUIPMENT CARD  (buildContent y 875–1120) — same unlock as workers
         // ════════════════════════════════════════════════════════════════════
         var equipmentPanel = content.CreateChild("EquipmentPanel");
         equipmentPanel.AddImage(Color.clear);
-        PF(equipmentPanel, 875, 245);
+        PF(equipmentPanel, 915, 245);
 
         Panel(equipmentPanel, "EquipmentCardBg", 0, 245, Surface1, 24);
         { var a = equipmentPanel.CreateChild("EquipAccent"); a.AddImage(Blue); PF(a, 0, 4, 24); }
@@ -562,7 +565,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var bloodRitualPanel = content.CreateChild("BloodRitualPanel");
         bloodRitualPanel.AddImage(Color.clear);
-        PF(bloodRitualPanel, 1130, 215);
+        PF(bloodRitualPanel, 1170, 215);
 
         Panel(bloodRitualPanel, "BloodRitualCardBg", 0, 215, Surface1, 24);
         { var a = bloodRitualPanel.CreateChild("RitualAccent"); a.AddImage(Purple); PF(a, 0, 4, 24); }
@@ -595,7 +598,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var bloodBankPanel = content.CreateChild("BloodBankPanel");
         bloodBankPanel.AddImage(Color.clear);
-        PF(bloodBankPanel, 1355, 165);
+        PF(bloodBankPanel, 1395, 165);
 
         Panel(bloodBankPanel, "BloodBankCardBg", 0, 165, Surface1, 24);
         { var a = bloodBankPanel.CreateChild("BankAccent"); a.AddImage(Gold); PF(a, 0, 4, 24); }
@@ -1326,6 +1329,8 @@ public static class SceneBuilder
         uim.barracksInfoText        = barracksInfoGO.GetComponent<Text>();
         uim.upgradeBarracksButton   = upgradeBarracksGO.GetComponent<Button>();
         uim.barracksUpgradeCostText = upgradeBarracksGO.GetComponentInChildren<Text>();
+        uim.autoBuyButton           = autoBuyBtnGO.GetComponent<Button>();
+        uim.autoBuyButtonText       = autoBuyBtnGO.GetComponentInChildren<Text>();
         uim.damageLayer             = dmgLayerGO.GetComponent<RectTransform>();
         uim.tutorialPanel           = tutPanelGO;
         uim.tutorialTitleText       = tutTitleGO.GetComponent<Text>();
@@ -1415,6 +1420,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(upgradeArmorGO.GetComponent<Button>().onClick,          clk.OnUpgradeArmor);
         UnityEventTools.AddPersistentListener(upgradeTalismanGO.GetComponent<Button>().onClick,       clk.OnUpgradeTalisman);
         UnityEventTools.AddPersistentListener(formationBtnGO.GetComponent<Button>().onClick,          clk.OnToggleFormation);
+        UnityEventTools.AddPersistentListener(autoBuyBtnGO.GetComponent<Button>().onClick,            clk.OnToggleAutoBuy);
         UnityEventTools.AddPersistentListener(prestigeBtnGO.GetComponent<Button>().onClick,           clk.OnPrestige);
         UnityEventTools.AddPersistentListener(pSoldierCapBtnGO.GetComponent<Button>().onClick,        clk.OnBuyPSoldierCap);
         UnityEventTools.AddPersistentListener(pClickBonusBtnGO.GetComponent<Button>().onClick,        clk.OnBuyPClickBonus);
