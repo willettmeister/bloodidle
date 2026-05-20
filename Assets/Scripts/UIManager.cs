@@ -513,7 +513,8 @@ public class UIManager : MonoBehaviour
             string meditTag       = gm.MeditationReady      ? "  ⚡ FOCUS" : "";
             string adrenalTag     = gm.AdrenalineStacks > 0 ? $"  ⬆×{gm.AdrenalineStacks}" : "";
             string pactTag        = gm.CrimsonPactCharged   ? "  🔺 PACT" : "";
-            soldierHPText.text = $"{cls}: {GameManager.FormatHP(gm.SoldierHP)} / {GameManager.FormatHP(gm.FrontlineMaxHP)} HP  |  {gm.EffectiveAttack:F1} DPS{desperTag}{rageTag}{lastStandTag}{meditTag}{adrenalTag}{pactTag}";
+            string undyingTag     = gm.UndyingAvailable     ? "  ✝ UNDYING" : "";
+            soldierHPText.text = $"{cls}: {GameManager.FormatHP(gm.SoldierHP)} / {GameManager.FormatHP(gm.FrontlineMaxHP)} HP  |  {gm.EffectiveAttack:F1} DPS{desperTag}{rageTag}{lastStandTag}{meditTag}{adrenalTag}{pactTag}{undyingTag}";
         }
 
         if (formationButtonText != null)

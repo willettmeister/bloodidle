@@ -509,6 +509,7 @@ public class GameManager : MonoBehaviour
     public bool FlawlessActive => _flawlessTimer <= FlawlessThreshold && EnemyHP > 0 && !WavePreviewActive;
     float _flawlessTimer;
     bool  _undyingUsedThisWave;
+    public bool UndyingAvailable => HasTalent(TalentFlags.Undying) && !_undyingUsedThisWave;
     bool  _isBountyEnemy;
     bool  _isEliteEnemy;
 
