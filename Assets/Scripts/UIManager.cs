@@ -54,6 +54,8 @@ public class UIManager : MonoBehaviour
     public Text healCostText;
     public Button autoSurgeButton;
     public Text   autoSurgeButtonText;
+    public Button autoHealButton;
+    public Text   autoHealButtonText;
 
     [Header("Blood Storm")]
     public Text bloodStormInfoText;
@@ -660,6 +662,10 @@ public class UIManager : MonoBehaviour
                 healCostText.text = gm.HealUpgradeLevel < GameManager.MaxSpellUpgradeLevel
                     ? $"Upgrade Heal\n(Lv.{gm.HealUpgradeLevel}/{GameManager.MaxSpellUpgradeLevel}  {GameManager.FormatNumber(gm.HealUpgradeCost)} blood)"
                     : "Heal MAX";
+            if (autoHealButtonText != null)
+                autoHealButtonText.text = gm.AutoHeal
+                    ? $"Auto-Heal: ON (<{GameManager.AutoHealThreshold * 100:F0}% HP)"
+                    : "Auto-Heal: OFF";
         }
 
         // Workers + Blood Pact

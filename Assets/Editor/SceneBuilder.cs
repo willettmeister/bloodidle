@@ -311,7 +311,10 @@ public static class SceneBuilder
         mixedBonusGO.SetActive(false);
 
         var upgradeHealBtnGO = Btn(content, "UpgradeHealSelfButton", "Upgrade Heal\n(40 blood)", 28, Purple);
-        PF(upgradeHealBtnGO, 657, 64, 40);
+        PT(upgradeHealBtnGO, 657, 64, -160, 510);
+
+        var autoHealBtnGO = Btn(content, "AutoHealButton", "Auto-Heal: OFF", 26, HC("6A006A"));
+        PT(autoHealBtnGO, 657, 64, +245, 260);
 
         var corruptionTextGO = Label(content, "CorruptionText", "", 28, new Color(0.8f, 0.2f, 0.2f), TextAnchor.MiddleLeft);
         PF(corruptionTextGO, 725, 30, 50);
@@ -1340,6 +1343,8 @@ public static class SceneBuilder
         uim.bloodShieldButton       = bloodShieldBtnGO.GetComponent<Button>();
         uim.upgradeHealSelfButton   = upgradeHealBtnGO.GetComponent<Button>();
         uim.healCostText            = upgradeHealBtnGO.GetComponentInChildren<Text>();
+        uim.autoHealButton          = autoHealBtnGO.GetComponent<Button>();
+        uim.autoHealButtonText      = autoHealBtnGO.GetComponentInChildren<Text>();
         uim.prestigeShopPanel       = prestigeShopPanel;
         uim.prestigeShopPointsText  = shopPtsGO.GetComponent<Text>();
         uim.pSoldierCapInfoText     = pSoldierCapInfoGO.GetComponent<Text>();
@@ -1494,6 +1499,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(upgradeSurgeBtnGO.GetComponent<Button>().onClick,      clk.OnUpgradeSurge);
         UnityEventTools.AddPersistentListener(autoSurgeBtnGO.GetComponent<Button>().onClick,         clk.OnToggleAutoSurge);
         UnityEventTools.AddPersistentListener(upgradeHealBtnGO.GetComponent<Button>().onClick,       clk.OnUpgradeHealSelf);
+        UnityEventTools.AddPersistentListener(autoHealBtnGO.GetComponent<Button>().onClick,          clk.OnToggleAutoHeal);
         UnityEventTools.AddPersistentListener(depositBtnGO.GetComponent<Button>().onClick,            clk.OnDepositToBank);
         UnityEventTools.AddPersistentListener(withdrawBtnGO.GetComponent<Button>().onClick,           clk.OnWithdrawFromBank);
         UnityEventTools.AddPersistentListener(cursedBloodBtnGO.GetComponent<Button>().onClick,        clk.OnToggleCursedBlood);

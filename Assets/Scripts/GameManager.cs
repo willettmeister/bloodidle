@@ -579,6 +579,8 @@ public class GameManager : MonoBehaviour
     public bool   BloodShieldUnlocked { get; private set; }
     public bool   AutoBuySoldiers     { get; private set; }
     public bool   AutoSurge           { get; private set; }
+    public bool   AutoHeal            { get; private set; }
+    public const float AutoHealThreshold = 0.5f;
     public const double TruceCost        = 100.0;
     public const double WarCryCost         = 30.0;
     public const float  WarCryDuration     = 10f;
@@ -844,6 +846,13 @@ public class GameManager : MonoBehaviour
         if (AutoSurge && SurgeUnlocked && !SurgeActive && Blood >= SurgeCost && SoldierCount > 0 && EnemyHP > 0)
         {
             UseSurge();
+            changed = true;
+        }
+
+        if (AutoHeal && HealSelfUnlocked && SoldierCount > 0 && Blood >= HealSelfCost
+            && SoldierHP < FrontlineMaxHP * AutoHealThreshold)
+        {
+            UseHealSelf();
             changed = true;
         }
 
@@ -1304,6 +1313,7 @@ public class GameManager : MonoBehaviour
     public bool BuySoldier() => BuyTank();
     public void ToggleAutoBuySoldiers() { AutoBuySoldiers = !AutoBuySoldiers; OnStateChanged?.Invoke(); }
     public void ToggleAutoSurge()       { AutoSurge       = !AutoSurge;       OnStateChanged?.Invoke(); }
+    public void ToggleAutoHeal()        { AutoHeal        = !AutoHeal;        OnStateChanged?.Invoke(); }
 
     public bool UseTruce()
     {
@@ -2038,6 +2048,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("WorkersUnlocked",     WorkersUnlocked  ? 1 : 0);
         PlayerPrefs.SetInt   ("AutoBuySoldiers",     AutoBuySoldiers ? 1 : 0);
         PlayerPrefs.SetInt   ("AutoSurge",           AutoSurge       ? 1 : 0);
+        PlayerPrefs.SetInt   ("AutoHeal",            AutoHeal        ? 1 : 0);
         PlayerPrefs.SetInt   ("BloodShieldUnlocked", BloodShieldUnlocked ? 1 : 0);
         PlayerPrefs.SetFloat ("BloodShieldHP",       BloodShieldHP);
         PlayerPrefs.SetInt   ("TotalEnemiesKilled",  TotalEnemiesKilled);
@@ -2128,6 +2139,7 @@ public class GameManager : MonoBehaviour
         WorkersUnlocked     = PlayerPrefs.GetInt   ("WorkersUnlocked",     0) == 1;
         AutoBuySoldiers     = PlayerPrefs.GetInt   ("AutoBuySoldiers",     0) == 1;
         AutoSurge           = PlayerPrefs.GetInt   ("AutoSurge",           0) == 1;
+        AutoHeal            = PlayerPrefs.GetInt   ("AutoHeal",            0) == 1;
         BloodShieldUnlocked = PlayerPrefs.GetInt   ("BloodShieldUnlocked", 0) == 1;
         BloodShieldHP       = PlayerPrefs.GetFloat ("BloodShieldHP",       0f);
         TotalEnemiesKilled  = PlayerPrefs.GetInt   ("TotalEnemiesKilled",  0);
