@@ -2344,6 +2344,8 @@ public class GameManager : MonoBehaviour
                     OfflineWoodEarned  -= woodForWells;
                     Wood               -= woodForWells;
                 }
+                if (BloodBankDeposit > 0)
+                    BloodBankAccrued += BloodBankDeposit * (BankInterestRatePerHour / 3600.0) * secs;
                 Blood            += OfflineBloodEarned;
                 TotalBloodEarned += OfflineBloodEarned;
             }
