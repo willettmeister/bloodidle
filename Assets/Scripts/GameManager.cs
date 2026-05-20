@@ -2091,7 +2091,7 @@ public class GameManager : MonoBehaviour
         SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0;
         BloodBankDeposit = 0; BloodBankAccrued = 0; WaveStreak = 0;
         SurgeUpgradeLevel = 0; HealUpgradeLevel = 0; BloodStormUpgradeLevel = 0;
-        TotalEnemiesKilled = 0; TotalSpellsCast = 0; TimePlayed = 0; Achievements = AchievementFlags.None;
+        TotalEnemiesKilled = 0; TotalSpellsCast = 0; TotalBossesKilled = 0; VeteranAttackBonus = 0f; TimePlayed = 0; Achievements = AchievementFlags.None;
         AutoBuySoldiers = false; AutoSurge = false; AutoHeal = false; AutoStorm = false;
         AutoDesecrate = false; AutoBuyRituals = false; AutoBankDeposit = false;
         AutoWarCry = false; AutoHexCurse = false; AutoBloodOath = false; AutoBloodShield = false;
@@ -2205,6 +2205,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("TotalEnemiesKilled",  TotalEnemiesKilled);
         PlayerPrefs.SetInt   ("TotalSoldiersLost",   TotalSoldiersLost);
         PlayerPrefs.SetInt   ("TotalBossesKilled",   TotalBossesKilled);
+        PlayerPrefs.SetFloat ("VeteranAttackBonus",  VeteranAttackBonus);
         PlayerPrefs.SetInt   ("TotalSpellsCast",     TotalSpellsCast);
         PlayerPrefs.SetInt   ("HealSelfUnlocked",    HealSelfUnlocked ? 1 : 0);
         PlayerPrefs.SetInt   ("PrestigeCount",       PrestigeCount);
@@ -2307,6 +2308,7 @@ public class GameManager : MonoBehaviour
         TotalEnemiesKilled  = PlayerPrefs.GetInt   ("TotalEnemiesKilled",  0);
         TotalSoldiersLost   = PlayerPrefs.GetInt   ("TotalSoldiersLost",   0);
         TotalBossesKilled   = PlayerPrefs.GetInt   ("TotalBossesKilled",   0);
+        VeteranAttackBonus  = PlayerPrefs.GetFloat ("VeteranAttackBonus",  0f);
         TotalSpellsCast     = PlayerPrefs.GetInt   ("TotalSpellsCast",     0);
         HealSelfUnlocked    = PlayerPrefs.GetInt   ("HealSelfUnlocked",    0) == 1;
         PrestigeCount       = PlayerPrefs.GetInt   ("PrestigeCount",       0);
