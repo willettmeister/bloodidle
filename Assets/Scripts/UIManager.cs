@@ -662,9 +662,15 @@ public class UIManager : MonoBehaviour
                 upgradeSurgeButton.interactable = gm.SurgeUpgradeLevel < GameManager.MaxSpellUpgradeLevel
                     && gm.Blood >= gm.SurgeUpgradeCost;
             if (surgeCostText != null)
-                surgeCostText.text = gm.SurgeUpgradeLevel < GameManager.MaxSpellUpgradeLevel
-                    ? $"Upgrade Surge\n(Lv.{gm.SurgeUpgradeLevel}/{GameManager.MaxSpellUpgradeLevel}  {GameManager.FormatNumber(gm.SurgeUpgradeCost)} blood)"
-                    : "Surge MAX";
+            {
+                if (gm.SurgeUpgradeLevel < GameManager.MaxSpellUpgradeLevel)
+                {
+                    float nextDur = GameManager.SurgeDuration + (gm.SurgeUpgradeLevel + 1) * 5f;
+                    surgeCostText.text = $"Upgrade Surge\nLv.{gm.SurgeUpgradeLevel}→{gm.SurgeUpgradeLevel + 1}  {gm.SurgeDurationEffective:F0}s→{nextDur:F0}s\n({GameManager.FormatNumber(gm.SurgeUpgradeCost)} blood)";
+                }
+                else
+                    surgeCostText.text = "Surge MAX";
+            }
             if (autoSurgeButtonText != null)
                 autoSurgeButtonText.text = gm.AutoSurge ? "Auto-Surge: ON" : "Auto-Surge: OFF";
         }
@@ -675,9 +681,15 @@ public class UIManager : MonoBehaviour
                 upgradeHealSelfButton.interactable = gm.HealUpgradeLevel < GameManager.MaxSpellUpgradeLevel
                     && gm.Blood >= gm.HealUpgradeCost;
             if (healCostText != null)
-                healCostText.text = gm.HealUpgradeLevel < GameManager.MaxSpellUpgradeLevel
-                    ? $"Upgrade Heal\n(Lv.{gm.HealUpgradeLevel}/{GameManager.MaxSpellUpgradeLevel}  {GameManager.FormatNumber(gm.HealUpgradeCost)} blood)"
-                    : "Heal MAX";
+            {
+                if (gm.HealUpgradeLevel < GameManager.MaxSpellUpgradeLevel)
+                {
+                    float nextHeal = GameManager.HealSelfAmount + (gm.HealUpgradeLevel + 1) * 10f;
+                    healCostText.text = $"Upgrade Heal\nLv.{gm.HealUpgradeLevel}→{gm.HealUpgradeLevel + 1}  +{gm.HealSelfAmountEffective:F0}→+{nextHeal:F0} HP\n({GameManager.FormatNumber(gm.HealUpgradeCost)} blood)";
+                }
+                else
+                    healCostText.text = "Heal MAX";
+            }
             if (autoHealButtonText != null)
                 autoHealButtonText.text = gm.AutoHeal
                     ? $"Auto-Heal: ON (<{GameManager.AutoHealThreshold * 100:F0}% HP)"
