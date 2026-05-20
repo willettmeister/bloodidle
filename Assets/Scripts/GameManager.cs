@@ -2257,7 +2257,15 @@ public class GameManager : MonoBehaviour
                     Wood += OfflineWoodEarned;
                 }
                 OfflineBloodEarned = BloodPerSec * secs;
-                Blood += OfflineBloodEarned;
+                if (BloodWellCount > 0 && OfflineWoodEarned > 0)
+                {
+                    double woodForWells = Math.Min(BloodWellCount * BloodWellWoodPerSec * secs, OfflineWoodEarned);
+                    double wellBlood    = woodForWells * BloodWellBloodRatio;
+                    OfflineBloodEarned += wellBlood;
+                    OfflineWoodEarned  -= woodForWells;
+                    Wood               -= woodForWells;
+                }
+                Blood            += OfflineBloodEarned;
                 TotalBloodEarned += OfflineBloodEarned;
             }
         }
