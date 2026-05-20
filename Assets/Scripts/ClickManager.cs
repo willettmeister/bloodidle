@@ -63,4 +63,9 @@ public class ClickManager : MonoBehaviour
     public void OnBuyStarterPack()         => IAPManager.Instance?.BuyStarterPack();
     public void OnBuyBloodBoostSmall()     => IAPManager.Instance?.BuyBoostSmall();
     public void OnBuyBloodBoostLarge()     => IAPManager.Instance?.BuyBoostLarge();
+    public void OnOpenQuests()             => uiManager.ShowQuestsPanel();
+    public void OnCloseQuests()            => uiManager.HideQuestsPanel();
+    public void OnClaimQuest0()            => GameManager.Instance.ClaimQuest(0);
+    public void OnClaimQuest1()            => GameManager.Instance.ClaimQuest(1);
+    public void OnClaimQuest2()            => GameManager.Instance.ClaimQuest(2);
 }

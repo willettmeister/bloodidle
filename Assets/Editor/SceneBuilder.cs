@@ -26,9 +26,10 @@ using System.IO;
 // 2950–3115  Blood Bank card
 // 3125–3610  Prestige Shop card  (7 rows)
 // 3620–4000  Soul Shard Shop card  (5 rows incl. Shard Hunger)
+// 4200–4265  Daily Quests row  — opens DailyQuests overlay
 // 4275–4345  Watch Ad row  — 2× Blood boost (hidden when ads removed)
 // 4350–4450  Bottom row  — Stats | Settings | Suggest | Shop
-// overlay    StatsPanel, SettingsPanel, IAPShopPanel, FeatureRequestOverlay — modals
+// overlay    StatsPanel, SettingsPanel, IAPShopPanel, QuestsPanel, FeatureRequestOverlay — modals
 public static class SceneBuilder
 {
     const string OutSprites = "Assets/Resources/Sprites/";
@@ -653,6 +654,15 @@ public static class SceneBuilder
         soulShardShopPanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
+        // DAILY QUESTS BUTTON ROW  (y 4200–4265)
+        // ════════════════════════════════════════════════════════════════════
+        var questsRowGO = content.CreateChild("DailyQuestsRow");
+        questsRowGO.AddImage(HC("0A1A0A")); PF(questsRowGO, 4200, 65, 20);
+
+        var openQuestsBtnGO = Btn(questsRowGO, "OpenQuestsButton", "Daily Quests", 34, HC("1B5E20"));
+        openQuestsBtnGO.Stretch();
+
+        // ════════════════════════════════════════════════════════════════════
         // WATCH AD ROW  (y 4275–4345)
         // ════════════════════════════════════════════════════════════════════
         var adBoostRowGO = content.CreateChild("AdBoostRow");
@@ -867,6 +877,60 @@ public static class SceneBuilder
         PT(iapCloseGO, 680, 80, 0, 400);
 
         iapOverlay.SetActive(false);
+
+        // ════════════════════════════════════════════════════════════════════
+        // DAILY QUESTS OVERLAY
+        // ════════════════════════════════════════════════════════════════════
+        var questsOverlay = cv.CreateChild("QuestsPanel");
+        questsOverlay.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0.9f);
+        questsOverlay.Stretch();
+
+        var questsCard   = questsOverlay.CreateChild("Card");
+        RImg(questsCard, Surface1);
+        var questsCardRT = questsCard.GetComponent<RectTransform>();
+        questsCardRT.anchorMin        = new Vector2(0.5f, 0.5f);
+        questsCardRT.anchorMax        = new Vector2(0.5f, 0.5f);
+        questsCardRT.anchoredPosition = Vector2.zero;
+        questsCardRT.sizeDelta        = new Vector2(960, 800);
+
+        var questsTitleGO = Label(questsCard, "QuestsTitle", "Daily Quests", 52, HC("1B5E20"));
+        PT(questsTitleGO, 16, 62, 0, 920);
+
+        var questsSubGO = Label(questsCard, "QuestsSubtitle", "Resets at midnight UTC", 26, TextSec);
+        PT(questsSubGO, 76, 34, 0, 920);
+
+        var questsDivGO = questsCard.CreateChild("QuestsDiv");
+        questsDivGO.AddImage(HC("2D2D4A")); PT(questsDivGO, 114, 2, 0, 900);
+
+        // Quest rows (3 slots, each 150px tall)
+        var questInfo0GO = Label(questsCard, "QuestInfoText0", "Quest 1", 30, Color.white, TextAnchor.MiddleLeft);
+        questInfo0GO.GetComponent<Text>().verticalOverflow = VerticalWrapMode.Overflow;
+        PT(questInfo0GO, 124, 80, -110, 620);
+        var questClaim0GO = Btn(questsCard, "QuestClaimButton0", "Locked", 30, HC("2A2A4A"));
+        PT(questClaim0GO, 128, 66, +330, 220);
+
+        var questDiv0GO = questsCard.CreateChild("QuestDiv0");
+        questDiv0GO.AddImage(HC("1A1A30")); PT(questDiv0GO, 206, 2, 0, 880);
+
+        var questInfo1GO = Label(questsCard, "QuestInfoText1", "Quest 2", 30, Color.white, TextAnchor.MiddleLeft);
+        questInfo1GO.GetComponent<Text>().verticalOverflow = VerticalWrapMode.Overflow;
+        PT(questInfo1GO, 216, 80, -110, 620);
+        var questClaim1GO = Btn(questsCard, "QuestClaimButton1", "Locked", 30, HC("2A2A4A"));
+        PT(questClaim1GO, 220, 66, +330, 220);
+
+        var questDiv1GO = questsCard.CreateChild("QuestDiv1");
+        questDiv1GO.AddImage(HC("1A1A30")); PT(questDiv1GO, 298, 2, 0, 880);
+
+        var questInfo2GO = Label(questsCard, "QuestInfoText2", "Quest 3", 30, Color.white, TextAnchor.MiddleLeft);
+        questInfo2GO.GetComponent<Text>().verticalOverflow = VerticalWrapMode.Overflow;
+        PT(questInfo2GO, 308, 80, -110, 620);
+        var questClaim2GO = Btn(questsCard, "QuestClaimButton2", "Locked", 30, HC("2A2A4A"));
+        PT(questClaim2GO, 312, 66, +330, 220);
+
+        var questsCloseGO = Btn(questsCard, "QuestsCloseButton", "Close", 42, HC("252440"));
+        PT(questsCloseGO, 686, 80, 0, 400);
+
+        questsOverlay.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
         // TALENT SELECTION OVERLAY
@@ -1145,6 +1209,16 @@ public static class SceneBuilder
         uim.desecrateButtonText     = desecrateBtnGO.GetComponentInChildren<Text>();
         uim.soulSacrificeButton     = soulSacBtnGO.GetComponent<Button>();
         uim.soulSacrificeInfoText   = soulSacInfoGO.GetComponent<Text>();
+        uim.questsPanel             = questsOverlay;
+        uim.questInfoText0          = questInfo0GO.GetComponent<Text>();
+        uim.questInfoText1          = questInfo1GO.GetComponent<Text>();
+        uim.questInfoText2          = questInfo2GO.GetComponent<Text>();
+        uim.questClaimButton0       = questClaim0GO.GetComponent<Button>();
+        uim.questClaimButton1       = questClaim1GO.GetComponent<Button>();
+        uim.questClaimButton2       = questClaim2GO.GetComponent<Button>();
+        uim.questClaimButtonText0   = questClaim0GO.GetComponentInChildren<Text>();
+        uim.questClaimButtonText1   = questClaim1GO.GetComponentInChildren<Text>();
+        uim.questClaimButtonText2   = questClaim2GO.GetComponentInChildren<Text>();
         uim.adBoostRow              = adBoostRowGO;
         uim.watchAdButton           = watchAdBtnGO.GetComponent<Button>();
         uim.adBoostButtonText       = watchAdBtnGO.GetComponentInChildren<Text>();
@@ -1204,6 +1278,11 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(boostSmallBtnGO.GetComponent<Button>().onClick,         clk.OnBuyBloodBoostSmall);
         UnityEventTools.AddPersistentListener(boostLargeBtnGO.GetComponent<Button>().onClick,         clk.OnBuyBloodBoostLarge);
         UnityEventTools.AddPersistentListener(iapCloseGO.GetComponent<Button>().onClick,              clk.OnCloseShop);
+        UnityEventTools.AddPersistentListener(openQuestsBtnGO.GetComponent<Button>().onClick,         clk.OnOpenQuests);
+        UnityEventTools.AddPersistentListener(questsCloseGO.GetComponent<Button>().onClick,           clk.OnCloseQuests);
+        UnityEventTools.AddPersistentListener(questClaim0GO.GetComponent<Button>().onClick,           clk.OnClaimQuest0);
+        UnityEventTools.AddPersistentListener(questClaim1GO.GetComponent<Button>().onClick,           clk.OnClaimQuest1);
+        UnityEventTools.AddPersistentListener(questClaim2GO.GetComponent<Button>().onClick,           clk.OnClaimQuest2);
         UnityEventTools.AddPersistentListener(statsCloseGO.GetComponent<Button>().onClick,            uim.HideStatsPanel);
         UnityEventTools.AddPersistentListener(settingsCloseGO.GetComponent<Button>().onClick,         uim.HideSettingsPanel);
         UnityEventTools.AddPersistentListener(soundToggleGO.GetComponent<Button>().onClick,           clk.OnToggleSound);

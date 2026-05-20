@@ -27,6 +27,16 @@ public enum AchievementFlags
 
 public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral }
 public enum BossAbility    { None, Shield, Berserk, Drain }
+public enum QuestTrackType { Kills, Farms, Wave, Spells }
+
+public struct DailyQuestDef
+{
+    public string        Desc;
+    public QuestTrackType TrackType;
+    public int           Target;
+    public double        BloodReward;
+    public double        ShardReward;
+}
 
 [Flags]
 public enum TalentFlags
@@ -422,6 +432,36 @@ public class GameManager : MonoBehaviour
     public bool  StarterPackOwned     { get; private set; }
     public double AdBoostMult         => AdBoostActive ? AdBoostMultiplier : 1.0;
 
+    // --- Daily Quests ---
+    public const int DailyQuestCount = 3;
+    public static readonly DailyQuestDef[] QuestPool =
+    {
+        new DailyQuestDef { Desc="Kill 10 enemies",      TrackType=QuestTrackType.Kills,  Target=10,  BloodReward=50,  ShardReward=0 },
+        new DailyQuestDef { Desc="Kill 25 enemies",      TrackType=QuestTrackType.Kills,  Target=25,  BloodReward=120, ShardReward=0 },
+        new DailyQuestDef { Desc="Kill 50 enemies",      TrackType=QuestTrackType.Kills,  Target=50,  BloodReward=300, ShardReward=1 },
+        new DailyQuestDef { Desc="Kill 100 enemies",     TrackType=QuestTrackType.Kills,  Target=100, BloodReward=600, ShardReward=2 },
+        new DailyQuestDef { Desc="Farm Blood 20 times",  TrackType=QuestTrackType.Farms,  Target=20,  BloodReward=40,  ShardReward=0 },
+        new DailyQuestDef { Desc="Farm Blood 50 times",  TrackType=QuestTrackType.Farms,  Target=50,  BloodReward=100, ShardReward=0 },
+        new DailyQuestDef { Desc="Farm Blood 100 times", TrackType=QuestTrackType.Farms,  Target=100, BloodReward=250, ShardReward=1 },
+        new DailyQuestDef { Desc="Reach wave 5",         TrackType=QuestTrackType.Wave,   Target=5,   BloodReward=60,  ShardReward=0 },
+        new DailyQuestDef { Desc="Reach wave 10",        TrackType=QuestTrackType.Wave,   Target=10,  BloodReward=150, ShardReward=0 },
+        new DailyQuestDef { Desc="Reach wave 20",        TrackType=QuestTrackType.Wave,   Target=20,  BloodReward=400, ShardReward=2 },
+        new DailyQuestDef { Desc="Use a spell 3 times",  TrackType=QuestTrackType.Spells, Target=3,   BloodReward=80,  ShardReward=0 },
+        new DailyQuestDef { Desc="Use a spell 10 times", TrackType=QuestTrackType.Spells, Target=10,  BloodReward=200, ShardReward=1 },
+    };
+
+    public int[]  DailyQuestIndices  { get; private set; } = new int[DailyQuestCount];
+    public int[]  DailyQuestProgress { get; private set; } = new int[DailyQuestCount];
+    public bool[] DailyQuestClaimed  { get; private set; } = new bool[DailyQuestCount];
+    public bool   DailyQuestsReady   { get; private set; }
+
+    int    _dailyKillCount;
+    int    _dailyFarmCount;
+    int    _dailySpellCount;
+    string _questDate = "";
+    float  _dailyCheckTimer;
+    const float DailyCheckInterval = 60f;
+
     // --- Enemy ---
     public int Wave { get; private set; } = 1;
     public float EnemyHP { get; private set; }
@@ -710,6 +750,18 @@ public class GameManager : MonoBehaviour
 
         TimePlayed += dt;
 
+        _dailyCheckTimer -= dt;
+        if (_dailyCheckTimer <= 0f)
+        {
+            _dailyCheckTimer = DailyCheckInterval;
+            string today = DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+            if (DailyQuestsReady && today != _questDate)
+            {
+                GenerateDailyQuests(today);
+                changed = true;
+            }
+        }
+
         if (SurgeActive)
         {
             SurgeTimeRemaining -= dt;
@@ -916,6 +968,8 @@ public class GameManager : MonoBehaviour
             bool isFlawless = _flawlessTimer > 0f && _flawlessTimer <= FlawlessThreshold;
             reward = Math.Floor(reward * StreakMultiplier * KillStreakBonusMult * (isFlawless ? 2.0 : 1.0));
             TotalEnemiesKilled++;
+            _dailyKillCount++;
+            CheckQuestProgress(QuestTrackType.Kills);
             if (wasBoss) TotalBossesKilled++;
             WaveStreak++;
             if (wasBoss)          BloodEchoCount = HasTalent(TalentFlags.EchoMastery) ? TalentEchoWaves : BloodEchoWaves;
@@ -937,6 +991,7 @@ public class GameManager : MonoBehaviour
 
             bool isMilestone = (Wave % 5 == 0);
             Wave++;
+            CheckQuestProgress(QuestTrackType.Wave);
             if (Wave > BestWave)   BestWave   = Wave;
             if (WaveStreak > BestStreak) BestStreak = WaveStreak;
             if (Wave >= 10)  TryUnlock(AchievementFlags.Wave10);
@@ -1178,6 +1233,7 @@ public class GameManager : MonoBehaviour
     public void FarmBlood()
     {
         _tapCount++;
+        _dailyFarmCount++;
         _idleTimer = 0f;
         if (SoldierCount > 0 && EnemyHP > 0) _crimsonPactCharged = true;
         double amount = EffectiveBloodPerClick * ComboMult * (_tapCount % EchoTapInterval == 0 ? 2.0 : 1.0);
@@ -1191,6 +1247,7 @@ public class GameManager : MonoBehaviour
             PlayerPrefs.Save();
         }
         AddBlood(amount);
+        CheckQuestProgress(QuestTrackType.Farms);
         OnStateChanged?.Invoke();
     }
 
@@ -1282,6 +1339,8 @@ public class GameManager : MonoBehaviour
         float dmg = BloodStormBaseDmg + (Wave - 1) * BloodStormDmgPerWave;
         EnemyHP = Mathf.Max(float.Epsilon, EnemyHP - dmg);
         _bloodStormTimer = BloodStormCooldown;
+        _dailySpellCount++;
+        CheckQuestProgress(QuestTrackType.Spells);
         OnDamageDealt?.Invoke(dmg, true);
         OnStateChanged?.Invoke();
         return true;
@@ -1295,6 +1354,8 @@ public class GameManager : MonoBehaviour
         float dmg = EnemyMaxHP * DesecrateDmgPct;
         EnemyHP = Mathf.Max(float.Epsilon, EnemyHP - dmg);
         _desecrateTimer = DesecrateCooldown;
+        _dailySpellCount++;
+        CheckQuestProgress(QuestTrackType.Spells);
         OnDamageDealt?.Invoke(dmg, true);
         OnStateChanged?.Invoke();
         return true;
@@ -1308,6 +1369,64 @@ public class GameManager : MonoBehaviour
         BloodOathActive = true;
         BloodOathTimeRemaining = BloodOathDuration;
         _bloodOathTimer = BloodOathCooldown;
+        _dailySpellCount++;
+        CheckQuestProgress(QuestTrackType.Spells);
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    // --- Daily quest logic ---
+    void GenerateDailyQuests(string today)
+    {
+        _questDate = today;
+        int seed = DateTime.UtcNow.DayOfYear + DateTime.UtcNow.Year * 1000;
+        var rng  = new System.Random(seed);
+        var used = new System.Collections.Generic.HashSet<int>();
+        for (int i = 0; i < DailyQuestCount; i++)
+        {
+            int idx;
+            do { idx = rng.Next(QuestPool.Length); } while (used.Contains(idx));
+            used.Add(idx);
+            DailyQuestIndices[i]  = idx;
+            DailyQuestProgress[i] = 0;
+            DailyQuestClaimed[i]  = false;
+        }
+        _dailyKillCount  = 0;
+        _dailyFarmCount  = 0;
+        _dailySpellCount = 0;
+        DailyQuestsReady = true;
+    }
+
+    void CheckQuestProgress(QuestTrackType type)
+    {
+        if (!DailyQuestsReady) return;
+        bool changed = false;
+        for (int i = 0; i < DailyQuestCount; i++)
+        {
+            if (DailyQuestClaimed[i]) continue;
+            var def = QuestPool[DailyQuestIndices[i]];
+            if (def.TrackType != type) continue;
+            int current = type switch {
+                QuestTrackType.Kills  => _dailyKillCount,
+                QuestTrackType.Farms  => _dailyFarmCount,
+                QuestTrackType.Spells => _dailySpellCount,
+                QuestTrackType.Wave   => Wave,
+                _                    => 0,
+            };
+            int newProgress = Math.Min(current, def.Target);
+            if (newProgress != DailyQuestProgress[i]) { DailyQuestProgress[i] = newProgress; changed = true; }
+        }
+        if (changed) OnStateChanged?.Invoke();
+    }
+
+    public bool ClaimQuest(int index)
+    {
+        if (index < 0 || index >= DailyQuestCount || DailyQuestClaimed[index]) return false;
+        var def = QuestPool[DailyQuestIndices[index]];
+        if (DailyQuestProgress[index] < def.Target) return false;
+        DailyQuestClaimed[index] = true;
+        AddBlood(def.BloodReward);
+        if (def.ShardReward > 0) SoulShards += def.ShardReward;
         OnStateChanged?.Invoke();
         return true;
     }
@@ -1471,6 +1590,8 @@ public class GameManager : MonoBehaviour
         Blood -= SurgeCost;
         SurgeActive = true;
         SurgeTimeRemaining = SurgeDurationEffective;
+        _dailySpellCount++;
+        CheckQuestProgress(QuestTrackType.Spells);
         OnStateChanged?.Invoke();
         return true;
     }
@@ -1813,6 +1934,7 @@ public class GameManager : MonoBehaviour
         StarterPackOwned = hadStarterPack;
         if (AdsRemoved)    { PlayerPrefs.SetInt("AdsRemoved",      1); PlayerPrefs.Save(); }
         if (StarterPackOwned) { PlayerPrefs.SetInt("StarterPackOwned", 1); PlayerPrefs.Save(); }
+        GenerateDailyQuests(DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
         SpawnEnemy(1);
         CheckTutorial();
         OnStateChanged?.Invoke();
@@ -1948,8 +2070,18 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("Talents",             (int)Talents);
         PlayerPrefs.SetInt   ("CorruptionLevel",     CorruptionLevel);
         PlayerPrefs.SetString("SaveTime",            DateTime.UtcNow.ToString("O", CultureInfo.InvariantCulture));
-        PlayerPrefs.SetInt   ("AdsRemoved",           AdsRemoved      ? 1 : 0);
-        PlayerPrefs.SetInt   ("StarterPackOwned",     StarterPackOwned ? 1 : 0);
+        PlayerPrefs.SetInt   ("AdsRemoved",           AdsRemoved       ? 1 : 0);
+        PlayerPrefs.SetInt   ("StarterPackOwned",     StarterPackOwned  ? 1 : 0);
+        PlayerPrefs.SetString("QuestDate",            _questDate);
+        PlayerPrefs.SetInt   ("DailyKillCount",       _dailyKillCount);
+        PlayerPrefs.SetInt   ("DailyFarmCount",       _dailyFarmCount);
+        PlayerPrefs.SetInt   ("DailySpellCount",      _dailySpellCount);
+        for (int i = 0; i < DailyQuestCount; i++)
+        {
+            PlayerPrefs.SetInt($"QuestIdx{i}",       DailyQuestIndices[i]);
+            PlayerPrefs.SetInt($"QuestProgress{i}",  DailyQuestProgress[i]);
+            PlayerPrefs.SetInt($"QuestClaimed{i}",   DailyQuestClaimed[i] ? 1 : 0);
+        }
         PlayerPrefs.Save();
     }
 
@@ -2032,6 +2164,27 @@ public class GameManager : MonoBehaviour
         CorruptionLevel  =              PlayerPrefs.GetInt("CorruptionLevel",  0);
         AdsRemoved       = PlayerPrefs.GetInt("AdsRemoved",       0) == 1;
         StarterPackOwned = PlayerPrefs.GetInt("StarterPackOwned",  0) == 1;
+
+        string questToday = DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        string savedQDate = PlayerPrefs.GetString("QuestDate", "");
+        if (savedQDate == questToday)
+        {
+            _questDate       = questToday;
+            _dailyKillCount  = PlayerPrefs.GetInt("DailyKillCount",  0);
+            _dailyFarmCount  = PlayerPrefs.GetInt("DailyFarmCount",  0);
+            _dailySpellCount = PlayerPrefs.GetInt("DailySpellCount", 0);
+            for (int i = 0; i < DailyQuestCount; i++)
+            {
+                DailyQuestIndices[i]  = PlayerPrefs.GetInt($"QuestIdx{i}",      i % QuestPool.Length);
+                DailyQuestProgress[i] = PlayerPrefs.GetInt($"QuestProgress{i}", 0);
+                DailyQuestClaimed[i]  = PlayerPrefs.GetInt($"QuestClaimed{i}",  0) == 1;
+            }
+            DailyQuestsReady = true;
+        }
+        else
+        {
+            GenerateDailyQuests(questToday);
+        }
 
         string today = DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         string savedDate      = PlayerPrefs.GetString("LastLoginDate",    "");

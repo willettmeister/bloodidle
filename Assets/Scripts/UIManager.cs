@@ -206,6 +206,12 @@ public class UIManager : MonoBehaviour
     public Button soulSacrificeButton;
     public Text   soulSacrificeInfoText;
 
+    [Header("Daily Quests")]
+    public GameObject questsPanel;
+    public Text       questInfoText0, questInfoText1, questInfoText2;
+    public Button     questClaimButton0, questClaimButton1, questClaimButton2;
+    public Text       questClaimButtonText0, questClaimButtonText1, questClaimButtonText2;
+
     [Header("Ads & IAP")]
     public GameObject adBoostRow;
     public Button     watchAdButton;
@@ -856,6 +862,10 @@ public class UIManager : MonoBehaviour
                 prestigeInfoText.text += $"\n{talentLine}";
         }
 
+        // Daily Quests panel (refresh if open)
+        if (questsPanel != null && questsPanel.activeSelf)
+            RefreshQuestsPanel();
+
         // Ad Boost row
         if (adBoostRow != null)
         {
@@ -939,6 +949,52 @@ public class UIManager : MonoBehaviour
     public void HideIAPPanel()
     {
         if (iapShopPanel != null) iapShopPanel.SetActive(false);
+    }
+
+    // ── Daily Quests Panel ────────────────────────────────────────────────────
+
+    public void ShowQuestsPanel()
+    {
+        if (questsPanel == null) return;
+        RefreshQuestsPanel();
+        questsPanel.SetActive(true);
+    }
+
+    public void HideQuestsPanel()
+    {
+        if (questsPanel != null) questsPanel.SetActive(false);
+    }
+
+    void RefreshQuestsPanel()
+    {
+        var gm = GameManager.Instance;
+        if (gm == null || !gm.DailyQuestsReady) return;
+        var infoTexts  = new[] { questInfoText0,  questInfoText1,  questInfoText2  };
+        var claimBtns  = new[] { questClaimButton0, questClaimButton1, questClaimButton2 };
+        var claimTexts = new[] { questClaimButtonText0, questClaimButtonText1, questClaimButtonText2 };
+        for (int i = 0; i < GameManager.DailyQuestCount; i++)
+        {
+            var def      = GameManager.QuestPool[gm.DailyQuestIndices[i]];
+            int progress = gm.DailyQuestProgress[i];
+            bool claimed = gm.DailyQuestClaimed[i];
+            bool complete = progress >= def.Target;
+
+            string reward = def.ShardReward > 0
+                ? $"+{GameManager.FormatNumber(def.BloodReward)} blood & {def.ShardReward} ⬡"
+                : $"+{GameManager.FormatNumber(def.BloodReward)} blood";
+
+            if (infoTexts[i] != null)
+                infoTexts[i].text = claimed
+                    ? $"✓ {def.Desc}"
+                    : $"{def.Desc}  [{progress}/{def.Target}]\n{reward}";
+
+            if (claimBtns[i] != null)
+            {
+                claimBtns[i].interactable = complete && !claimed;
+                if (claimTexts[i] != null)
+                    claimTexts[i].text = claimed ? "Claimed" : complete ? "Claim!" : "Locked";
+            }
+        }
     }
 
     // ── Settings Panel ────────────────────────────────────────────────────────
