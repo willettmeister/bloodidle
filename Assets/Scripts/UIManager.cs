@@ -371,12 +371,13 @@ public class UIManager : MonoBehaviour
             farmBloodInfoText.text = $"+{GameManager.FormatNumber(gm.EffectiveBloodPerClick)}/tap{echoHint}";
         }
 
+        string speedTag = gm.GameSpeedMult >= GameManager.GameSpeedFast ? "  2×⚡" : "";
         if (gm.SoulShardShopUnlocked)
-            woodText.text = $"Wood: {GameManager.FormatNumber(gm.Wood)}  ⬡{GameManager.FormatNumber(gm.SoulShards)}";
+            woodText.text = $"Wood: {GameManager.FormatNumber(gm.Wood)}  ⬡{GameManager.FormatNumber(gm.SoulShards)}{speedTag}";
         else
             woodText.text = gm.WoodPerSecond > 0
-                ? $"Wood: {GameManager.FormatNumber(gm.Wood)}  +{gm.WoodPerSecond:F1}/s"
-                : $"Wood: {GameManager.FormatNumber(gm.Wood)}";
+                ? $"Wood: {GameManager.FormatNumber(gm.Wood)}  +{gm.WoodPerSecond:F1}/s{speedTag}"
+                : $"Wood: {GameManager.FormatNumber(gm.Wood)}{speedTag}";
 
         // Wave preview overlay (covers enemy card when active)
         if (wavePreviewBanner != null)
