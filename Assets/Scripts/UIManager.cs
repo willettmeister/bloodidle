@@ -505,7 +505,8 @@ public class UIManager : MonoBehaviour
             string rageTag        = gm.BerserkerRageActive  ? "  🔴 RAGE" : "";
             string meditTag       = gm.MeditationReady      ? "  ⚡ FOCUS" : "";
             string adrenalTag     = gm.AdrenalineStacks > 0 ? $"  ⬆×{gm.AdrenalineStacks}" : "";
-            soldierHPText.text = $"{cls}: {GameManager.FormatHP(gm.SoldierHP)} / {GameManager.FormatHP(gm.FrontlineMaxHP)} HP  |  {gm.EffectiveAttack:F1} DPS{desperTag}{rageTag}{lastStandTag}{meditTag}{adrenalTag}";
+            string pactTag        = gm.CrimsonPactCharged   ? "  🔺 PACT" : "";
+            soldierHPText.text = $"{cls}: {GameManager.FormatHP(gm.SoldierHP)} / {GameManager.FormatHP(gm.FrontlineMaxHP)} HP  |  {gm.EffectiveAttack:F1} DPS{desperTag}{rageTag}{lastStandTag}{meditTag}{adrenalTag}{pactTag}";
         }
 
         if (formationButtonText != null)
@@ -1201,6 +1202,11 @@ public class UIManager : MonoBehaviour
         sb.AppendLine($"Soul Shards:       {GameManager.FormatNumber(gm.SoulShards)}");
         sb.AppendLine($"Time Played:       {h}h {m}m {s}s");
         sb.AppendLine($"Prestige Level:    {gm.PrestigeCount}  (milestones: {gm.PrestigeMilestonesReached}/4)");
+        sb.AppendLine();
+        sb.AppendLine("── Passive Unlocks ────────────────");
+        if (gm.SiphonUnlocked)       sb.AppendLine($"  ⚕ Siphon (wave {GameManager.SiphonUnlockWave}+):       {GameManager.SiphonRate * 100:F0}% dmg dealt → HP");
+        if (gm.SoulHarvestUnlocked)  sb.AppendLine($"  🌾 Soul Harvest (10 kills):   +{GameManager.SoulHarvestPct * 100:F0}% enemy HP → reward");
+        if (gm.CursedBloodUnlocked)  sb.AppendLine($"  🩸 Cursed Blood (wave {GameManager.CursedBloodUnlockWave}+):  {(gm.CursedBloodEnabled ? "ON" : "OFF")}  ({GameManager.CursedBloodConversionRate * 100:F0}% dmg taken → blood)");
         sb.AppendLine();
         sb.AppendLine("── Achievement Bonuses ────────────");
         if (gm.AchievementBloodIncomeMult > 1.0)
