@@ -1226,6 +1226,26 @@ public class UIManager : MonoBehaviour
         sb.AppendLine($"Soul Shards:       {GameManager.FormatNumber(gm.SoulShards)}");
         sb.AppendLine($"Time Played:       {h}h {m}m {s}s");
         sb.AppendLine($"Prestige Level:    {gm.PrestigeCount}  (milestones: {gm.PrestigeMilestonesReached}/4)");
+        if (gm.BloodPerSec > 0)
+        {
+            sb.AppendLine();
+            sb.AppendLine("── Income / sec ───────────────────");
+            double mult = gm.AchievementBloodIncomeMult * gm.AdBoostMult;
+            if (gm.BloodRitualCount > 0)
+            {
+                double ritualBase = gm.BloodRitualCount * (GameManager.BloodRitualBloodPerSec + gm.PRitualEffLevel * 0.5) * gm.PrestigeMultiplier;
+                sb.AppendLine($"  Rituals ×{gm.BloodRitualCount}:      +{GameManager.FormatNumber(ritualBase * mult)}/s");
+            }
+            if (gm.ShrineCount > 0)
+                sb.AppendLine($"  Shrines ×{gm.ShrineCount}:       +{GameManager.FormatNumber(gm.ShrineCount * GameManager.ShrineBloodPerSec * mult)}/s");
+            if (gm.KillIncomePerSec > 0)
+                sb.AppendLine($"  Kill income:        +{GameManager.FormatNumber(gm.KillIncomePerSec * mult)}/s");
+            if (gm.BloodTithePerSec > 0)
+                sb.AppendLine($"  Blood Tithe:        +{GameManager.FormatNumber(gm.BloodTithePerSec * mult)}/s");
+            if (gm.BloodTapPerSec > 0)
+                sb.AppendLine($"  Blood Tap:          +{GameManager.FormatNumber(gm.BloodTapPerSec * mult)}/s");
+            sb.AppendLine($"  Total:              +{GameManager.FormatNumber(gm.BloodPerSec)}/s");
+        }
         sb.AppendLine();
         sb.AppendLine("── Passive Unlocks ────────────────");
         if (gm.SiphonUnlocked)       sb.AppendLine($"  ⚕ Siphon (wave {GameManager.SiphonUnlockWave}+):       {GameManager.SiphonRate * 100:F0}% dmg dealt → HP");
