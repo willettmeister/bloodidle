@@ -254,6 +254,9 @@ public static class SceneBuilder
         PF(enemyModifierTextGO, 283, 38, 60);
         enemyModifierTextGO.SetActive(false);
 
+        var truceBtnGO = Btn(content, "TruceButton", "Skip Wave\n(100 blood)", 26, HC("1A1A00"));
+        PT(truceBtnGO, 287, 48, +300, 380);
+
         // Wave preview overlay — sits on top of enemy card, hidden until preview starts
         var wavePreviewBannerGO = content.CreateChild("WavePreviewBanner");
         var wpImg = wavePreviewBannerGO.AddComponent<Image>();
@@ -1228,6 +1231,8 @@ public static class SceneBuilder
         uim.enemyHPText             = enemyHPTextGO.GetComponent<Text>();
         uim.bossTimerText           = bossTimerTextGO.GetComponent<Text>();
         uim.bossTimerRow            = bossTimerRowGO;
+        uim.truceButton             = truceBtnGO.GetComponent<Button>();
+        uim.truceButtonText         = truceBtnGO.GetComponentInChildren<Text>();
         uim.wavePreviewBanner       = wavePreviewBannerGO;
         uim.wavePreviewText         = wavePreviewTextGO.GetComponent<Text>();
         uim.soldierCountText        = soldierCountGO.GetComponent<Text>();
@@ -1408,6 +1413,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(warCryBtnGO.GetComponent<Button>().onClick,             clk.OnUseWarCry);
         UnityEventTools.AddPersistentListener(hexCurseBtnGO.GetComponent<Button>().onClick,           clk.OnUseHexCurse);
         UnityEventTools.AddPersistentListener(bloodShieldBtnGO.GetComponent<Button>().onClick,        clk.OnUseBloodShield);
+        UnityEventTools.AddPersistentListener(truceBtnGO.GetComponent<Button>().onClick,              clk.OnUseTruce);
         UnityEventTools.AddPersistentListener(bloodPactGO.GetComponent<Button>().onClick,             clk.OnUseBloodPact);
         UnityEventTools.AddPersistentListener(buyWorkerGO.GetComponent<Button>().onClick,             clk.OnBuyWorker);
         UnityEventTools.AddPersistentListener(buyShrineGO.GetComponent<Button>().onClick,            clk.OnBuyShrine);

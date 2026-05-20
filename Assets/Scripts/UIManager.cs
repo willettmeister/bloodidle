@@ -26,6 +26,8 @@ public class UIManager : MonoBehaviour
     public GameObject bossTimerRow;
     public GameObject wavePreviewBanner;
     public Text wavePreviewText;
+    public Button truceButton;
+    public Text   truceButtonText;
 
     [Header("Soldiers")]
     public Text soldierCountText;
@@ -457,6 +459,13 @@ public class UIManager : MonoBehaviour
         enemyHPFill.fillAmount = gm.EnemyMaxHP > 0 ? gm.EnemyHP / gm.EnemyMaxHP : 0f;
 #endif
         enemyHPText.text = $"{GameManager.FormatHP(gm.EnemyHP)} / {GameManager.FormatHP(gm.EnemyMaxHP)}  |  +{GameManager.FormatNumber(gm.WaveBloodPreview)} blood";
+        if (truceButton != null)
+        {
+            bool canTruce = !gm.WavePreviewActive && gm.EnemyHP > 0 && gm.Blood >= GameManager.TruceCost;
+            truceButton.interactable = canTruce;
+            if (truceButtonText != null)
+                truceButtonText.text = $"Skip Wave\n({GameManager.FormatNumber(GameManager.TruceCost)} blood)";
+        }
 
         // Army
         bool hasSoldiers = gm.SoldierCount > 0;
@@ -482,9 +491,12 @@ public class UIManager : MonoBehaviour
             soldierHPFill.fillAmount = gm.FrontlineMaxHP > 0 ? gm.SoldierHP / gm.FrontlineMaxHP : 0f;
 #endif
             string cls = gm.FrontlineIsTank ? "Tank" : gm.FrontlineIsBerserker ? "Berserker" : "Paladin";
-            string desperTag   = gm.DesperationActive ? "  💥" : "";
-            string lastStandTag = gm.LastStandActive  ? "  ⚔ LAST STAND" : "";
-            soldierHPText.text = $"{cls}: {GameManager.FormatHP(gm.SoldierHP)} / {GameManager.FormatHP(gm.FrontlineMaxHP)} HP  |  {gm.EffectiveAttack:F1} DPS{desperTag}{lastStandTag}";
+            string desperTag      = gm.DesperationActive    ? "  💥 DESPERATION" : "";
+            string lastStandTag   = gm.DeathsDoorActive      ? "  💀 DEATH'S DOOR" : gm.LastStandActive ? "  ⚔ LAST STAND" : "";
+            string rageTag        = gm.BerserkerRageActive  ? "  🔴 RAGE" : "";
+            string meditTag       = gm.MeditationReady      ? "  ⚡ FOCUS" : "";
+            string adrenalTag     = gm.AdrenalineStacks > 0 ? $"  ⬆×{gm.AdrenalineStacks}" : "";
+            soldierHPText.text = $"{cls}: {GameManager.FormatHP(gm.SoldierHP)} / {GameManager.FormatHP(gm.FrontlineMaxHP)} HP  |  {gm.EffectiveAttack:F1} DPS{desperTag}{rageTag}{lastStandTag}{meditTag}{adrenalTag}";
         }
 
         if (formationButtonText != null)
