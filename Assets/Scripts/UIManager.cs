@@ -775,8 +775,10 @@ public class UIManager : MonoBehaviour
         if (bloodRitualPanel != null) bloodRitualPanel.SetActive(gm.WorkersUnlocked);
         if (gm.WorkersUnlocked && bloodRitualInfoText != null)
         {
+            double ritualIncome = gm.BloodRitualCount * (GameManager.BloodRitualBloodPerSec + gm.PRitualEffLevel * 0.5)
+                * gm.PrestigeMultiplier * gm.AchievementBloodIncomeMult * gm.AdBoostMult;
             bloodRitualInfoText.text = gm.BloodRitualCount > 0
-                ? $"Blood Ritual: {gm.BloodRitualCount}  +{gm.BloodPerSec:F1} blood/s"
+                ? $"Blood Ritual: {gm.BloodRitualCount}  +{GameManager.FormatNumber(ritualIncome)}/s blood"
                 : "Blood Ritual  —  passive blood income";
             if (buyBloodRitualButton != null)
                 buyBloodRitualButton.interactable = gm.Wood >= gm.BloodRitualCost;
