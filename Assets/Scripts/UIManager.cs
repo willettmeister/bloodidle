@@ -66,6 +66,10 @@ public class UIManager : MonoBehaviour
     public Text   hexCurseInfoText;
     public Button hexCurseButton;
 
+    [Header("Blood Shield")]
+    public Text   bloodShieldInfoText;
+    public Button bloodShieldButton;
+
     [Header("Workers")]
     public GameObject workersPanel;
     public Text workerInfoText;
@@ -566,6 +570,22 @@ public class UIManager : MonoBehaviour
             {
                 hexCurseInfoText.text = $"Hex Curse  —  Unlocks at wave {GameManager.HexCurseUnlockWave}";
                 if (hexCurseButton != null) hexCurseButton.interactable = false;
+            }
+        }
+        if (bloodShieldInfoText != null)
+        {
+            if (gm.BloodShieldUnlocked)
+            {
+                bloodShieldInfoText.text = gm.BloodShieldHP > 0f
+                    ? $"Blood Shield  —  {gm.BloodShieldHP:F0} / {GameManager.BloodShieldAmount:F0} HP remaining"
+                    : $"Blood Shield  —  {GameManager.BloodShieldAmount:F0} HP absorb  ({GameManager.FormatNumber(GameManager.BloodShieldCost)} blood)";
+                if (bloodShieldButton != null)
+                    bloodShieldButton.interactable = gm.BloodShieldHP <= 0f && gm.Blood >= GameManager.BloodShieldCost && hasSoldiers;
+            }
+            else
+            {
+                bloodShieldInfoText.text = $"Blood Shield  —  Unlocks at {GameManager.FormatNumber(GameManager.BloodShieldUnlockThreshold)} total blood";
+                if (bloodShieldButton != null) bloodShieldButton.interactable = false;
             }
         }
 
