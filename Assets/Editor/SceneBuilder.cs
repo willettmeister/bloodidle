@@ -19,8 +19,8 @@ using System.IO;
 //  425–805   Army card  [Formation, MixedBonus, UpgradeHeal, Corruption]
 //  815–1025  Farm Blood
 // 1035–1165  Action row — Tank | Berserker | Paladin | Heal Self
-// 1175–2325  Blood Surge card (Surge + SoulSac + Storm + StormUpgrade + Oath + OathUpgrade + WarCry + WarCryUpgrade + HexCurse + HexCurseUpgrade + BloodShield + SoldierSac)
-// battleContent height: 2350
+// 1175–2385  Blood Surge card (Surge + SoulSac + Storm + StormUpgrade + Oath + OathUpgrade + WarCry + WarCryUpgrade + HexCurse + HexCurseUpgrade + BloodShield + SoldierSac + DesecrateUpgrade)
+// battleContent height: 2410
 //
 // ── BUILD TAB (y in buildContent) ───────────────────────────────────────────
 //   10–215   Barracks card (+ Auto-Buy toggle)
@@ -195,7 +195,7 @@ public static class SceneBuilder
             return (sg, cnt);
         }
 
-        var (battleScrollGO,   battleContent)   = MakeTabScroll(tabAreaGO, "BattleTab",   2350f);
+        var (battleScrollGO,   battleContent)   = MakeTabScroll(tabAreaGO, "BattleTab",   2410f);
         var (buildScrollGO,    buildContent)    = MakeTabScroll(tabAreaGO, "BuildTab",    1670f);
         var (progressScrollGO, progressContent) = MakeTabScroll(tabAreaGO, "ProgressTab", 1245f);
         var (settingsScrollGO, settingsContent) = MakeTabScroll(tabAreaGO, "SettingsTab", 400f);
@@ -367,9 +367,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var bloodSurgePanel = content.CreateChild("BloodSurgePanel");
         bloodSurgePanel.AddImage(Color.clear);
-        PF(bloodSurgePanel, 1175, 1150);
+        PF(bloodSurgePanel, 1175, 1210);
 
-        Panel(bloodSurgePanel, "BloodSurgeCardBg", 0, 1150, Surface1, 24);
+        Panel(bloodSurgePanel, "BloodSurgeCardBg", 0, 1210, Surface1, 24);
         { var a = bloodSurgePanel.CreateChild("SurgeAccent"); a.AddImage(Crimson); PF(a, 0, 4, 24); }
 
         var bloodSurgeInfoGO = Label(bloodSurgePanel, "BloodSurgeInfoText",
@@ -502,6 +502,11 @@ public static class SceneBuilder
         var soldierSacBtnGO = Btn(bloodSurgePanel, "SoldierSacButton",
             "Sacrifice! (3× HP burst)", 30, HC("4A0A0A"));
         PT(soldierSacBtnGO, 1104, 42, 0, 680);
+
+        var upgradeDesecrateBtnGO = Btn(bloodSurgePanel, "UpgradeDesecrateButton",
+            "Upgrade Desecrate\n(80 blood)", 28, HC("2A004A"));
+        PT(upgradeDesecrateBtnGO, 1152, 52, 0, 680);
+        upgradeDesecrateBtnGO.SetActive(false);
 
         bloodSurgePanel.SetActive(false);
 
@@ -1496,10 +1501,12 @@ public static class SceneBuilder
         uim.corruptionText          = corruptionTextGO.GetComponent<Text>();
         uim.purifyButton            = purifyBtnGO.GetComponent<Button>();
         uim.purifyButtonText        = purifyBtnGO.GetComponentInChildren<Text>();
-        uim.desecrateButton         = desecrateBtnGO.GetComponent<Button>();
-        uim.desecrateButtonText     = desecrateBtnGO.GetComponentInChildren<Text>();
-        uim.autoDesecrateButton     = autoDesecrateBtnGO.GetComponent<Button>();
-        uim.autoDesecrateButtonText = autoDesecrateBtnGO.GetComponentInChildren<Text>();
+        uim.desecrateButton           = desecrateBtnGO.GetComponent<Button>();
+        uim.desecrateButtonText       = desecrateBtnGO.GetComponentInChildren<Text>();
+        uim.autoDesecrateButton       = autoDesecrateBtnGO.GetComponent<Button>();
+        uim.autoDesecrateButtonText   = autoDesecrateBtnGO.GetComponentInChildren<Text>();
+        uim.upgradeDesecrateButton    = upgradeDesecrateBtnGO.GetComponent<Button>();
+        uim.desecrateUpgradeCostText  = upgradeDesecrateBtnGO.GetComponentInChildren<Text>();
         uim.soulSacrificeButton     = soulSacBtnGO.GetComponent<Button>();
         uim.soulSacrificeInfoText   = soulSacInfoGO.GetComponent<Text>();
         uim.soldierSacrificeButton  = soldierSacBtnGO.GetComponent<Button>();
@@ -1627,6 +1634,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(purifyBtnGO.GetComponent<Button>().onClick,             clk.OnPurify);
         UnityEventTools.AddPersistentListener(desecrateBtnGO.GetComponent<Button>().onClick,          clk.OnUseDesecrate);
         UnityEventTools.AddPersistentListener(autoDesecrateBtnGO.GetComponent<Button>().onClick,     clk.OnToggleAutoDesecrate);
+        UnityEventTools.AddPersistentListener(upgradeDesecrateBtnGO.GetComponent<Button>().onClick,  clk.OnUpgradeDesecrate);
         UnityEventTools.AddPersistentListener(soulSacBtnGO.GetComponent<Button>().onClick,            clk.OnUseSoulSacrifice);
         UnityEventTools.AddPersistentListener(tutDismissGO.GetComponent<Button>().onClick,            uim.DismissTutorial);
         UnityEventTools.AddPersistentListener(tabBattleBtnGO.GetComponent<Button>().onClick,          clk.OnSelectBattleTab);

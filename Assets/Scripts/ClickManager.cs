@@ -71,6 +71,7 @@ public class ClickManager : MonoBehaviour
     public void OnUpgradeWarCry()          => GameManager.Instance.UpgradeWarCry();
     public void OnUpgradeHexCurse()        => GameManager.Instance.UpgradeHexCurse();
     public void OnUpgradeBloodOath()       => GameManager.Instance.UpgradeBloodOath();
+    public void OnUpgradeDesecrate()       => GameManager.Instance.UpgradeDesecrate();
     public void OnSelectBattleTab()        => uiManager.ShowBattleTab();
     public void OnSelectBuildTab()         => uiManager.ShowBuildTab();
     public void OnSelectProgressTab()      => uiManager.ShowProgressTab();

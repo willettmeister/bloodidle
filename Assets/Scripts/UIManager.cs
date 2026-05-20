@@ -252,6 +252,8 @@ public class UIManager : MonoBehaviour
     public Text   desecrateButtonText;
     public Button autoDesecrateButton;
     public Text   autoDesecrateButtonText;
+    public Button upgradeDesecrateButton;
+    public Text   desecrateUpgradeCostText;
 
     [Header("Soul Sacrifice")]
     public Button soulSacrificeButton;
@@ -1091,6 +1093,25 @@ public class UIManager : MonoBehaviour
             autoDesecrateButton.gameObject.SetActive(showAutoDesecrate);
             if (showAutoDesecrate && autoDesecrateButtonText != null)
                 autoDesecrateButtonText.text = gm.AutoDesecrate ? "Auto-Desecrate: ON" : "Auto-Desecrate: OFF";
+        }
+        if (upgradeDesecrateButton != null)
+        {
+            upgradeDesecrateButton.gameObject.SetActive(gm.DesecrateUnlocked);
+            if (gm.DesecrateUnlocked)
+            {
+                upgradeDesecrateButton.interactable = gm.DesecrateUpgradeLevel < GameManager.MaxSpellUpgradeLevel
+                    && gm.Blood >= gm.DesecrateUpgradeCost;
+                if (desecrateUpgradeCostText != null)
+                {
+                    if (gm.DesecrateUpgradeLevel < GameManager.MaxSpellUpgradeLevel)
+                    {
+                        float nextCD = GameManager.DesecrateCooldown - (gm.DesecrateUpgradeLevel + 1) * GameManager.DesecrateCooldownReduction;
+                        desecrateUpgradeCostText.text = $"Upgrade Desecrate\nLv.{gm.DesecrateUpgradeLevel}→{gm.DesecrateUpgradeLevel + 1}  {gm.DesecrateCooldownEffective:F0}s→{nextCD:F0}s CD\n({GameManager.FormatNumber(gm.DesecrateUpgradeCost)} blood)";
+                    }
+                    else
+                        desecrateUpgradeCostText.text = "Desecrate MAX";
+                }
+            }
         }
 
         // Daily Challenge
