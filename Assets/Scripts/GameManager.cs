@@ -398,6 +398,21 @@ public class GameManager : MonoBehaviour
     public const float  SurgeMultiplier      = 2f;
     public const double SurgeUnlockThreshold = 500.0;
 
+    // --- Blood Oath spell ---
+    public bool  BloodOathActive        { get; private set; }
+    public float BloodOathTimeRemaining { get; private set; }
+    public const double BloodOathCost        = 200.0;
+    public const float  BloodOathDuration    = 20f;
+    public const float  BloodOathAtkMult     = 4.0f;
+    public const float  BloodOathReflectPct  = 0.50f;
+    public const float  BloodOathCooldown    = 60f;
+    public const int    BloodOathUnlockWave  = 15;
+    float _bloodOathTimer;
+    public bool  BloodOathReady    => _bloodOathTimer <= 0f;
+    public float BloodOathCooldownLeft => _bloodOathTimer;
+    public bool  BloodOathUnlocked => Wave >= BloodOathUnlockWave;
+    public bool  BloodOathCanCast  => BloodOathUnlocked && !BloodOathActive && BloodOathReady && Blood >= BloodOathCost && SoldierCount > 0 && EnemyHP > 0;
+
     // --- Enemy ---
     public int Wave { get; private set; } = 1;
     public float EnemyHP { get; private set; }
@@ -815,6 +830,12 @@ public class GameManager : MonoBehaviour
         _idleTimer += dt;
         if (_bloodStormTimer  > 0f) { _bloodStormTimer  -= dt; if (_bloodStormTimer  < 0f) _bloodStormTimer  = 0f; }
         if (_desecrateTimer   > 0f) { _desecrateTimer   -= dt; if (_desecrateTimer   < 0f) _desecrateTimer   = 0f; }
+        if (_bloodOathTimer   > 0f) { _bloodOathTimer   -= dt; if (_bloodOathTimer   < 0f) _bloodOathTimer   = 0f; }
+        if (BloodOathActive)
+        {
+            BloodOathTimeRemaining -= dt;
+            if (BloodOathTimeRemaining <= 0f) { BloodOathActive = false; BloodOathTimeRemaining = 0f; }
+        }
         if (_comboTimer > 0f)
         {
             _comboTimer -= dt;
@@ -822,6 +843,7 @@ public class GameManager : MonoBehaviour
         }
         float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f) * (WarCryActive ? WarCryMult : 1f) * AdrenalineMult * IdleFuryMult * (IsBloodyWave ? BloodMoonAtkMult : 1f) * (BloodEchoCount > 0 ? (1f + BloodEchoAtkBonus) : 1f) * (DesperationActive ? DesperationMult : 1f);
         if (PackTacticsActive)   eff *= PackTacticsMult;
+        if (BloodOathActive)     eff *= BloodOathAtkMult;
         if (CurrentEnemyModifier == EnemyModifier.Armored && !IsAllBerserker)
             eff *= IsAllTank ? EnemyArmoredDmgMult + 0.25f : EnemyArmoredDmgMult;
         if (CurrentEnemyModifier == EnemyModifier.Cursed && PaladinCount > 0) eff *= PaladinHolyBonus;
@@ -935,6 +957,8 @@ public class GameManager : MonoBehaviour
             dmg           -= absorbed;
         }
         if (CursedBloodEnabled && dmg > 0) AddBlood(dmg * CursedBloodConversionRate);
+        if (BloodOathActive && dmg > 0 && EnemyHP > 0)
+            EnemyHP = Mathf.Max(float.Epsilon, EnemyHP - dmg * BloodOathReflectPct);
         if (dmg > 0) _meditationTimer = 0f;
         SoldierHP -= dmg;
 
@@ -1256,6 +1280,18 @@ public class GameManager : MonoBehaviour
         EnemyHP = Mathf.Max(float.Epsilon, EnemyHP - dmg);
         _desecrateTimer = DesecrateCooldown;
         OnDamageDealt?.Invoke(dmg, true);
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    public bool UseBloodOath()
+    {
+        if (!BloodOathCanCast) return false;
+        Blood -= BloodOathCost;
+        SoldierHP = 1f;
+        BloodOathActive = true;
+        BloodOathTimeRemaining = BloodOathDuration;
+        _bloodOathTimer = BloodOathCooldown;
         OnStateChanged?.Invoke();
         return true;
     }

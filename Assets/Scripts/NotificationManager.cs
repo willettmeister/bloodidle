@@ -1,10 +1,10 @@
 // Schedules and cancels the "soldiers idle" push notification.
-// Requires: com.unity.mobile.notifications (already in manifest).
+// Requires: com.unity.mobile.notifications (install via Package Manager for device builds).
 using UnityEngine;
-#if UNITY_ANDROID
+#if UNITY_ANDROID && HAVE_MOBILE_NOTIFICATIONS
 using Unity.Notifications.Android;
 #endif
-#if UNITY_IOS
+#if UNITY_IOS && HAVE_MOBILE_NOTIFICATIONS
 using Unity.Notifications.iOS;
 #endif
 
@@ -16,7 +16,7 @@ public static class NotificationManager
     {
         if (!playerIsIdle) return;
 
-#if UNITY_ANDROID
+#if UNITY_ANDROID && HAVE_MOBILE_NOTIFICATIONS
         var channel = new AndroidNotificationChannel
         {
             Id          = ChannelId,
@@ -36,7 +36,7 @@ public static class NotificationManager
             LargeIcon = "default",
         };
         AndroidNotificationCenter.SendNotification(notification, ChannelId);
-#elif UNITY_IOS
+#elif UNITY_IOS && HAVE_MOBILE_NOTIFICATIONS
         CancelAll();
         var request = new iOSNotificationTimeIntervalTrigger { TimeInterval = System.TimeSpan.FromHours(2) };
         var notification = new iOSNotification
@@ -52,9 +52,9 @@ public static class NotificationManager
 
     public static void CancelAll()
     {
-#if UNITY_ANDROID
+#if UNITY_ANDROID && HAVE_MOBILE_NOTIFICATIONS
         AndroidNotificationCenter.CancelAllScheduledNotifications();
-#elif UNITY_IOS
+#elif UNITY_IOS && HAVE_MOBILE_NOTIFICATIONS
         iOSNotificationCenter.RemoveAllScheduledNotifications();
 #endif
     }

@@ -54,6 +54,10 @@ public class UIManager : MonoBehaviour
     public Text bloodStormInfoText;
     public Button bloodStormButton;
 
+    [Header("Blood Oath")]
+    public Text   bloodOathInfoText;
+    public Button bloodOathButton;
+
     [Header("Workers")]
     public GameObject workersPanel;
     public Text workerInfoText;
@@ -480,6 +484,24 @@ public class UIManager : MonoBehaviour
             }
             else if (bloodStormInfoText != null)
                 bloodStormInfoText.text = $"Blood Storm  —  Unlocks at wave {GameManager.BloodStormUnlockWave}";
+        }
+        if (bloodOathInfoText != null)
+        {
+            if (gm.BloodOathUnlocked)
+            {
+                bloodOathInfoText.text = gm.BloodOathActive
+                    ? $"Blood Oath  —  ×4 atk + reflect  {Mathf.CeilToInt(gm.BloodOathTimeRemaining)}s"
+                    : gm.BloodOathReady
+                        ? $"Blood Oath  —  ×4 atk, 50% reflect  ({GameManager.FormatNumber(GameManager.BloodOathCost)} blood)"
+                        : $"Blood Oath  —  Cooldown: {Mathf.CeilToInt(gm.BloodOathCooldownLeft)}s";
+                if (bloodOathButton != null)
+                    bloodOathButton.interactable = gm.BloodOathCanCast;
+            }
+            else
+            {
+                bloodOathInfoText.text = $"Blood Oath  —  Unlocks at wave {GameManager.BloodOathUnlockWave}";
+                if (bloodOathButton != null) bloodOathButton.interactable = false;
+            }
         }
 
         if (bloodSurgePanel != null) bloodSurgePanel.SetActive(gm.SurgeUnlocked);
