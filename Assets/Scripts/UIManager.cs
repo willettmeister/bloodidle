@@ -56,6 +56,8 @@ public class UIManager : MonoBehaviour
     public Text   autoSurgeButtonText;
     public Button autoHealButton;
     public Text   autoHealButtonText;
+    public Button autoStormButton;
+    public Text   autoStormButtonText;
 
     [Header("Blood Storm")]
     public Text bloodStormInfoText;
@@ -559,9 +561,16 @@ public class UIManager : MonoBehaviour
                 bloodStormInfoText.text = stormInfo;
                 if (bloodStormButton != null)
                     bloodStormButton.interactable = gm.BloodStormReady && gm.Blood >= GameManager.BloodStormCost && hasSoldiers && gm.EnemyHP > 0;
+                if (autoStormButtonText != null)
+                    autoStormButtonText.text = gm.AutoStorm ? "Auto-Storm: ON" : "Auto-Storm: OFF";
+                if (autoStormButton != null) autoStormButton.gameObject.SetActive(true);
             }
-            else if (bloodStormInfoText != null)
-                bloodStormInfoText.text = $"Blood Storm  —  Unlocks at wave {GameManager.BloodStormUnlockWave}";
+            else
+            {
+                if (autoStormButton != null) autoStormButton.gameObject.SetActive(false);
+                if (bloodStormInfoText != null)
+                    bloodStormInfoText.text = $"Blood Storm  —  Unlocks at wave {GameManager.BloodStormUnlockWave}";
+            }
         }
         if (bloodOathInfoText != null)
         {

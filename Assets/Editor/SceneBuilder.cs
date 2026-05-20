@@ -406,7 +406,10 @@ public static class SceneBuilder
 
         var bloodStormBtnGO = Btn(bloodSurgePanel, "BloodStormButton",
             "Storm! (50 blood)", 30, HC("0D3A6E"));
-        PT(bloodStormBtnGO, 364, 42, 0, 680);
+        PT(bloodStormBtnGO, 364, 42, -165, 400);
+
+        var autoStormBtnGO = Btn(bloodSurgePanel, "AutoStormButton", "Auto-Storm: OFF", 24, HC("0A2A4A"));
+        PT(autoStormBtnGO, 364, 42, +245, 260);
 
         var bloodOathDivGO = bloodSurgePanel.CreateChild("BloodOathDiv");
         bloodOathDivGO.AddImage(HC("2D2D4A")); PT(bloodOathDivGO, 406, 2, 0, 640);
@@ -1333,6 +1336,8 @@ public static class SceneBuilder
         uim.autoSurgeButtonText     = autoSurgeBtnGO.GetComponentInChildren<Text>();
         uim.bloodStormInfoText      = bloodStormInfoGO.GetComponent<Text>();
         uim.bloodStormButton        = bloodStormBtnGO.GetComponent<Button>();
+        uim.autoStormButton         = autoStormBtnGO.GetComponent<Button>();
+        uim.autoStormButtonText     = autoStormBtnGO.GetComponentInChildren<Text>();
         uim.bloodOathInfoText       = bloodOathInfoGO.GetComponent<Text>();
         uim.bloodOathButton         = bloodOathBtnGO.GetComponent<Button>();
         uim.warCryInfoText          = warCryInfoGO.GetComponent<Text>();
@@ -1464,6 +1469,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(healBtnGO.GetComponent<Button>().onClick,               clk.OnHealSelf);
         UnityEventTools.AddPersistentListener(surgeBtnGO.GetComponent<Button>().onClick,              clk.OnUseSurge);
         UnityEventTools.AddPersistentListener(bloodStormBtnGO.GetComponent<Button>().onClick,         clk.OnUseBloodStorm);
+        UnityEventTools.AddPersistentListener(autoStormBtnGO.GetComponent<Button>().onClick,          clk.OnToggleAutoStorm);
         UnityEventTools.AddPersistentListener(bloodOathBtnGO.GetComponent<Button>().onClick,          clk.OnUseBloodOath);
         UnityEventTools.AddPersistentListener(warCryBtnGO.GetComponent<Button>().onClick,             clk.OnUseWarCry);
         UnityEventTools.AddPersistentListener(hexCurseBtnGO.GetComponent<Button>().onClick,           clk.OnUseHexCurse);
