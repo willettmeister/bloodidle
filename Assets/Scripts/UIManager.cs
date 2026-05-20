@@ -509,7 +509,18 @@ public class UIManager : MonoBehaviour
 #else
         enemyHPFill.fillAmount = gm.EnemyMaxHP > 0 ? gm.EnemyHP / gm.EnemyMaxHP : 0f;
 #endif
-        enemyHPText.text = $"{GameManager.FormatHP(gm.EnemyHP)} / {GameManager.FormatHP(gm.EnemyMaxHP)}  |  +{GameManager.FormatNumber(gm.WaveBloodPreview)} blood";
+        string ttkTag = "";
+        if (gm.SoldierCount > 0 && gm.EnemyHP > 0 && gm.EffectiveAttack > 0f)
+        {
+            float regenDps = gm.CurrentEnemyModifier == EnemyModifier.Regen ? gm.EnemyMaxHP * GameManager.EnemyRegenPct : 0f;
+            float netDps = gm.EffectiveAttack - regenDps;
+            if (netDps > 0f)
+            {
+                float ttk = gm.EnemyHP / netDps;
+                ttkTag = ttk < 60f ? $"  ~{Mathf.CeilToInt(ttk)}s" : $"  ~{Mathf.CeilToInt(ttk / 60f)}m";
+            }
+        }
+        enemyHPText.text = $"{GameManager.FormatHP(gm.EnemyHP)} / {GameManager.FormatHP(gm.EnemyMaxHP)}{ttkTag}  |  +{GameManager.FormatNumber(gm.WaveBloodPreview)} blood";
         if (truceButton != null)
         {
             bool canTruce = !gm.WavePreviewActive && gm.EnemyHP > 0 && gm.Blood >= GameManager.TruceCost;
