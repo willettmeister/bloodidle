@@ -796,7 +796,7 @@ public class GameManager : MonoBehaviour
         if (_comboTimer > 0f)
         {
             _comboTimer -= dt;
-            if (_comboTimer <= 0f) { _comboTimer = 0f; ComboStacks = 0; changed = true; }
+            if (_comboTimer <= 0f) { _comboTimer = 0f; ComboStacks = 0; }
         }
         float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f) * (WarCryActive ? WarCryMult : 1f) * AdrenalineMult * IdleFuryMult * (IsBloodyWave ? BloodMoonAtkMult : 1f) * (BloodEchoCount > 0 ? (1f + BloodEchoAtkBonus) : 1f) * (DesperationActive ? DesperationMult : 1f);
         if (PackTacticsActive)   eff *= PackTacticsMult;
