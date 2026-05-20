@@ -406,13 +406,17 @@ public class GameManager : MonoBehaviour
     // --- Spell Upgrades ---
     public int    SurgeUpgradeLevel  { get; private set; }
     public int    HealUpgradeLevel   { get; private set; }
+    public int    WarCryUpgradeLevel { get; private set; }
     public const int    MaxSpellUpgradeLevel  = 3;
     public const double SurgeUpgradeBaseCost  = 60.0;
     public const double HealUpgradeBaseCost   = 40.0;
-    public double SurgeUpgradeCost   => Math.Floor(SurgeUpgradeBaseCost * Math.Pow(2, SurgeUpgradeLevel));
-    public double HealUpgradeCost    => Math.Floor(HealUpgradeBaseCost  * Math.Pow(2, HealUpgradeLevel));
-    public float  SurgeDurationEffective  => SurgeDuration  + SurgeUpgradeLevel * 5f;
-    public float  HealSelfAmountEffective => HealSelfAmount + HealUpgradeLevel  * 10f;
+    public const double WarCryUpgradeBaseCost = 50.0;
+    public double SurgeUpgradeCost   => Math.Floor(SurgeUpgradeBaseCost  * Math.Pow(2, SurgeUpgradeLevel));
+    public double HealUpgradeCost    => Math.Floor(HealUpgradeBaseCost   * Math.Pow(2, HealUpgradeLevel));
+    public double WarCryUpgradeCost  => Math.Floor(WarCryUpgradeBaseCost * Math.Pow(2, WarCryUpgradeLevel));
+    public float  SurgeDurationEffective  => SurgeDuration  + SurgeUpgradeLevel  * 5f;
+    public float  HealSelfAmountEffective => HealSelfAmount + HealUpgradeLevel   * 10f;
+    public float  WarCryDurationEffective => WarCryDuration + WarCryUpgradeLevel * 5f;
 
     // --- Blood Surge spell ---
     public bool  SurgeActive        { get; private set; }
@@ -1469,7 +1473,7 @@ public class GameManager : MonoBehaviour
     {
         if (!WarCryUnlocked || Blood < WarCryCost || WarCryActive) return false;
         Blood -= WarCryCost;
-        _warCryTimer = WarCryDuration;
+        _warCryTimer = WarCryDurationEffective;
         OnStateChanged?.Invoke();
         return true;
     }
@@ -1942,6 +1946,15 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool UpgradeWarCry()
+    {
+        if (!WarCryUnlocked || WarCryUpgradeLevel >= MaxSpellUpgradeLevel || Blood < WarCryUpgradeCost) return false;
+        Blood -= WarCryUpgradeCost;
+        WarCryUpgradeLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public bool BuySSBloodTap()
     {
         if (SoulShards < SSUpgradeCost || SSBloodTapLevel >= SSMaxLevel) return false;
@@ -2090,7 +2103,7 @@ public class GameManager : MonoBehaviour
         SoulShards = 0; SoulShardShopUnlocked = false;
         SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0;
         BloodBankDeposit = 0; BloodBankAccrued = 0; WaveStreak = 0;
-        SurgeUpgradeLevel = 0; HealUpgradeLevel = 0; BloodStormUpgradeLevel = 0;
+        SurgeUpgradeLevel = 0; HealUpgradeLevel = 0; BloodStormUpgradeLevel = 0; WarCryUpgradeLevel = 0;
         TotalEnemiesKilled = 0; TotalSpellsCast = 0; TotalBossesKilled = 0; VeteranAttackBonus = 0f; TimePlayed = 0; Achievements = AchievementFlags.None;
         AutoBuySoldiers = false; AutoSurge = false; AutoHeal = false; AutoStorm = false;
         AutoDesecrate = false; AutoBuyRituals = false; AutoBankDeposit = false;
@@ -2238,6 +2251,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("SurgeUpgradeLevel",        SurgeUpgradeLevel);
         PlayerPrefs.SetInt   ("HealUpgradeLevel",         HealUpgradeLevel);
         PlayerPrefs.SetInt   ("BloodStormUpgradeLevel",   BloodStormUpgradeLevel);
+        PlayerPrefs.SetInt   ("WarCryUpgradeLevel",       WarCryUpgradeLevel);
         PlayerPrefs.SetInt   ("SoundEnabled",        SoundEnabled        ? 1 : 0);
         PlayerPrefs.SetInt   ("NotificationsEnabled",NotificationsEnabled ? 1 : 0);
         PlayerPrefs.SetString("BloodBankDeposit",    BloodBankDeposit.ToString("R", ic));
@@ -2341,6 +2355,7 @@ public class GameManager : MonoBehaviour
         SurgeUpgradeLevel        = PlayerPrefs.GetInt   ("SurgeUpgradeLevel",        0);
         HealUpgradeLevel         = PlayerPrefs.GetInt   ("HealUpgradeLevel",         0);
         BloodStormUpgradeLevel   = PlayerPrefs.GetInt   ("BloodStormUpgradeLevel",   0);
+        WarCryUpgradeLevel       = PlayerPrefs.GetInt   ("WarCryUpgradeLevel",       0);
         SoundEnabled             = PlayerPrefs.GetInt   ("SoundEnabled",             1) == 1;
         NotificationsEnabled = PlayerPrefs.GetInt  ("NotificationsEnabled",1) == 1;
         BloodBankDeposit    = double.Parse(PlayerPrefs.GetString("BloodBankDeposit", "0"), ic);

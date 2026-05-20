@@ -76,6 +76,8 @@ public class UIManager : MonoBehaviour
     public Button warCryButton;
     public Button autoWarCryButton;
     public Text   autoWarCryButtonText;
+    public Button upgradeWarCryButton;
+    public Text   warCryUpgradeCostText;
 
     [Header("Hex Curse")]
     public Text   hexCurseInfoText;
@@ -654,14 +656,28 @@ public class UIManager : MonoBehaviour
             {
                 warCryInfoText.text = gm.WarCryActive
                     ? $"War Cry  —  ×2 attack  {Mathf.CeilToInt(gm.WarCryTimeLeft)}s"
-                    : $"War Cry  —  ×2 attack for {GameManager.WarCryDuration:F0}s  ({GameManager.FormatNumber(GameManager.WarCryCost)} blood)";
+                    : $"War Cry  —  ×2 attack for {gm.WarCryDurationEffective:F0}s  ({GameManager.FormatNumber(GameManager.WarCryCost)} blood)";
                 if (warCryButton != null)
                     warCryButton.interactable = !gm.WarCryActive && gm.Blood >= GameManager.WarCryCost;
+                if (upgradeWarCryButton != null)
+                    upgradeWarCryButton.interactable = gm.WarCryUpgradeLevel < GameManager.MaxSpellUpgradeLevel
+                        && gm.Blood >= gm.WarCryUpgradeCost;
+                if (warCryUpgradeCostText != null)
+                {
+                    if (gm.WarCryUpgradeLevel < GameManager.MaxSpellUpgradeLevel)
+                    {
+                        float nextDur = GameManager.WarCryDuration + (gm.WarCryUpgradeLevel + 1) * 5f;
+                        warCryUpgradeCostText.text = $"Upgrade War Cry\nLv.{gm.WarCryUpgradeLevel}→{gm.WarCryUpgradeLevel + 1}  {gm.WarCryDurationEffective:F0}s→{nextDur:F0}s\n({GameManager.FormatNumber(gm.WarCryUpgradeCost)} blood)";
+                    }
+                    else
+                        warCryUpgradeCostText.text = "War Cry MAX";
+                }
             }
             else
             {
                 warCryInfoText.text = $"War Cry  —  Unlocks at wave {GameManager.WarCryUnlockWave}";
                 if (warCryButton != null) warCryButton.interactable = false;
+                if (upgradeWarCryButton != null) upgradeWarCryButton.gameObject.SetActive(false);
             }
             if (autoWarCryButton != null)
             {
