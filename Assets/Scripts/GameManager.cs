@@ -657,6 +657,8 @@ public class GameManager : MonoBehaviour
         (AchievementFlags.Wave100,       2000.0, 0),
         (AchievementFlags.BloodMillion,  2000.0, 0),
         (AchievementFlags.BossSlayer,    0.0,    1),
+        (AchievementFlags.BloodBillion,  5000.0, 1),
+        (AchievementFlags.Wave200,       5000.0, 1),
     };
 
 #if UNITY_INCLUDE_TESTS
