@@ -312,6 +312,7 @@ public class UIManager : MonoBehaviour
         (AchievementFlags.Wave200,       "Legend (Wave 200)",     5000.0, 1),
         (AchievementFlags.SpellCaster,   "Spell Caster (50)",      300.0,  0),
         (AchievementFlags.GrandWizard,   "Grand Wizard (500)",    2000.0,  1),
+        (AchievementFlags.StreakMaster,  "Streak Master (×10)",    500.0,  0),
     };
 
     void Start()

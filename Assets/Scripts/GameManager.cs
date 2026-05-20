@@ -27,6 +27,7 @@ public enum AchievementFlags
     Wave200       = 1 << 17,
     SpellCaster   = 1 << 18,  // cast 50 spells lifetime
     GrandWizard   = 1 << 19,  // cast 500 spells lifetime
+    StreakMaster  = 1 << 20,  // reach a 10-wave kill streak
 }
 
 public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral }
@@ -688,6 +689,7 @@ public class GameManager : MonoBehaviour
         (AchievementFlags.Wave200,       5000.0, 1),
         (AchievementFlags.SpellCaster,   300.0,  0),
         (AchievementFlags.GrandWizard,   2000.0, 1),
+        (AchievementFlags.StreakMaster,  500.0,  0),
     };
 
 #if UNITY_INCLUDE_TESTS
@@ -1089,6 +1091,7 @@ public class GameManager : MonoBehaviour
             CheckQuestProgress(QuestTrackType.Kills);
             if (wasBoss) TotalBossesKilled++;
             WaveStreak++;
+            if (WaveStreak >= 10) TryUnlock(AchievementFlags.StreakMaster);
             if (wasBoss)          BloodEchoCount = HasTalent(TalentFlags.EchoMastery) ? TalentEchoWaves : BloodEchoWaves;
             else if (BloodEchoCount > 0) BloodEchoCount--;
             if (SoulHarvestUnlocked) reward += Math.Floor(EnemyMaxHP * SoulHarvestPct);
