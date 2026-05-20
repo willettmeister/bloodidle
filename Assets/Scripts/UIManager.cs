@@ -904,14 +904,14 @@ public class UIManager : MonoBehaviour
         if (bloodBankPanel != null)
         {
             if (bloodBankInfoText != null)
-                bloodBankInfoText.text = $"Blood Bank  {GameManager.FormatNumber(gm.BloodBankDeposit)}/{GameManager.FormatNumber(GameManager.BankMaxDeposit)}  (+{GameManager.BankInterestRatePerHour * 100:F0}%/hr)";
+                bloodBankInfoText.text = $"Blood Bank  {GameManager.FormatNumber(gm.BloodBankDeposit)}/{GameManager.FormatNumber(gm.BankMaxDeposit)}  (+{GameManager.BankInterestRatePerHour * 100:F0}%/hr)";
             if (bloodBankAccruedText != null)
                 bloodBankAccruedText.text = gm.BloodBankAccrued > 0
                     ? $"Interest accrued: +{GameManager.FormatNumber(gm.BloodBankAccrued)} blood"
                     : "Interest accrued: none yet";
             if (depositBloodButton != null)
                 depositBloodButton.interactable = gm.Blood >= 1.0
-                    && gm.BloodBankDeposit < GameManager.BankMaxDeposit;
+                    && gm.BloodBankDeposit < gm.BankMaxDeposit;
             if (withdrawBloodButton != null)
                 withdrawBloodButton.interactable = gm.BloodBankDeposit > 0 || gm.BloodBankAccrued > 0;
         }

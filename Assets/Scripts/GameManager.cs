@@ -291,7 +291,8 @@ public class GameManager : MonoBehaviour
     public double BloodBankDeposit { get; private set; }
     public double BloodBankAccrued { get; private set; }
     public const double BankInterestRatePerHour = 0.02;
-    public const double BankMaxDeposit          = 10_000.0;
+    public const double BankMaxDepositBase      = 10_000.0;
+    public double BankMaxDeposit => BankMaxDepositBase * Math.Pow(10.0, PrestigeCount * 0.5);
 
     // --- Wave Streak ---
     public int   WaveStreak          { get; private set; }
