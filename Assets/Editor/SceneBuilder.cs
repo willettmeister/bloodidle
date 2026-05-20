@@ -133,7 +133,7 @@ public static class SceneBuilder
         contentRT.anchorMax        = new Vector2(1f, 1f);
         contentRT.pivot            = new Vector2(0.5f, 1f);
         contentRT.anchoredPosition = Vector2.zero;
-        contentRT.sizeDelta        = new Vector2(0, 4250);
+        contentRT.sizeDelta        = new Vector2(0, 4375);
 
         var scroll = scrollGO.AddComponent<ScrollRect>();
         scroll.viewport          = viewportGO.GetComponent<RectTransform>();
@@ -290,9 +290,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var workersPanel = content.CreateChild("WorkersPanel");
         workersPanel.AddImage(Color.clear);
-        PF(workersPanel, 1290, 380);
+        PF(workersPanel, 1290, 505);
 
-        Panel(workersPanel, "WorkersCardBg", 0, 380, Surface1, 24);
+        Panel(workersPanel, "WorkersCardBg", 0, 505, Surface1, 24);
         { var a = workersPanel.CreateChild("WorkersAccent"); a.AddImage(Amber); PF(a, 0, 4, 24); }
 
         var workerInfoGO = Label(workersPanel, "WorkerInfoText", "Workers: 0",
@@ -316,42 +316,49 @@ public static class SceneBuilder
         var clickPowerGO = Btn(workersPanel, "ClickPowerButton", "Upgrade\n(15 wood)", 34, Gold);
         PT(clickPowerGO, 263, 110, +232, 370);
 
+        var bloodWellInfoGO = Label(workersPanel, "BloodWellInfoText", "Blood Well  0/5  (0.0/s blood)",
+            34, Color.white, TextAnchor.MiddleLeft);
+        PT(bloodWellInfoGO, 398, 52, -175, 500);
+
+        var buyBloodWellGO = Btn(workersPanel, "BloodWellButton", "Build Well\n(20 wood)", 34, HC("1B5E20"));
+        PT(buyBloodWellGO, 388, 110, +232, 370);
+
         workersPanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
-        // BARRACKS CARD  (y 1680–1845)
+        // BARRACKS CARD  (y 1805–1970)
         // ════════════════════════════════════════════════════════════════════
-        Panel(content, "BarracksCardBg", 1680, 165, Surface1, 24);
-        { var a = content.CreateChild("BarracksCardAccent"); a.AddImage(Brown); PF(a, 1680, 4, 24); }
+        Panel(content, "BarracksCardBg", 1805, 165, Surface1, 24);
+        { var a = content.CreateChild("BarracksCardAccent"); a.AddImage(Brown); PF(a, 1805, 4, 24); }
 
         var barracksInfoGO = Label(content, "BarracksInfoText",
             "Barracks  Lv.1  —  Max 10 soldiers",
             34, Color.white, TextAnchor.MiddleLeft);
-        PT(barracksInfoGO, 1703, 52, -175, 540);
+        PT(barracksInfoGO, 1828, 52, -175, 540);
 
         var upgradeBarracksGO = Btn(content, "UpgradeBarracksButton", "Upgrade\n(20 wood)", 34, Brown);
-        PT(upgradeBarracksGO, 1693, 110, +232, 370);
+        PT(upgradeBarracksGO, 1818, 110, +232, 370);
 
         // ════════════════════════════════════════════════════════════════════
         // FORTIFICATIONS CARD  (y 1855–2020) — always visible
         // ════════════════════════════════════════════════════════════════════
-        Panel(content, "FortificationsCardBg", 1855, 165, Surface1, 24);
-        { var a = content.CreateChild("FortCardAccent"); a.AddImage(HC("4A3728")); PF(a, 1855, 4, 24); }
+        Panel(content, "FortificationsCardBg", 1980, 165, Surface1, 24);
+        { var a = content.CreateChild("FortCardAccent"); a.AddImage(HC("4A3728")); PF(a, 1980, 4, 24); }
 
         var fortInfoGO = Label(content, "FortificationsInfoText",
             "Fortifications  Lv.0/10  (−0% enemy HP)",
             34, Color.white, TextAnchor.MiddleLeft);
-        PT(fortInfoGO, 1878, 52, -175, 540);
+        PT(fortInfoGO, 2003, 52, -175, 540);
 
         var upgradeFortGO = Btn(content, "UpgradeFortificationButton", "Fortify\n(50 wood)", 34, Brown);
-        PT(upgradeFortGO, 1868, 110, +232, 370);
+        PT(upgradeFortGO, 1993, 110, +232, 370);
 
         // ════════════════════════════════════════════════════════════════════
         // EQUIPMENT CARD  (y 2030–2275) — same unlock as workers
         // ════════════════════════════════════════════════════════════════════
         var equipmentPanel = content.CreateChild("EquipmentPanel");
         equipmentPanel.AddImage(Color.clear);
-        PF(equipmentPanel, 2030, 245);
+        PF(equipmentPanel, 2155, 245);
 
         Panel(equipmentPanel, "EquipmentCardBg", 0, 245, Surface1, 24);
         { var a = equipmentPanel.CreateChild("EquipAccent"); a.AddImage(Blue); PF(a, 0, 4, 24); }
@@ -390,7 +397,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var bloodRitualPanel = content.CreateChild("BloodRitualPanel");
         bloodRitualPanel.AddImage(Color.clear);
-        PF(bloodRitualPanel, 2285, 215);
+        PF(bloodRitualPanel, 2410, 215);
 
         Panel(bloodRitualPanel, "BloodRitualCardBg", 0, 215, Surface1, 24);
         { var a = bloodRitualPanel.CreateChild("RitualAccent"); a.AddImage(Purple); PF(a, 0, 4, 24); }
@@ -423,7 +430,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var prestigePanel = content.CreateChild("PrestigePanel");
         prestigePanel.AddImage(Color.clear);
-        PF(prestigePanel, 2510, 140);
+        PF(prestigePanel, 2635, 140);
 
         Panel(prestigePanel, "PrestigeCardBg", 0, 140, HC("1A0A00"), 24);
 
@@ -443,7 +450,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var bloodSurgePanel = content.CreateChild("BloodSurgePanel");
         bloodSurgePanel.AddImage(Color.clear);
-        PF(bloodSurgePanel, 2660, 420);
+        PF(bloodSurgePanel, 2785, 420);
 
         Panel(bloodSurgePanel, "BloodSurgeCardBg", 0, 420, Surface1, 24);
         { var a = bloodSurgePanel.CreateChild("SurgeAccent"); a.AddImage(Crimson); PF(a, 0, 4, 24); }
@@ -494,7 +501,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var bloodBankPanel = content.CreateChild("BloodBankPanel");
         bloodBankPanel.AddImage(Color.clear);
-        PF(bloodBankPanel, 3090, 165);
+        PF(bloodBankPanel, 3215, 165);
 
         Panel(bloodBankPanel, "BloodBankCardBg", 0, 165, Surface1, 24);
         { var a = bloodBankPanel.CreateChild("BankAccent"); a.AddImage(Gold); PF(a, 0, 4, 24); }
@@ -521,7 +528,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var prestigeShopPanel = content.CreateChild("PrestigeShopPanel");
         prestigeShopPanel.AddImage(Color.clear);
-        PF(prestigeShopPanel, 3265, 485);
+        PF(prestigeShopPanel, 3390, 485);
 
         Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 485, HC("150A30"), 24);
 
@@ -589,7 +596,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var soulShardShopPanel = content.CreateChild("SoulShardShopPanel");
         soulShardShopPanel.AddImage(Color.clear);
-        PF(soulShardShopPanel, 3760, 380);
+        PF(soulShardShopPanel, 3885, 380);
 
         Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 380, HC("0A1A30"), 24);
 
@@ -642,13 +649,13 @@ public static class SceneBuilder
         // BOTTOM ROW  (y 3435–3535) — Stats | Settings | Suggest
         // ════════════════════════════════════════════════════════════════════
         var statsBtnGO = Btn(content, "StatsButton", "Statistics", 36, Teal);
-        PT(statsBtnGO, 4040, 100, -345, 310);
+        PT(statsBtnGO, 4165, 100, -345, 310);
 
         var settingsBtnGO = Btn(content, "SettingsButton", "Settings", 36, HC("2A2A4A"));
-        PT(settingsBtnGO, 4040, 100, 0, 300);
+        PT(settingsBtnGO, 4165, 100, 0, 300);
 
         var suggestBtnGO = Btn(content, "SuggestButton", "Suggest", 36, HC("1565C0"));
-        PT(suggestBtnGO, 4040, 100, +345, 300);
+        PT(suggestBtnGO, 4165, 100, +345, 300);
 
         // ── Damage number layer ───────────────────────────────────────────────
         var dmgLayerGO = cv.CreateChild("DamageLayer");
@@ -956,6 +963,8 @@ public static class SceneBuilder
         uim.buyShrineButton         = buyShrineGO.GetComponent<Button>();
         uim.clickPowerInfoText      = clickPowerInfoGO.GetComponent<Text>();
         uim.clickPowerButton        = clickPowerGO.GetComponent<Button>();
+        uim.bloodWellInfoText       = bloodWellInfoGO.GetComponent<Text>();
+        uim.buyBloodWellButton      = buyBloodWellGO.GetComponent<Button>();
         uim.equipmentPanel          = equipmentPanel;
         uim.weaponInfoText          = weaponInfoGO.GetComponent<Text>();
         uim.upgradeWeaponButton     = upgradeWeaponGO.GetComponent<Button>();
@@ -1075,6 +1084,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(buyWorkerGO.GetComponent<Button>().onClick,             clk.OnBuyWorker);
         UnityEventTools.AddPersistentListener(buyShrineGO.GetComponent<Button>().onClick,            clk.OnBuyShrine);
         UnityEventTools.AddPersistentListener(clickPowerGO.GetComponent<Button>().onClick,           clk.OnBuyClickPower);
+        UnityEventTools.AddPersistentListener(buyBloodWellGO.GetComponent<Button>().onClick,         clk.OnBuyBloodWell);
         UnityEventTools.AddPersistentListener(buyBloodRitualGO.GetComponent<Button>().onClick,        clk.OnBuyBloodRitual);
         UnityEventTools.AddPersistentListener(upgradeBarracksGO.GetComponent<Button>().onClick,       clk.OnUpgradeBarracks);
         UnityEventTools.AddPersistentListener(upgradeFortGO.GetComponent<Button>().onClick,           clk.OnUpgradeFortification);

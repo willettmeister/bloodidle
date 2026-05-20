@@ -210,6 +210,17 @@ public class GameManager : MonoBehaviour
     public const int    ShrineMaxCount   = 3;
     public int ShrineCount { get; private set; }
     public bool ShrineUnlocked => WorkerCount > 0;
+
+    // --- Blood Well ---
+    public int    BloodWellCount   { get; private set; }
+    public const int    BloodWellMaxCount   = 5;
+    public const double BloodWellBaseCost   = 20.0;
+    public double BloodWellCost    { get; private set; } = BloodWellBaseCost;
+    public const double BloodWellWoodPerSec = 0.5;
+    public const double BloodWellBloodRatio = 4.0;
+    public double BloodWellBloodPerSec => BloodWellCount * BloodWellWoodPerSec * BloodWellBloodRatio;
+    public bool   BloodWellUnlocked    => WorkerCount >= 3 && Wave >= 8;
+
     public const double BloodRitualBaseCost       = 30.0;
     public const double BloodRitualBloodPerSec    = 1.0;
     public const double BloodRitualCostMultiplier = 2.0;
@@ -681,6 +692,14 @@ public class GameManager : MonoBehaviour
         {
             AddBlood(BloodPerSec * dt);
             changed = true;
+        }
+
+        if (BloodWellCount > 0 && Wood > 0)
+        {
+            double consumed = Math.Min(BloodWellCount * BloodWellWoodPerSec * dt, Wood);
+            Wood    -= consumed;
+            AddBlood(consumed * BloodWellBloodRatio);
+            changed  = true;
         }
 
         if (AutoBuySoldiers && SoldierCount < MaxSoldiers && Blood >= SoldierCost)
@@ -1229,6 +1248,16 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuyBloodWell()
+    {
+        if (!BloodWellUnlocked || Wood < BloodWellCost || BloodWellCount >= BloodWellMaxCount) return false;
+        Wood -= BloodWellCost;
+        BloodWellCount++;
+        BloodWellCost = Math.Floor(BloodWellCost * 2.0);
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public bool BuyBloodRitual()
     {
         if (Wood < BloodRitualCost) return false;
@@ -1600,6 +1629,7 @@ public class GameManager : MonoBehaviour
         Blood = 0; TotalBloodEarned = 0; Wood = 0;
         TankCount = 0; BerserkerCount = 0; PaladinCount = 0; SoldierHP = 0f;
         WorkerCount = 0; BloodRitualCount = 0; BloodRitualCost = BloodRitualBaseCost;
+        BloodWellCount = 0; BloodWellCost = BloodWellBaseCost;
         BarracksLevel = 1; MaxSoldiers = 10; BarracksUpgradeCost = 20.0;
         WorkersUnlocked = false; HealSelfUnlocked = false; SurgeUnlocked = false;
         BloodShieldUnlocked = false; BloodShieldHP = 0f;
@@ -1648,6 +1678,8 @@ public class GameManager : MonoBehaviour
         WorkerCount         = 0;
         BloodRitualCount    = 0;
         BloodRitualCost     = BloodRitualBaseCost;
+        BloodWellCount      = 0;
+        BloodWellCost       = BloodWellBaseCost;
         Wave                = 1;
         NextBossWave        = UnityEngine.Random.Range(6, 13);
         BarracksLevel       = 1;
@@ -1722,6 +1754,8 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetString("FortificationCost",   FortificationCost.ToString("R", ic));
         PlayerPrefs.SetInt   ("ClickPowerLevel",      ClickPowerLevel);
         PlayerPrefs.SetInt   ("ShrineCount",          ShrineCount);
+        PlayerPrefs.SetInt   ("BloodWellCount",       BloodWellCount);
+        PlayerPrefs.SetString("BloodWellCost",        BloodWellCost.ToString("R", ic));
         PlayerPrefs.SetString("ClickPowerCost",       ClickPowerCost.ToString("R", ic));
         PlayerPrefs.SetString("SoulShards",          SoulShards.ToString("R", ic));
         PlayerPrefs.SetInt   ("SoulShardShopUnlocked", SoulShardShopUnlocked ? 1 : 0);
@@ -1797,6 +1831,8 @@ public class GameManager : MonoBehaviour
         FortificationCost   = double.Parse(PlayerPrefs.GetString("FortificationCost", FortBaseCost.ToString("R", ic)), ic);
         ClickPowerLevel     = PlayerPrefs.GetInt   ("ClickPowerLevel", 0);
         ShrineCount         = PlayerPrefs.GetInt   ("ShrineCount",     0);
+        BloodWellCount      = PlayerPrefs.GetInt   ("BloodWellCount",  0);
+        BloodWellCost       = double.TryParse(PlayerPrefs.GetString("BloodWellCost", ""), System.Globalization.NumberStyles.Any, ic, out double bwc) ? bwc : BloodWellBaseCost;
         ClickPowerCost      = double.Parse(PlayerPrefs.GetString("ClickPowerCost", ClickPowerBaseCost.ToString("R", ic)), ic);
         SoulShards          = double.Parse(PlayerPrefs.GetString("SoulShards",        "0"), ic);
         SoulShardShopUnlocked = PlayerPrefs.GetInt ("SoulShardShopUnlocked", 0) == 1;

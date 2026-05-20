@@ -65,6 +65,10 @@ public class UIManager : MonoBehaviour
     public Text clickPowerInfoText;
     public Button clickPowerButton;
 
+    [Header("Blood Well")]
+    public Text   bloodWellInfoText;
+    public Button buyBloodWellButton;
+
     [Header("Equipment")]
     public GameObject equipmentPanel;
     public Text weaponInfoText;
@@ -532,6 +536,16 @@ public class UIManager : MonoBehaviour
         if (clickPowerButton != null)
         {
             clickPowerButton.interactable = gm.ClickPowerUnlocked && gm.Wood >= gm.ClickPowerCost && gm.ClickPowerLevel < GameManager.ClickPowerMaxLevel;
+        }
+        if (bloodWellInfoText != null)
+        {
+            bloodWellInfoText.text = gm.BloodWellUnlocked
+                ? $"Blood Well  {gm.BloodWellCount}/{GameManager.BloodWellMaxCount}  ({gm.BloodWellBloodPerSec:F1}/s blood)"
+                : $"Blood Well  (need 3 workers + wave 8)";
+        }
+        if (buyBloodWellButton != null)
+        {
+            buyBloodWellButton.interactable = gm.BloodWellUnlocked && gm.Wood >= gm.BloodWellCost && gm.BloodWellCount < GameManager.BloodWellMaxCount;
         }
 
         // Equipment
