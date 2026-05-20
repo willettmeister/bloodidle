@@ -321,12 +321,16 @@ public static class SceneBuilder
         corruptionTextGO.SetActive(false);
 
         var purifyBtnGO = Btn(content, "PurifyButton", "Purify\n(3 shards)", 28, HC("4A0A0A"));
-        PT(purifyBtnGO, 757, 38, +232, 280);
+        PT(purifyBtnGO, 757, 38, -310, 280);
         purifyBtnGO.SetActive(false);
 
         var desecrateBtnGO = Btn(content, "DesecrateButton", "Desecrate\n(-1 corrupt +50% burst)", 26, HC("3A006A"));
-        PT(desecrateBtnGO, 757, 38, 0, 300);
+        PT(desecrateBtnGO, 757, 38, +5, 300);
         desecrateBtnGO.SetActive(false);
+
+        var autoDesecrateBtnGO = Btn(content, "AutoDesecrateButton", "Auto-Desecrate: OFF", 24, HC("2A004A"));
+        PT(autoDesecrateBtnGO, 757, 38, +320, 250);
+        autoDesecrateBtnGO.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
         // FARM BLOOD  (battleContent y 815–1025)
@@ -1431,6 +1435,8 @@ public static class SceneBuilder
         uim.purifyButtonText        = purifyBtnGO.GetComponentInChildren<Text>();
         uim.desecrateButton         = desecrateBtnGO.GetComponent<Button>();
         uim.desecrateButtonText     = desecrateBtnGO.GetComponentInChildren<Text>();
+        uim.autoDesecrateButton     = autoDesecrateBtnGO.GetComponent<Button>();
+        uim.autoDesecrateButtonText = autoDesecrateBtnGO.GetComponentInChildren<Text>();
         uim.soulSacrificeButton     = soulSacBtnGO.GetComponent<Button>();
         uim.soulSacrificeInfoText   = soulSacInfoGO.GetComponent<Text>();
         uim.soldierSacrificeButton  = soldierSacBtnGO.GetComponent<Button>();
@@ -1545,6 +1551,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(dailyChallengeBtnGO.GetComponent<Button>().onClick,     clk.OnStartDailyChallenge);
         UnityEventTools.AddPersistentListener(purifyBtnGO.GetComponent<Button>().onClick,             clk.OnPurify);
         UnityEventTools.AddPersistentListener(desecrateBtnGO.GetComponent<Button>().onClick,          clk.OnUseDesecrate);
+        UnityEventTools.AddPersistentListener(autoDesecrateBtnGO.GetComponent<Button>().onClick,     clk.OnToggleAutoDesecrate);
         UnityEventTools.AddPersistentListener(soulSacBtnGO.GetComponent<Button>().onClick,            clk.OnUseSoulSacrifice);
         UnityEventTools.AddPersistentListener(tutDismissGO.GetComponent<Button>().onClick,            uim.DismissTutorial);
         UnityEventTools.AddPersistentListener(tabBattleBtnGO.GetComponent<Button>().onClick,          clk.OnSelectBattleTab);

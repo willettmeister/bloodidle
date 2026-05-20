@@ -28,6 +28,7 @@ public class ClickManager : MonoBehaviour
     public void OnToggleAutoSurge()        => GameManager.Instance.ToggleAutoSurge();
     public void OnToggleAutoHeal()         => GameManager.Instance.ToggleAutoHeal();
     public void OnToggleAutoStorm()        => GameManager.Instance.ToggleAutoStorm();
+    public void OnToggleAutoDesecrate()    => GameManager.Instance.ToggleAutoDesecrate();
     public void OnPrestige()               => GameManager.Instance.RequestPrestige();
     public void OnConfirmTalent0()         => GameManager.Instance.ConfirmPrestige(0);
     public void OnConfirmTalent1()         => GameManager.Instance.ConfirmPrestige(1);

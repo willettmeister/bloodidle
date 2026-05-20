@@ -229,6 +229,8 @@ public class UIManager : MonoBehaviour
     public Text   purifyButtonText;
     public Button desecrateButton;
     public Text   desecrateButtonText;
+    public Button autoDesecrateButton;
+    public Text   autoDesecrateButtonText;
 
     [Header("Soul Sacrifice")]
     public Button soulSacrificeButton;
@@ -925,6 +927,13 @@ public class UIManager : MonoBehaviour
                     desecrateButtonText.text = $"Desecrate\n(-1 corrupt +50% burst{cdStr})";
                 }
             }
+        }
+        if (autoDesecrateButton != null)
+        {
+            bool showAutoDesecrate = gm.DesecrateUnlocked && gm.CorruptionLevel > 0;
+            autoDesecrateButton.gameObject.SetActive(showAutoDesecrate);
+            if (showAutoDesecrate && autoDesecrateButtonText != null)
+                autoDesecrateButtonText.text = gm.AutoDesecrate ? "Auto-Desecrate: ON" : "Auto-Desecrate: OFF";
         }
 
         // Daily Challenge
