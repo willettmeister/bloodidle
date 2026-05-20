@@ -32,12 +32,12 @@ using System.IO;
 // buildContent height: 1580
 //
 // ── PROGRESS TAB (y in progressContent) ─────────────────────────────────────
-//   10–150   Prestige card (hidden until wave 20)
-//  160–645   Prestige Shop (hidden until prestige 1)
-//  655–1035  Soul Shard Shop (hidden until first boss)
-// 1045–1110  Daily Quests row
-// 1120–1185  Watch Ad row
-// progressContent height: 1200
+//   10–195   Prestige card (hidden until wave 20)
+//  205–690   Prestige Shop (hidden until prestige 1)
+//  700–1080  Soul Shard Shop (hidden until first boss)
+// 1090–1155  Daily Quests row
+// 1160–1225  Watch Ad row
+// progressContent height: 1245
 //
 // ── SETTINGS TAB (y in settingsContent) ─────────────────────────────────────
 //   10–240   Utility buttons (Stats | Settings row, Suggest | Shop row)
@@ -196,7 +196,7 @@ public static class SceneBuilder
 
         var (battleScrollGO,   battleContent)   = MakeTabScroll(tabAreaGO, "BattleTab",   2110f);
         var (buildScrollGO,    buildContent)    = MakeTabScroll(tabAreaGO, "BuildTab",    1580f);
-        var (progressScrollGO, progressContent) = MakeTabScroll(tabAreaGO, "ProgressTab", 1200f);
+        var (progressScrollGO, progressContent) = MakeTabScroll(tabAreaGO, "ProgressTab", 1245f);
         var (settingsScrollGO, settingsContent) = MakeTabScroll(tabAreaGO, "SettingsTab", 400f);
 
         buildScrollGO.SetActive(false);
@@ -645,9 +645,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var prestigePanel = content.CreateChild("PrestigePanel");
         prestigePanel.AddImage(Color.clear);
-        PF(prestigePanel, 10, 140);
+        PF(prestigePanel, 10, 185);
 
-        Panel(prestigePanel, "PrestigeCardBg", 0, 140, HC("1A0A00"), 24);
+        Panel(prestigePanel, "PrestigeCardBg", 0, 185, HC("1A0A00"), 24);
 
         var prestigeInfoGO = Label(prestigePanel, "PrestigeInfoText",
             "Prestige  —  reset for a blood bonus",
@@ -658,6 +658,10 @@ public static class SceneBuilder
             "PRESTIGE\n(reset progress)", 32, Amber);
         PT(prestigeBtnGO, 10, 110, +232, 370);
 
+        var prestigeMilestoneGO = Label(prestigePanel, "PrestigeMilestoneText",
+            "Milestone 0/4", 26, HC("FFD700"), TextAnchor.MiddleCenter);
+        PF(prestigeMilestoneGO, 130, 34, 20);
+
         prestigePanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
@@ -665,7 +669,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var prestigeShopPanel = content.CreateChild("PrestigeShopPanel");
         prestigeShopPanel.AddImage(Color.clear);
-        PF(prestigeShopPanel, 160, 485);
+        PF(prestigeShopPanel, 205, 485);
 
         Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 485, HC("150A30"), 24);
 
@@ -733,7 +737,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var soulShardShopPanel = content.CreateChild("SoulShardShopPanel");
         soulShardShopPanel.AddImage(Color.clear);
-        PF(soulShardShopPanel, 655, 380);
+        PF(soulShardShopPanel, 700, 380);
 
         Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 380, HC("0A1A30"), 24);
 
@@ -786,7 +790,7 @@ public static class SceneBuilder
         // DAILY QUESTS BUTTON ROW  (y 4200–4265)
         // ════════════════════════════════════════════════════════════════════
         var questsRowGO = content.CreateChild("DailyQuestsRow");
-        questsRowGO.AddImage(HC("0A1A0A")); PF(questsRowGO, 1045, 65, 20);
+        questsRowGO.AddImage(HC("0A1A0A")); PF(questsRowGO, 1090, 65, 20);
 
         var openQuestsBtnGO = Btn(questsRowGO, "OpenQuestsButton", "Daily Quests", 34, HC("1B5E20"));
         openQuestsBtnGO.Stretch();
@@ -795,7 +799,7 @@ public static class SceneBuilder
         // WATCH AD ROW  (y 4275–4345)
         // ════════════════════════════════════════════════════════════════════
         var adBoostRowGO = content.CreateChild("AdBoostRow");
-        adBoostRowGO.AddImage(HC("1A0A2E")); PF(adBoostRowGO, 1120, 65, 20);
+        adBoostRowGO.AddImage(HC("1A0A2E")); PF(adBoostRowGO, 1160, 65, 20);
 
         var watchAdBtnGO = Btn(adBoostRowGO, "WatchAdButton", "Watch Ad  →  2× Blood (5 min)", 34, Purple);
         watchAdBtnGO.Stretch();
@@ -1290,6 +1294,7 @@ public static class SceneBuilder
         uim.prestigePanel           = prestigePanel;
         uim.prestigeInfoText        = prestigeInfoGO.GetComponent<Text>();
         uim.prestigeButton          = prestigeBtnGO.GetComponent<Button>();
+        uim.prestigeMilestoneText   = prestigeMilestoneGO.GetComponent<Text>();
         uim.bloodSurgePanel         = bloodSurgePanel;
         uim.bloodSurgeInfoText      = bloodSurgeInfoGO.GetComponent<Text>();
         uim.bloodSurgeButton        = surgeBtnGO.GetComponent<Button>();
