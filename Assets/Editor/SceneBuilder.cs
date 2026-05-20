@@ -376,7 +376,10 @@ public static class SceneBuilder
 
         var upgradeSurgeBtnGO = Btn(bloodSurgePanel, "UpgradeSurgeButton",
             "Upgrade Surge\n(60 blood)", 28, HC("8E2424"));
-        PF(upgradeSurgeBtnGO, 128, 64, 40);
+        PT(upgradeSurgeBtnGO, 128, 64, -160, 510);
+
+        var autoSurgeBtnGO = Btn(bloodSurgePanel, "AutoSurgeButton", "Auto-Surge: OFF", 26, HC("6A0000"));
+        PT(autoSurgeBtnGO, 128, 64, +245, 260);
 
         var surgeDivGO = bloodSurgePanel.CreateChild("SurgeDiv");
         surgeDivGO.AddImage(HC("2D2D4A")); PT(surgeDivGO, 202, 2, 0, 640);
@@ -1323,6 +1326,8 @@ public static class SceneBuilder
         uim.bloodSurgeButton        = surgeBtnGO.GetComponent<Button>();
         uim.upgradeSurgeButton      = upgradeSurgeBtnGO.GetComponent<Button>();
         uim.surgeCostText           = upgradeSurgeBtnGO.GetComponentInChildren<Text>();
+        uim.autoSurgeButton         = autoSurgeBtnGO.GetComponent<Button>();
+        uim.autoSurgeButtonText     = autoSurgeBtnGO.GetComponentInChildren<Text>();
         uim.bloodStormInfoText      = bloodStormInfoGO.GetComponent<Text>();
         uim.bloodStormButton        = bloodStormBtnGO.GetComponent<Button>();
         uim.bloodOathInfoText       = bloodOathInfoGO.GetComponent<Text>();
@@ -1487,6 +1492,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(ssBloodTapBtnGO.GetComponent<Button>().onClick,        clk.OnBuySSBloodTap);
         UnityEventTools.AddPersistentListener(ssShardHungerBtnGO.GetComponent<Button>().onClick,    clk.OnBuySSShardHunger);
         UnityEventTools.AddPersistentListener(upgradeSurgeBtnGO.GetComponent<Button>().onClick,      clk.OnUpgradeSurge);
+        UnityEventTools.AddPersistentListener(autoSurgeBtnGO.GetComponent<Button>().onClick,         clk.OnToggleAutoSurge);
         UnityEventTools.AddPersistentListener(upgradeHealBtnGO.GetComponent<Button>().onClick,       clk.OnUpgradeHealSelf);
         UnityEventTools.AddPersistentListener(depositBtnGO.GetComponent<Button>().onClick,            clk.OnDepositToBank);
         UnityEventTools.AddPersistentListener(withdrawBtnGO.GetComponent<Button>().onClick,           clk.OnWithdrawFromBank);

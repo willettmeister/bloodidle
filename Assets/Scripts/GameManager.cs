@@ -578,6 +578,7 @@ public class GameManager : MonoBehaviour
     public float  BloodShieldHP       { get; private set; }
     public bool   BloodShieldUnlocked { get; private set; }
     public bool   AutoBuySoldiers     { get; private set; }
+    public bool   AutoSurge           { get; private set; }
     public const double TruceCost        = 100.0;
     public const double WarCryCost         = 30.0;
     public const float  WarCryDuration     = 10f;
@@ -837,6 +838,12 @@ public class GameManager : MonoBehaviour
         if (AutoBuySoldiers && SoldierCount < MaxSoldiers && Blood >= SoldierCost)
         {
             BuyTank();
+            changed = true;
+        }
+
+        if (AutoSurge && SurgeUnlocked && !SurgeActive && Blood >= SurgeCost && SoldierCount > 0 && EnemyHP > 0)
+        {
+            UseSurge();
             changed = true;
         }
 
@@ -1296,6 +1303,7 @@ public class GameManager : MonoBehaviour
 
     public bool BuySoldier() => BuyTank();
     public void ToggleAutoBuySoldiers() { AutoBuySoldiers = !AutoBuySoldiers; OnStateChanged?.Invoke(); }
+    public void ToggleAutoSurge()       { AutoSurge       = !AutoSurge;       OnStateChanged?.Invoke(); }
 
     public bool UseTruce()
     {
@@ -2029,6 +2037,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetString("TotalBloodEarned",    TotalBloodEarned.ToString("R", ic));
         PlayerPrefs.SetInt   ("WorkersUnlocked",     WorkersUnlocked  ? 1 : 0);
         PlayerPrefs.SetInt   ("AutoBuySoldiers",     AutoBuySoldiers ? 1 : 0);
+        PlayerPrefs.SetInt   ("AutoSurge",           AutoSurge       ? 1 : 0);
         PlayerPrefs.SetInt   ("BloodShieldUnlocked", BloodShieldUnlocked ? 1 : 0);
         PlayerPrefs.SetFloat ("BloodShieldHP",       BloodShieldHP);
         PlayerPrefs.SetInt   ("TotalEnemiesKilled",  TotalEnemiesKilled);
@@ -2118,6 +2127,7 @@ public class GameManager : MonoBehaviour
         TotalBloodEarned    = double.Parse(PlayerPrefs.GetString("TotalBloodEarned",    "0"),  ic);
         WorkersUnlocked     = PlayerPrefs.GetInt   ("WorkersUnlocked",     0) == 1;
         AutoBuySoldiers     = PlayerPrefs.GetInt   ("AutoBuySoldiers",     0) == 1;
+        AutoSurge           = PlayerPrefs.GetInt   ("AutoSurge",           0) == 1;
         BloodShieldUnlocked = PlayerPrefs.GetInt   ("BloodShieldUnlocked", 0) == 1;
         BloodShieldHP       = PlayerPrefs.GetFloat ("BloodShieldHP",       0f);
         TotalEnemiesKilled  = PlayerPrefs.GetInt   ("TotalEnemiesKilled",  0);

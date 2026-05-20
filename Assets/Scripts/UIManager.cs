@@ -52,6 +52,8 @@ public class UIManager : MonoBehaviour
     public Text surgeCostText;
     public Button upgradeHealSelfButton;
     public Text healCostText;
+    public Button autoSurgeButton;
+    public Text   autoSurgeButtonText;
 
     [Header("Blood Storm")]
     public Text bloodStormInfoText;
@@ -645,6 +647,8 @@ public class UIManager : MonoBehaviour
                 surgeCostText.text = gm.SurgeUpgradeLevel < GameManager.MaxSpellUpgradeLevel
                     ? $"Upgrade Surge\n(Lv.{gm.SurgeUpgradeLevel}/{GameManager.MaxSpellUpgradeLevel}  {GameManager.FormatNumber(gm.SurgeUpgradeCost)} blood)"
                     : "Surge MAX";
+            if (autoSurgeButtonText != null)
+                autoSurgeButtonText.text = gm.AutoSurge ? "Auto-Surge: ON" : "Auto-Surge: OFF";
         }
 
         if (gm.HealSelfUnlocked)
