@@ -67,6 +67,7 @@ public class ClickManager : MonoBehaviour
     public void OnBuyPaladin()             => GameManager.Instance.BuyPaladin();
     public void OnUpgradeSurge()           => GameManager.Instance.UpgradeSurge();
     public void OnUpgradeHealSelf()        => GameManager.Instance.UpgradeHealSelf();
+    public void OnUpgradeBloodStorm()      => GameManager.Instance.UpgradeBloodStorm();
     public void OnSelectBattleTab()        => uiManager.ShowBattleTab();
     public void OnSelectBuildTab()         => uiManager.ShowBuildTab();
     public void OnSelectProgressTab()      => uiManager.ShowProgressTab();

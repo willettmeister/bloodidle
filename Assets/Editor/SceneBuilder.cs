@@ -19,8 +19,8 @@ using System.IO;
 //  425–805   Army card  [Formation, MixedBonus, UpgradeHeal, Corruption]
 //  815–1025  Farm Blood
 // 1035–1165  Action row — Tank | Berserker | Paladin | Heal Self
-// 1175–2085  Blood Surge card (Surge + SoulSac + Storm + Oath + WarCry + HexCurse + BloodShield + SoldierSac)
-// battleContent height: 2110
+// 1175–2145  Blood Surge card (Surge + SoulSac + Storm + StormUpgrade + Oath + WarCry + HexCurse + BloodShield + SoldierSac)
+// battleContent height: 2170
 //
 // ── BUILD TAB (y in buildContent) ───────────────────────────────────────────
 //   10–215   Barracks card (+ Auto-Buy toggle)
@@ -195,7 +195,7 @@ public static class SceneBuilder
             return (sg, cnt);
         }
 
-        var (battleScrollGO,   battleContent)   = MakeTabScroll(tabAreaGO, "BattleTab",   2110f);
+        var (battleScrollGO,   battleContent)   = MakeTabScroll(tabAreaGO, "BattleTab",   2170f);
         var (buildScrollGO,    buildContent)    = MakeTabScroll(tabAreaGO, "BuildTab",    1670f);
         var (progressScrollGO, progressContent) = MakeTabScroll(tabAreaGO, "ProgressTab", 1245f);
         var (settingsScrollGO, settingsContent) = MakeTabScroll(tabAreaGO, "SettingsTab", 400f);
@@ -367,9 +367,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var bloodSurgePanel = content.CreateChild("BloodSurgePanel");
         bloodSurgePanel.AddImage(Color.clear);
-        PF(bloodSurgePanel, 1175, 910);
+        PF(bloodSurgePanel, 1175, 970);
 
-        Panel(bloodSurgePanel, "BloodSurgeCardBg", 0, 910, Surface1, 24);
+        Panel(bloodSurgePanel, "BloodSurgeCardBg", 0, 970, Surface1, 24);
         { var a = bloodSurgePanel.CreateChild("SurgeAccent"); a.AddImage(Crimson); PF(a, 0, 4, 24); }
 
         var bloodSurgeInfoGO = Label(bloodSurgePanel, "BloodSurgeInfoText",
@@ -415,77 +415,81 @@ public static class SceneBuilder
         var autoStormBtnGO = Btn(bloodSurgePanel, "AutoStormButton", "Auto-Storm: OFF", 24, HC("0A2A4A"));
         PT(autoStormBtnGO, 364, 42, +245, 260);
 
+        var upgradeBloodStormBtnGO = Btn(bloodSurgePanel, "UpgradeBloodStormButton",
+            "Upgrade Storm\n(80 blood)", 28, HC("0A2A5A"));
+        PT(upgradeBloodStormBtnGO, 414, 52, 0, 680);
+
         var bloodOathDivGO = bloodSurgePanel.CreateChild("BloodOathDiv");
-        bloodOathDivGO.AddImage(HC("2D2D4A")); PT(bloodOathDivGO, 406, 2, 0, 640);
+        bloodOathDivGO.AddImage(HC("2D2D4A")); PT(bloodOathDivGO, 466, 2, 0, 640);
 
         var bloodOathInfoGO = Label(bloodSurgePanel, "BloodOathInfoText",
             "Blood Oath  —  Unlocks at wave 15",
             30, new Color(0.85f, 0.5f, 1f), TextAnchor.MiddleLeft);
-        PT(bloodOathInfoGO, 414, 44, -140, 620);
+        PT(bloodOathInfoGO, 474, 44, -140, 620);
 
         var bloodOathBtnGO = Btn(bloodSurgePanel, "BloodOathButton",
             "Oath! (200 blood)", 30, HC("3A006A"));
-        PT(bloodOathBtnGO, 464, 42, -165, 400);
+        PT(bloodOathBtnGO, 524, 42, -165, 400);
 
         var autoBloodOathBtnGO = Btn(bloodSurgePanel, "AutoBloodOathButton", "Auto-Oath: OFF", 26, HC("1A0040"));
-        PT(autoBloodOathBtnGO, 464, 42, +245, 260);
+        PT(autoBloodOathBtnGO, 524, 42, +245, 260);
 
         var warCryDivGO = bloodSurgePanel.CreateChild("WarCryDiv");
-        warCryDivGO.AddImage(HC("2D2D4A")); PT(warCryDivGO, 506, 2, 0, 640);
+        warCryDivGO.AddImage(HC("2D2D4A")); PT(warCryDivGO, 566, 2, 0, 640);
 
         var warCryInfoGO = Label(bloodSurgePanel, "WarCryInfoText",
             "War Cry  —  Unlocks at wave 5",
             30, new Color(1f, 0.7f, 0.3f), TextAnchor.MiddleLeft);
-        PT(warCryInfoGO, 514, 44, -140, 620);
+        PT(warCryInfoGO, 574, 44, -140, 620);
 
         var warCryBtnGO = Btn(bloodSurgePanel, "WarCryButton",
             "War Cry! (30 blood)", 30, HC("4A2800"));
-        PT(warCryBtnGO, 564, 42, -165, 400);
+        PT(warCryBtnGO, 624, 42, -165, 400);
 
         var autoWarCryBtnGO = Btn(bloodSurgePanel, "AutoWarCryButton", "Auto-Cry: OFF", 26, HC("2A1200"));
-        PT(autoWarCryBtnGO, 564, 42, +245, 260);
+        PT(autoWarCryBtnGO, 624, 42, +245, 260);
 
         var hexCurseDivGO = bloodSurgePanel.CreateChild("HexCurseDiv");
-        hexCurseDivGO.AddImage(HC("2D2D4A")); PT(hexCurseDivGO, 606, 2, 0, 640);
+        hexCurseDivGO.AddImage(HC("2D2D4A")); PT(hexCurseDivGO, 666, 2, 0, 640);
 
         var hexCurseInfoGO = Label(bloodSurgePanel, "HexCurseInfoText",
             "Hex Curse  —  Unlocks at wave 4",
             30, new Color(0.3f, 0.85f, 0.4f), TextAnchor.MiddleLeft);
-        PT(hexCurseInfoGO, 614, 44, -140, 620);
+        PT(hexCurseInfoGO, 674, 44, -140, 620);
 
         var hexCurseBtnGO = Btn(bloodSurgePanel, "HexCurseButton",
             "Hex! (20 blood)", 30, HC("003A10"));
-        PT(hexCurseBtnGO, 664, 42, -165, 400);
+        PT(hexCurseBtnGO, 724, 42, -165, 400);
 
         var autoHexCurseBtnGO = Btn(bloodSurgePanel, "AutoHexCurseButton", "Auto-Hex: OFF", 26, HC("001A08"));
-        PT(autoHexCurseBtnGO, 664, 42, +245, 260);
+        PT(autoHexCurseBtnGO, 724, 42, +245, 260);
 
         var bloodShieldDivGO = bloodSurgePanel.CreateChild("BloodShieldDiv");
-        bloodShieldDivGO.AddImage(HC("2D2D4A")); PT(bloodShieldDivGO, 706, 2, 0, 640);
+        bloodShieldDivGO.AddImage(HC("2D2D4A")); PT(bloodShieldDivGO, 766, 2, 0, 640);
 
         var bloodShieldInfoGO = Label(bloodSurgePanel, "BloodShieldInfoText",
             "Blood Shield  —  Unlocks at 150 total blood",
             30, new Color(0.4f, 0.8f, 1f), TextAnchor.MiddleLeft);
-        PT(bloodShieldInfoGO, 714, 44, -140, 620);
+        PT(bloodShieldInfoGO, 774, 44, -140, 620);
 
         var bloodShieldBtnGO = Btn(bloodSurgePanel, "BloodShieldButton",
             "Shield! (30 blood)", 30, HC("003A5A"));
-        PT(bloodShieldBtnGO, 764, 42, -165, 400);
+        PT(bloodShieldBtnGO, 824, 42, -165, 400);
 
         var autoBloodShieldBtnGO = Btn(bloodSurgePanel, "AutoBloodShieldButton", "Auto-Shield: OFF", 26, HC("001020"));
-        PT(autoBloodShieldBtnGO, 764, 42, +245, 260);
+        PT(autoBloodShieldBtnGO, 824, 42, +245, 260);
 
         var soldierSacDivGO = bloodSurgePanel.CreateChild("SoldierSacDiv");
-        soldierSacDivGO.AddImage(HC("2D2D4A")); PT(soldierSacDivGO, 806, 2, 0, 640);
+        soldierSacDivGO.AddImage(HC("2D2D4A")); PT(soldierSacDivGO, 866, 2, 0, 640);
 
         var soldierSacInfoGO = Label(bloodSurgePanel, "SoldierSacInfoText",
             "Soldier Sacrifice  —  Unlocks at wave 3  (2+ soldiers)",
             30, new Color(0.9f, 0.5f, 0.5f), TextAnchor.MiddleLeft);
-        PT(soldierSacInfoGO, 814, 44, -140, 620);
+        PT(soldierSacInfoGO, 874, 44, -140, 620);
 
         var soldierSacBtnGO = Btn(bloodSurgePanel, "SoldierSacButton",
             "Sacrifice! (3× HP burst)", 30, HC("4A0A0A"));
-        PT(soldierSacBtnGO, 864, 42, 0, 680);
+        PT(soldierSacBtnGO, 924, 42, 0, 680);
 
         bloodSurgePanel.SetActive(false);
 
@@ -1361,8 +1365,10 @@ public static class SceneBuilder
         uim.surgeCostText           = upgradeSurgeBtnGO.GetComponentInChildren<Text>();
         uim.autoSurgeButton         = autoSurgeBtnGO.GetComponent<Button>();
         uim.autoSurgeButtonText     = autoSurgeBtnGO.GetComponentInChildren<Text>();
-        uim.bloodStormInfoText      = bloodStormInfoGO.GetComponent<Text>();
-        uim.bloodStormButton        = bloodStormBtnGO.GetComponent<Button>();
+        uim.bloodStormInfoText          = bloodStormInfoGO.GetComponent<Text>();
+        uim.bloodStormButton            = bloodStormBtnGO.GetComponent<Button>();
+        uim.upgradeBloodStormButton     = upgradeBloodStormBtnGO.GetComponent<Button>();
+        uim.stormCostText               = upgradeBloodStormBtnGO.GetComponentInChildren<Text>();
         uim.autoStormButton         = autoStormBtnGO.GetComponent<Button>();
         uim.autoStormButtonText     = autoStormBtnGO.GetComponentInChildren<Text>();
         uim.bloodOathInfoText       = bloodOathInfoGO.GetComponent<Text>();
@@ -1508,7 +1514,8 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(buyPaladinGO.GetComponent<Button>().onClick,            clk.OnBuyPaladin);
         UnityEventTools.AddPersistentListener(healBtnGO.GetComponent<Button>().onClick,               clk.OnHealSelf);
         UnityEventTools.AddPersistentListener(surgeBtnGO.GetComponent<Button>().onClick,              clk.OnUseSurge);
-        UnityEventTools.AddPersistentListener(bloodStormBtnGO.GetComponent<Button>().onClick,         clk.OnUseBloodStorm);
+        UnityEventTools.AddPersistentListener(bloodStormBtnGO.GetComponent<Button>().onClick,             clk.OnUseBloodStorm);
+        UnityEventTools.AddPersistentListener(upgradeBloodStormBtnGO.GetComponent<Button>().onClick,     clk.OnUpgradeBloodStorm);
         UnityEventTools.AddPersistentListener(autoStormBtnGO.GetComponent<Button>().onClick,          clk.OnToggleAutoStorm);
         UnityEventTools.AddPersistentListener(bloodOathBtnGO.GetComponent<Button>().onClick,          clk.OnUseBloodOath);
         UnityEventTools.AddPersistentListener(autoBloodOathBtnGO.GetComponent<Button>().onClick,     clk.OnToggleAutoBloodOath);

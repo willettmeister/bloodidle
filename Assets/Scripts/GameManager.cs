@@ -334,6 +334,11 @@ public class GameManager : MonoBehaviour
     public const float  BloodStormDmgPerWave = 10f;
     public const float  BloodStormCooldown   = 30f;
     public const int    BloodStormUnlockWave = 8;
+    public const double BloodStormUpgradeBaseCost = 80.0;
+    public const float  BloodStormCooldownReduction = 5f;
+    public int    BloodStormUpgradeLevel { get; private set; }
+    public double BloodStormUpgradeCost  => Math.Floor(BloodStormUpgradeBaseCost * Math.Pow(2, BloodStormUpgradeLevel));
+    public float  BloodStormCooldownEffective => BloodStormCooldown - BloodStormUpgradeLevel * BloodStormCooldownReduction;
     float _bloodStormTimer;
     public bool  BloodStormReady       => _bloodStormTimer <= 0f;
     public float BloodStormCooldownLeft => _bloodStormTimer;
@@ -708,6 +713,7 @@ public class GameManager : MonoBehaviour
     public void SetSSBloodTapLevelForTest(int l)             => SSBloodTapLevel = l;
     public void TickCombatForTest(float dt)                  => RunCombat(dt);
     public void SetGameSpeedForTest(float s)                 => GameSpeedMult = s;
+    public void SetBloodStormUpgradeLevelForTest(int l)      => BloodStormUpgradeLevel = l;
     public void SetSurgeActiveForTest(bool active)           { SurgeActive = active; SurgeTimeRemaining = active ? 999f : 0f; }
     public void SetSSDoubleChestLevelForTest(int l)          => SSDoubleChestLevel = l;
     public void SetPIronWallLevelForTest(int l)              => PIronWallLevel = l;
@@ -1453,7 +1459,7 @@ public class GameManager : MonoBehaviour
         Blood -= BloodStormCost;
         float dmg = BloodStormBaseDmg + (Wave - 1) * BloodStormDmgPerWave;
         EnemyHP = Mathf.Max(float.Epsilon, EnemyHP - dmg);
-        _bloodStormTimer = BloodStormCooldown;
+        _bloodStormTimer = BloodStormCooldownEffective;
         _dailySpellCount++;
         CheckQuestProgress(QuestTrackType.Spells);
         OnDamageDealt?.Invoke(dmg, true);
@@ -1894,6 +1900,15 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool UpgradeBloodStorm()
+    {
+        if (!BloodStormUnlocked || BloodStormUpgradeLevel >= MaxSpellUpgradeLevel || Blood < BloodStormUpgradeCost) return false;
+        Blood -= BloodStormUpgradeCost;
+        BloodStormUpgradeLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public bool BuySSBloodTap()
     {
         if (SoulShards < SSUpgradeCost || SSBloodTapLevel >= SSMaxLevel) return false;
@@ -2042,7 +2057,7 @@ public class GameManager : MonoBehaviour
         SoulShards = 0; SoulShardShopUnlocked = false;
         SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0;
         BloodBankDeposit = 0; BloodBankAccrued = 0; WaveStreak = 0;
-        SurgeUpgradeLevel = 0; HealUpgradeLevel = 0;
+        SurgeUpgradeLevel = 0; HealUpgradeLevel = 0; BloodStormUpgradeLevel = 0;
         TotalEnemiesKilled = 0; TimePlayed = 0; Achievements = AchievementFlags.None;
         AutoBuySoldiers = false; AutoSurge = false; AutoHeal = false; AutoStorm = false;
         AutoDesecrate = false; AutoBuyRituals = false; AutoBankDeposit = false;
@@ -2183,8 +2198,9 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("SSRollbackLevel",     SSRollbackLevel);
         PlayerPrefs.SetInt   ("SSBloodTapLevel",     SSBloodTapLevel);
         PlayerPrefs.SetInt   ("SSShardHungerLevel",  SSShardHungerLevel);
-        PlayerPrefs.SetInt   ("SurgeUpgradeLevel",   SurgeUpgradeLevel);
-        PlayerPrefs.SetInt   ("HealUpgradeLevel",    HealUpgradeLevel);
+        PlayerPrefs.SetInt   ("SurgeUpgradeLevel",        SurgeUpgradeLevel);
+        PlayerPrefs.SetInt   ("HealUpgradeLevel",         HealUpgradeLevel);
+        PlayerPrefs.SetInt   ("BloodStormUpgradeLevel",   BloodStormUpgradeLevel);
         PlayerPrefs.SetInt   ("SoundEnabled",        SoundEnabled        ? 1 : 0);
         PlayerPrefs.SetInt   ("NotificationsEnabled",NotificationsEnabled ? 1 : 0);
         PlayerPrefs.SetString("BloodBankDeposit",    BloodBankDeposit.ToString("R", ic));
@@ -2282,9 +2298,10 @@ public class GameManager : MonoBehaviour
         SSRollbackLevel     = PlayerPrefs.GetInt   ("SSRollbackLevel",     0);
         SSBloodTapLevel     = PlayerPrefs.GetInt   ("SSBloodTapLevel",     0);
         SSShardHungerLevel  = PlayerPrefs.GetInt   ("SSShardHungerLevel",  0);
-        SurgeUpgradeLevel   = PlayerPrefs.GetInt   ("SurgeUpgradeLevel",   0);
-        HealUpgradeLevel    = PlayerPrefs.GetInt   ("HealUpgradeLevel",    0);
-        SoundEnabled        = PlayerPrefs.GetInt   ("SoundEnabled",        1) == 1;
+        SurgeUpgradeLevel        = PlayerPrefs.GetInt   ("SurgeUpgradeLevel",        0);
+        HealUpgradeLevel         = PlayerPrefs.GetInt   ("HealUpgradeLevel",         0);
+        BloodStormUpgradeLevel   = PlayerPrefs.GetInt   ("BloodStormUpgradeLevel",   0);
+        SoundEnabled             = PlayerPrefs.GetInt   ("SoundEnabled",             1) == 1;
         NotificationsEnabled = PlayerPrefs.GetInt  ("NotificationsEnabled",1) == 1;
         BloodBankDeposit    = double.Parse(PlayerPrefs.GetString("BloodBankDeposit", "0"), ic);
         BloodBankAccrued    = double.Parse(PlayerPrefs.GetString("BloodBankAccrued", "0"), ic);

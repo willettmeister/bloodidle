@@ -62,6 +62,8 @@ public class UIManager : MonoBehaviour
     [Header("Blood Storm")]
     public Text bloodStormInfoText;
     public Button bloodStormButton;
+    public Button upgradeBloodStormButton;
+    public Text   stormCostText;
 
     [Header("Blood Oath")]
     public Text   bloodOathInfoText;
@@ -579,6 +581,19 @@ public class UIManager : MonoBehaviour
                 bloodStormInfoText.text = stormInfo;
                 if (bloodStormButton != null)
                     bloodStormButton.interactable = gm.BloodStormReady && gm.Blood >= GameManager.BloodStormCost && hasSoldiers && gm.EnemyHP > 0;
+                if (upgradeBloodStormButton != null)
+                    upgradeBloodStormButton.interactable = gm.BloodStormUpgradeLevel < GameManager.MaxSpellUpgradeLevel
+                        && gm.Blood >= gm.BloodStormUpgradeCost;
+                if (stormCostText != null)
+                {
+                    if (gm.BloodStormUpgradeLevel < GameManager.MaxSpellUpgradeLevel)
+                    {
+                        float nextCD = GameManager.BloodStormCooldown - (gm.BloodStormUpgradeLevel + 1) * GameManager.BloodStormCooldownReduction;
+                        stormCostText.text = $"Upgrade Storm\nLv.{gm.BloodStormUpgradeLevel}→{gm.BloodStormUpgradeLevel + 1}  {gm.BloodStormCooldownEffective:F0}s→{nextCD:F0}s CD\n({GameManager.FormatNumber(gm.BloodStormUpgradeCost)} blood)";
+                    }
+                    else
+                        stormCostText.text = $"Storm Upgrade\n(Max Level)";
+                }
                 if (autoStormButtonText != null)
                     autoStormButtonText.text = gm.AutoStorm ? "Auto-Storm: ON" : "Auto-Storm: OFF";
                 if (autoStormButton != null) autoStormButton.gameObject.SetActive(true);
@@ -586,6 +601,7 @@ public class UIManager : MonoBehaviour
             else
             {
                 if (autoStormButton != null) autoStormButton.gameObject.SetActive(false);
+                if (upgradeBloodStormButton != null) upgradeBloodStormButton.gameObject.SetActive(false);
                 if (bloodStormInfoText != null)
                     bloodStormInfoText.text = $"Blood Storm  —  Unlocks at wave {GameManager.BloodStormUnlockWave}";
             }
