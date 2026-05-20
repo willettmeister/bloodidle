@@ -315,8 +315,9 @@ public class GameManager : MonoBehaviour
     public const int   AdrenalineMaxStack = 3;
     int   _adrenalineStacks;
     float _adrenalineTimer;
-    public int   AdrenalineStacks => _adrenalineStacks;
-    public float AdrenalineMult   => 1f + _adrenalineStacks * AdrenalineBonus;
+    public int   AdrenalineStacks   => _adrenalineStacks;
+    public float AdrenalineTimeLeft => _adrenalineTimer;
+    public float AdrenalineMult     => 1f + _adrenalineStacks * AdrenalineBonus;
 
     // --- Idle Fury ---
     public const float IdleFuryStepSecs   = 5f;
