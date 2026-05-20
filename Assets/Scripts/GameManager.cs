@@ -593,6 +593,10 @@ public class GameManager : MonoBehaviour
     public bool   AutoBuyRituals      { get; private set; }
     public bool   AutoBankDeposit     { get; private set; }
     public bool   AutoWarCry          { get; private set; }
+    public bool   AutoHexCurse        { get; private set; }
+    public bool   AutoBloodOath       { get; private set; }
+    public bool   AutoBloodShield     { get; private set; }
+    public const float AutoBloodShieldThreshold = 0.5f;
     public const double TruceCost        = 100.0;
     public const double WarCryCost         = 30.0;
     public const float  WarCryDuration     = 10f;
@@ -897,6 +901,25 @@ public class GameManager : MonoBehaviour
         if (AutoWarCry && WarCryUnlocked && !WarCryActive && Blood >= WarCryCost && SoldierCount > 0 && EnemyHP > 0)
         {
             UseWarCry();
+            changed = true;
+        }
+
+        if (AutoHexCurse && HexCurseUnlocked && !HexCurseActive && Blood >= HexCurseCost && EnemyHP > 0)
+        {
+            UseHexCurse();
+            changed = true;
+        }
+
+        if (AutoBloodOath && BloodOathCanCast)
+        {
+            UseBloodOath();
+            changed = true;
+        }
+
+        if (AutoBloodShield && BloodShieldUnlocked && BloodShieldHP <= 0 && SoldierCount > 0
+            && Blood >= BloodShieldCost && SoldierHP < FrontlineMaxHP * AutoBloodShieldThreshold)
+        {
+            UseBloodShield();
             changed = true;
         }
 
@@ -1365,6 +1388,9 @@ public class GameManager : MonoBehaviour
     public void ToggleAutoRituals()     { AutoBuyRituals  = !AutoBuyRituals;  OnStateChanged?.Invoke(); }
     public void ToggleAutoBankDeposit() { AutoBankDeposit = !AutoBankDeposit; OnStateChanged?.Invoke(); }
     public void ToggleAutoWarCry()      { AutoWarCry      = !AutoWarCry;      OnStateChanged?.Invoke(); }
+    public void ToggleAutoHexCurse()    { AutoHexCurse    = !AutoHexCurse;    OnStateChanged?.Invoke(); }
+    public void ToggleAutoBloodOath()   { AutoBloodOath   = !AutoBloodOath;   OnStateChanged?.Invoke(); }
+    public void ToggleAutoBloodShield() { AutoBloodShield = !AutoBloodShield; OnStateChanged?.Invoke(); }
 
     public bool UseTruce()
     {
@@ -2106,6 +2132,9 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("AutoBuyRituals",      AutoBuyRituals  ? 1 : 0);
         PlayerPrefs.SetInt   ("AutoBankDeposit",     AutoBankDeposit ? 1 : 0);
         PlayerPrefs.SetInt   ("AutoWarCry",          AutoWarCry      ? 1 : 0);
+        PlayerPrefs.SetInt   ("AutoHexCurse",        AutoHexCurse    ? 1 : 0);
+        PlayerPrefs.SetInt   ("AutoBloodOath",       AutoBloodOath   ? 1 : 0);
+        PlayerPrefs.SetInt   ("AutoBloodShield",     AutoBloodShield ? 1 : 0);
         PlayerPrefs.SetInt   ("BloodShieldUnlocked", BloodShieldUnlocked ? 1 : 0);
         PlayerPrefs.SetFloat ("BloodShieldHP",       BloodShieldHP);
         PlayerPrefs.SetInt   ("TotalEnemiesKilled",  TotalEnemiesKilled);
@@ -2202,6 +2231,9 @@ public class GameManager : MonoBehaviour
         AutoBuyRituals      = PlayerPrefs.GetInt   ("AutoBuyRituals",      0) == 1;
         AutoBankDeposit     = PlayerPrefs.GetInt   ("AutoBankDeposit",     0) == 1;
         AutoWarCry          = PlayerPrefs.GetInt   ("AutoWarCry",          0) == 1;
+        AutoHexCurse        = PlayerPrefs.GetInt   ("AutoHexCurse",        0) == 1;
+        AutoBloodOath       = PlayerPrefs.GetInt   ("AutoBloodOath",       0) == 1;
+        AutoBloodShield     = PlayerPrefs.GetInt   ("AutoBloodShield",     0) == 1;
         BloodShieldUnlocked = PlayerPrefs.GetInt   ("BloodShieldUnlocked", 0) == 1;
         BloodShieldHP       = PlayerPrefs.GetFloat ("BloodShieldHP",       0f);
         TotalEnemiesKilled  = PlayerPrefs.GetInt   ("TotalEnemiesKilled",  0);

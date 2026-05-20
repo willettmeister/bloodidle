@@ -66,6 +66,8 @@ public class UIManager : MonoBehaviour
     [Header("Blood Oath")]
     public Text   bloodOathInfoText;
     public Button bloodOathButton;
+    public Button autoBloodOathButton;
+    public Text   autoBloodOathButtonText;
 
     [Header("War Cry")]
     public Text   warCryInfoText;
@@ -76,10 +78,14 @@ public class UIManager : MonoBehaviour
     [Header("Hex Curse")]
     public Text   hexCurseInfoText;
     public Button hexCurseButton;
+    public Button autoHexCurseButton;
+    public Text   autoHexCurseButtonText;
 
     [Header("Blood Shield")]
     public Text   bloodShieldInfoText;
     public Button bloodShieldButton;
+    public Button autoBloodShieldButton;
+    public Text   autoBloodShieldButtonText;
 
     [Header("Workers")]
     public GameObject workersPanel;
@@ -600,6 +606,12 @@ public class UIManager : MonoBehaviour
                 bloodOathInfoText.text = $"Blood Oath  —  Unlocks at wave {GameManager.BloodOathUnlockWave}";
                 if (bloodOathButton != null) bloodOathButton.interactable = false;
             }
+            if (autoBloodOathButton != null)
+            {
+                autoBloodOathButton.gameObject.SetActive(gm.BloodOathUnlocked);
+                if (gm.BloodOathUnlocked && autoBloodOathButtonText != null)
+                    autoBloodOathButtonText.text = gm.AutoBloodOath ? "Auto-Oath: ON" : "Auto-Oath: OFF";
+            }
         }
 
         if (warCryInfoText != null)
@@ -639,6 +651,12 @@ public class UIManager : MonoBehaviour
                 hexCurseInfoText.text = $"Hex Curse  —  Unlocks at wave {GameManager.HexCurseUnlockWave}";
                 if (hexCurseButton != null) hexCurseButton.interactable = false;
             }
+            if (autoHexCurseButton != null)
+            {
+                autoHexCurseButton.gameObject.SetActive(gm.HexCurseUnlocked);
+                if (gm.HexCurseUnlocked && autoHexCurseButtonText != null)
+                    autoHexCurseButtonText.text = gm.AutoHexCurse ? "Auto-Hex: ON" : "Auto-Hex: OFF";
+            }
         }
         if (bloodShieldInfoText != null)
         {
@@ -654,6 +672,14 @@ public class UIManager : MonoBehaviour
             {
                 bloodShieldInfoText.text = $"Blood Shield  —  Unlocks at {GameManager.FormatNumber(GameManager.BloodShieldUnlockThreshold)} total blood";
                 if (bloodShieldButton != null) bloodShieldButton.interactable = false;
+            }
+            if (autoBloodShieldButton != null)
+            {
+                autoBloodShieldButton.gameObject.SetActive(gm.BloodShieldUnlocked);
+                if (gm.BloodShieldUnlocked && autoBloodShieldButtonText != null)
+                    autoBloodShieldButtonText.text = gm.AutoBloodShield
+                        ? $"Auto-Shield: ON (<{GameManager.AutoBloodShieldThreshold * 100:F0}%)"
+                        : "Auto-Shield: OFF";
             }
         }
 

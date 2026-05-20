@@ -425,7 +425,10 @@ public static class SceneBuilder
 
         var bloodOathBtnGO = Btn(bloodSurgePanel, "BloodOathButton",
             "Oath! (200 blood)", 30, HC("3A006A"));
-        PT(bloodOathBtnGO, 464, 42, 0, 680);
+        PT(bloodOathBtnGO, 464, 42, -165, 400);
+
+        var autoBloodOathBtnGO = Btn(bloodSurgePanel, "AutoBloodOathButton", "Auto-Oath: OFF", 26, HC("1A0040"));
+        PT(autoBloodOathBtnGO, 464, 42, +245, 260);
 
         var warCryDivGO = bloodSurgePanel.CreateChild("WarCryDiv");
         warCryDivGO.AddImage(HC("2D2D4A")); PT(warCryDivGO, 506, 2, 0, 640);
@@ -452,7 +455,10 @@ public static class SceneBuilder
 
         var hexCurseBtnGO = Btn(bloodSurgePanel, "HexCurseButton",
             "Hex! (20 blood)", 30, HC("003A10"));
-        PT(hexCurseBtnGO, 664, 42, 0, 680);
+        PT(hexCurseBtnGO, 664, 42, -165, 400);
+
+        var autoHexCurseBtnGO = Btn(bloodSurgePanel, "AutoHexCurseButton", "Auto-Hex: OFF", 26, HC("001A08"));
+        PT(autoHexCurseBtnGO, 664, 42, +245, 260);
 
         var bloodShieldDivGO = bloodSurgePanel.CreateChild("BloodShieldDiv");
         bloodShieldDivGO.AddImage(HC("2D2D4A")); PT(bloodShieldDivGO, 706, 2, 0, 640);
@@ -464,7 +470,10 @@ public static class SceneBuilder
 
         var bloodShieldBtnGO = Btn(bloodSurgePanel, "BloodShieldButton",
             "Shield! (30 blood)", 30, HC("003A5A"));
-        PT(bloodShieldBtnGO, 764, 42, 0, 680);
+        PT(bloodShieldBtnGO, 764, 42, -165, 400);
+
+        var autoBloodShieldBtnGO = Btn(bloodSurgePanel, "AutoBloodShieldButton", "Auto-Shield: OFF", 26, HC("001020"));
+        PT(autoBloodShieldBtnGO, 764, 42, +245, 260);
 
         var soldierSacDivGO = bloodSurgePanel.CreateChild("SoldierSacDiv");
         soldierSacDivGO.AddImage(HC("2D2D4A")); PT(soldierSacDivGO, 806, 2, 0, 640);
@@ -1355,14 +1364,20 @@ public static class SceneBuilder
         uim.autoStormButtonText     = autoStormBtnGO.GetComponentInChildren<Text>();
         uim.bloodOathInfoText       = bloodOathInfoGO.GetComponent<Text>();
         uim.bloodOathButton         = bloodOathBtnGO.GetComponent<Button>();
+        uim.autoBloodOathButton     = autoBloodOathBtnGO.GetComponent<Button>();
+        uim.autoBloodOathButtonText = autoBloodOathBtnGO.GetComponentInChildren<Text>();
         uim.warCryInfoText          = warCryInfoGO.GetComponent<Text>();
         uim.warCryButton            = warCryBtnGO.GetComponent<Button>();
         uim.autoWarCryButton        = autoWarCryBtnGO.GetComponent<Button>();
         uim.autoWarCryButtonText    = autoWarCryBtnGO.GetComponentInChildren<Text>();
         uim.hexCurseInfoText        = hexCurseInfoGO.GetComponent<Text>();
         uim.hexCurseButton          = hexCurseBtnGO.GetComponent<Button>();
+        uim.autoHexCurseButton      = autoHexCurseBtnGO.GetComponent<Button>();
+        uim.autoHexCurseButtonText  = autoHexCurseBtnGO.GetComponentInChildren<Text>();
         uim.bloodShieldInfoText     = bloodShieldInfoGO.GetComponent<Text>();
         uim.bloodShieldButton       = bloodShieldBtnGO.GetComponent<Button>();
+        uim.autoBloodShieldButton     = autoBloodShieldBtnGO.GetComponent<Button>();
+        uim.autoBloodShieldButtonText = autoBloodShieldBtnGO.GetComponentInChildren<Text>();
         uim.upgradeHealSelfButton   = upgradeHealBtnGO.GetComponent<Button>();
         uim.healCostText            = upgradeHealBtnGO.GetComponentInChildren<Text>();
         uim.autoHealButton          = autoHealBtnGO.GetComponent<Button>();
@@ -1492,10 +1507,13 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(bloodStormBtnGO.GetComponent<Button>().onClick,         clk.OnUseBloodStorm);
         UnityEventTools.AddPersistentListener(autoStormBtnGO.GetComponent<Button>().onClick,          clk.OnToggleAutoStorm);
         UnityEventTools.AddPersistentListener(bloodOathBtnGO.GetComponent<Button>().onClick,          clk.OnUseBloodOath);
+        UnityEventTools.AddPersistentListener(autoBloodOathBtnGO.GetComponent<Button>().onClick,     clk.OnToggleAutoBloodOath);
         UnityEventTools.AddPersistentListener(warCryBtnGO.GetComponent<Button>().onClick,             clk.OnUseWarCry);
         UnityEventTools.AddPersistentListener(autoWarCryBtnGO.GetComponent<Button>().onClick,        clk.OnToggleAutoWarCry);
         UnityEventTools.AddPersistentListener(hexCurseBtnGO.GetComponent<Button>().onClick,           clk.OnUseHexCurse);
+        UnityEventTools.AddPersistentListener(autoHexCurseBtnGO.GetComponent<Button>().onClick,      clk.OnToggleAutoHexCurse);
         UnityEventTools.AddPersistentListener(bloodShieldBtnGO.GetComponent<Button>().onClick,        clk.OnUseBloodShield);
+        UnityEventTools.AddPersistentListener(autoBloodShieldBtnGO.GetComponent<Button>().onClick,   clk.OnToggleAutoBloodShield);
         UnityEventTools.AddPersistentListener(truceBtnGO.GetComponent<Button>().onClick,              clk.OnUseTruce);
         UnityEventTools.AddPersistentListener(soldierSacBtnGO.GetComponent<Button>().onClick,         clk.OnUseSoldierSacrifice);
         UnityEventTools.AddPersistentListener(bloodPactGO.GetComponent<Button>().onClick,             clk.OnUseBloodPact);
