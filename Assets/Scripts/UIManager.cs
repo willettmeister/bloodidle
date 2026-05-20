@@ -84,6 +84,8 @@ public class UIManager : MonoBehaviour
     public Button hexCurseButton;
     public Button autoHexCurseButton;
     public Text   autoHexCurseButtonText;
+    public Button upgradeHexCurseButton;
+    public Text   hexCurseUpgradeCostText;
 
     [Header("Blood Shield")]
     public Text   bloodShieldInfoText;
@@ -692,14 +694,28 @@ public class UIManager : MonoBehaviour
             {
                 hexCurseInfoText.text = gm.HexCurseActive
                     ? $"Hex Curse  —  −{GameManager.HexCurseAtkReduction * 100:F0}% enemy atk  {Mathf.CeilToInt(gm.HexCurseTimeLeft)}s"
-                    : $"Hex Curse  —  −{GameManager.HexCurseAtkReduction * 100:F0}% enemy atk for {GameManager.HexCurseDuration:F0}s  ({GameManager.FormatNumber(GameManager.HexCurseCost)} blood)";
+                    : $"Hex Curse  —  −{GameManager.HexCurseAtkReduction * 100:F0}% enemy atk for {gm.HexCurseDurationEffective:F0}s  ({GameManager.FormatNumber(GameManager.HexCurseCost)} blood)";
                 if (hexCurseButton != null)
                     hexCurseButton.interactable = !gm.HexCurseActive && gm.Blood >= GameManager.HexCurseCost && gm.EnemyHP > 0;
+                if (upgradeHexCurseButton != null)
+                    upgradeHexCurseButton.interactable = gm.HexCurseUpgradeLevel < GameManager.MaxSpellUpgradeLevel
+                        && gm.Blood >= gm.HexCurseUpgradeCost;
+                if (hexCurseUpgradeCostText != null)
+                {
+                    if (gm.HexCurseUpgradeLevel < GameManager.MaxSpellUpgradeLevel)
+                    {
+                        float nextDur = GameManager.HexCurseDuration + (gm.HexCurseUpgradeLevel + 1) * 5f;
+                        hexCurseUpgradeCostText.text = $"Upgrade Hex Curse\nLv.{gm.HexCurseUpgradeLevel}→{gm.HexCurseUpgradeLevel + 1}  {gm.HexCurseDurationEffective:F0}s→{nextDur:F0}s\n({GameManager.FormatNumber(gm.HexCurseUpgradeCost)} blood)";
+                    }
+                    else
+                        hexCurseUpgradeCostText.text = "Hex Curse MAX";
+                }
             }
             else
             {
                 hexCurseInfoText.text = $"Hex Curse  —  Unlocks at wave {GameManager.HexCurseUnlockWave}";
                 if (hexCurseButton != null) hexCurseButton.interactable = false;
+                if (upgradeHexCurseButton != null) upgradeHexCurseButton.gameObject.SetActive(false);
             }
             if (autoHexCurseButton != null)
             {
