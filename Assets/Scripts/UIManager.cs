@@ -313,6 +313,8 @@ public class UIManager : MonoBehaviour
         (AchievementFlags.SpellCaster,   "Spell Caster (50)",      300.0,  0),
         (AchievementFlags.GrandWizard,   "Grand Wizard (500)",    2000.0,  1),
         (AchievementFlags.StreakMaster,  "Streak Master (×10)",    500.0,  0),
+        (AchievementFlags.Prestige5,     "Veteran (Prestige 5)",    0.0,   1),
+        (AchievementFlags.Prestige10,    "Warlord (Prestige 10)",   0.0,   2),
     };
 
     void Start()

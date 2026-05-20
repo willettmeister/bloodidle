@@ -28,6 +28,8 @@ public enum AchievementFlags
     SpellCaster   = 1 << 18,  // cast 50 spells lifetime
     GrandWizard   = 1 << 19,  // cast 500 spells lifetime
     StreakMaster  = 1 << 20,  // reach a 10-wave kill streak
+    Prestige5     = 1 << 21,  // reach prestige 5
+    Prestige10    = 1 << 22,  // reach prestige 10
 }
 
 public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral }
@@ -690,6 +692,8 @@ public class GameManager : MonoBehaviour
         (AchievementFlags.SpellCaster,   300.0,  0),
         (AchievementFlags.GrandWizard,   2000.0, 1),
         (AchievementFlags.StreakMaster,  500.0,  0),
+        (AchievementFlags.Prestige5,     0.0,    1),
+        (AchievementFlags.Prestige10,    0.0,    2),
     };
 
 #if UNITY_INCLUDE_TESTS
@@ -2119,7 +2123,9 @@ public class GameManager : MonoBehaviour
         ChallengeTimeRemaining = 0f;
         _undyingUsedThisWave   = false;
         TryUnlock(AchievementFlags.FirstPrestige);
-        if (PrestigeCount >= 3) TryUnlock(AchievementFlags.Prestige3);
+        if (PrestigeCount >= 3)  TryUnlock(AchievementFlags.Prestige3);
+        if (PrestigeCount >= 5)  TryUnlock(AchievementFlags.Prestige5);
+        if (PrestigeCount >= 10) TryUnlock(AchievementFlags.Prestige10);
         if (PrestigeMilestonesReached > milestonesBefore)
             OnMilestoneChest?.Invoke($"⭐ Prestige Milestone! +{PrestigeMilestoneDmgBonus * 100:F0}% attack!");
         Blood               = 0;
