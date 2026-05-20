@@ -116,6 +116,8 @@ public class UIManager : MonoBehaviour
     public Text bloodRitualInfoText;
     public Button buyBloodRitualButton;
     public Text bloodRitualCostText;
+    public Button autoRitualButton;
+    public Text   autoRitualButtonText;
 
     [Header("Prestige")]
     public GameObject prestigePanel;
@@ -696,8 +698,8 @@ public class UIManager : MonoBehaviour
         }
         if (shrineInfoText != null)
         {
-            double shrineIncome = gm.ShrineCount * GameManager.ShrineBloodPerSec;
-            shrineInfoText.text = $"Blood Shrine  {gm.ShrineCount}/{GameManager.ShrineMaxCount}  (+{shrineIncome:F1}/s blood)";
+            double shrineIncome = gm.ShrineCount * GameManager.ShrineBloodPerSec * gm.AchievementBloodIncomeMult * gm.AdBoostMult;
+            shrineInfoText.text = $"Blood Shrine  {gm.ShrineCount}/{GameManager.ShrineMaxCount}  (+{GameManager.FormatNumber(shrineIncome)}/s blood)";
         }
         if (buyShrineButton != null)
         {
@@ -784,6 +786,12 @@ public class UIManager : MonoBehaviour
                 buyBloodRitualButton.interactable = gm.Wood >= gm.BloodRitualCost;
             if (bloodRitualCostText != null)
                 bloodRitualCostText.text = $"Perform\n({GameManager.FormatNumber(gm.BloodRitualCost)} wood)";
+            if (autoRitualButton != null)
+            {
+                autoRitualButton.interactable = true;
+                if (autoRitualButtonText != null)
+                    autoRitualButtonText.text = gm.AutoBuyRituals ? "Auto-Ritual: ON" : "Auto-Ritual: OFF";
+            }
         }
 
         // Prestige

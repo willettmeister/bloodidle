@@ -588,6 +588,7 @@ public class GameManager : MonoBehaviour
     public const float AutoHealThreshold = 0.5f;
     public bool   AutoStorm           { get; private set; }
     public bool   AutoDesecrate       { get; private set; }
+    public bool   AutoBuyRituals      { get; private set; }
     public const double TruceCost        = 100.0;
     public const double WarCryCost         = 30.0;
     public const float  WarCryDuration     = 10f;
@@ -872,6 +873,12 @@ public class GameManager : MonoBehaviour
         if (AutoDesecrate && DesecrateCanCast)
         {
             UseDesecrate();
+            changed = true;
+        }
+
+        if (AutoBuyRituals && WorkersUnlocked && Wood >= BloodRitualCost)
+        {
+            BuyBloodRitual();
             changed = true;
         }
 
@@ -1337,6 +1344,7 @@ public class GameManager : MonoBehaviour
     public void ToggleAutoHeal()        { AutoHeal        = !AutoHeal;        OnStateChanged?.Invoke(); }
     public void ToggleAutoStorm()       { AutoStorm       = !AutoStorm;       OnStateChanged?.Invoke(); }
     public void ToggleAutoDesecrate()   { AutoDesecrate   = !AutoDesecrate;   OnStateChanged?.Invoke(); }
+    public void ToggleAutoRituals()     { AutoBuyRituals  = !AutoBuyRituals;  OnStateChanged?.Invoke(); }
 
     public bool UseTruce()
     {
@@ -2075,6 +2083,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("AutoHeal",            AutoHeal        ? 1 : 0);
         PlayerPrefs.SetInt   ("AutoStorm",           AutoStorm       ? 1 : 0);
         PlayerPrefs.SetInt   ("AutoDesecrate",       AutoDesecrate   ? 1 : 0);
+        PlayerPrefs.SetInt   ("AutoBuyRituals",      AutoBuyRituals  ? 1 : 0);
         PlayerPrefs.SetInt   ("BloodShieldUnlocked", BloodShieldUnlocked ? 1 : 0);
         PlayerPrefs.SetFloat ("BloodShieldHP",       BloodShieldHP);
         PlayerPrefs.SetInt   ("TotalEnemiesKilled",  TotalEnemiesKilled);
@@ -2168,6 +2177,7 @@ public class GameManager : MonoBehaviour
         AutoHeal            = PlayerPrefs.GetInt   ("AutoHeal",            0) == 1;
         AutoStorm           = PlayerPrefs.GetInt   ("AutoStorm",           0) == 1;
         AutoDesecrate       = PlayerPrefs.GetInt   ("AutoDesecrate",       0) == 1;
+        AutoBuyRituals      = PlayerPrefs.GetInt   ("AutoBuyRituals",      0) == 1;
         BloodShieldUnlocked = PlayerPrefs.GetInt   ("BloodShieldUnlocked", 0) == 1;
         BloodShieldHP       = PlayerPrefs.GetFloat ("BloodShieldHP",       0f);
         TotalEnemiesKilled  = PlayerPrefs.GetInt   ("TotalEnemiesKilled",  0);

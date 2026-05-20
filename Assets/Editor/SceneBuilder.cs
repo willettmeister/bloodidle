@@ -609,7 +609,10 @@ public static class SceneBuilder
 
         var buyBloodRitualGO = Btn(bloodRitualPanel, "BuyBloodRitualButton",
             "Perform\n(30 wood)", 34, Purple);
-        PT(buyBloodRitualGO, 10, 110, +232, 370);
+        PT(buyBloodRitualGO, 10, 110, +130, 250);
+
+        var autoRitualBtnGO = Btn(bloodRitualPanel, "AutoBuyRitualButton", "Auto-Ritual: OFF", 26, HC("2A0A4A"));
+        PT(autoRitualBtnGO, 10, 110, +365, 190);
 
         var ritualDivGO = bloodRitualPanel.CreateChild("RitualDiv");
         ritualDivGO.AddImage(HC("2D2D4A")); PT(ritualDivGO, 128, 2, 0, 640);
@@ -1327,6 +1330,8 @@ public static class SceneBuilder
         uim.bloodRitualInfoText     = bloodRitualInfoGO.GetComponent<Text>();
         uim.buyBloodRitualButton    = buyBloodRitualGO.GetComponent<Button>();
         uim.bloodRitualCostText     = buyBloodRitualGO.GetComponentInChildren<Text>();
+        uim.autoRitualButton        = autoRitualBtnGO.GetComponent<Button>();
+        uim.autoRitualButtonText    = autoRitualBtnGO.GetComponentInChildren<Text>();
         uim.prestigePanel           = prestigePanel;
         uim.prestigeInfoText        = prestigeInfoGO.GetComponent<Text>();
         uim.prestigeButton          = prestigeBtnGO.GetComponent<Button>();
@@ -1488,6 +1493,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(clickPowerGO.GetComponent<Button>().onClick,           clk.OnBuyClickPower);
         UnityEventTools.AddPersistentListener(buyBloodWellGO.GetComponent<Button>().onClick,         clk.OnBuyBloodWell);
         UnityEventTools.AddPersistentListener(buyBloodRitualGO.GetComponent<Button>().onClick,        clk.OnBuyBloodRitual);
+        UnityEventTools.AddPersistentListener(autoRitualBtnGO.GetComponent<Button>().onClick,        clk.OnToggleAutoRitual);
         UnityEventTools.AddPersistentListener(upgradeBarracksGO.GetComponent<Button>().onClick,       clk.OnUpgradeBarracks);
         UnityEventTools.AddPersistentListener(upgradeFortGO.GetComponent<Button>().onClick,           clk.OnUpgradeFortification);
         UnityEventTools.AddPersistentListener(upgradeWeaponGO.GetComponent<Button>().onClick,         clk.OnUpgradeWeapon);
