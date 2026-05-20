@@ -329,7 +329,10 @@ public static class SceneBuilder
         // FARM BLOOD  (battleContent y 815–1025)
         // ════════════════════════════════════════════════════════════════════
         var farmBtnGO = Btn(content, "FarmBloodButton", "FARM BLOOD", 90, Crimson);
-        PT(farmBtnGO, 815, 210, 0, 680);
+        PT(farmBtnGO, 815, 175, 0, 680);
+
+        var farmBloodInfoGO = Label(content, "FarmBloodInfoText", "+1/tap", 28, TextSec, TextAnchor.MiddleCenter);
+        PT(farmBloodInfoGO, 993, 30, 0, 680);
 
         // ════════════════════════════════════════════════════════════════════
         // ACTION ROW  (battleContent y 1035–1165) — Tank | Berserker | Paladin | Heal Self
@@ -1256,6 +1259,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         uim.bloodText               = bloodTextGO.GetComponent<Text>();
         uim.woodText                = woodTextGO.GetComponent<Text>();
+        uim.farmBloodInfoText       = farmBloodInfoGO.GetComponent<Text>();
         uim.waveText                = waveTextGO.GetComponent<Text>();
         uim.waveSubText             = waveSubGO.GetComponent<Text>();
         uim.enemyImage              = enemyImg;

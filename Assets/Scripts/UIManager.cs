@@ -14,6 +14,7 @@ public class UIManager : MonoBehaviour
     [Header("Resources")]
     public Text bloodText;
     public Text woodText;
+    public Text farmBloodInfoText;
 
     [Header("Enemy")]
     public Text waveText;
@@ -338,6 +339,12 @@ public class UIManager : MonoBehaviour
         }
 #endif
         _lastBloodDisplay = gm.Blood;
+
+        if (farmBloodInfoText != null)
+        {
+            string echoHint = gm.NextTapIsEcho ? "  ★ NEXT: 2×!" : "";
+            farmBloodInfoText.text = $"+{GameManager.FormatNumber(gm.EffectiveBloodPerClick)}/tap{echoHint}";
+        }
 
         if (gm.SoulShardShopUnlocked)
             woodText.text = $"Wood: {GameManager.FormatNumber(gm.Wood)}  ⬡{GameManager.FormatNumber(gm.SoulShards)}";
