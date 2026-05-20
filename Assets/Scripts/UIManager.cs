@@ -1408,13 +1408,15 @@ public class UIManager : MonoBehaviour
     {
         var gm = GameManager.Instance;
         if (offlinePanel == null || gm == null) return;
-        bool hasWood  = gm.OfflineWoodEarned  > 0;
-        bool hasBlood = gm.OfflineBloodEarned > 0;
-        if (!hasWood && !hasBlood) return;
+        bool hasWood  = gm.OfflineWoodEarned    > 0;
+        bool hasBlood = gm.OfflineBloodEarned   > 0;
+        bool hasBank  = gm.OfflineBankInterest  > 0;
+        if (!hasWood && !hasBlood && !hasBank) return;
         offlinePanel.SetActive(true);
         var sb = new StringBuilder("While you were away:\n");
         if (hasBlood) sb.AppendLine($"+{GameManager.FormatNumber(gm.OfflineBloodEarned)} blood");
-        if (hasWood)  sb.Append($"+{GameManager.FormatNumber(gm.OfflineWoodEarned)} wood");
+        if (hasWood)  sb.AppendLine($"+{GameManager.FormatNumber(gm.OfflineWoodEarned)} wood");
+        if (hasBank)  sb.Append($"+{GameManager.FormatNumber(gm.OfflineBankInterest)} bank interest");
         offlineText.text = sb.ToString();
     }
 

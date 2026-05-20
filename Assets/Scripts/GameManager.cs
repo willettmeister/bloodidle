@@ -567,8 +567,9 @@ public class GameManager : MonoBehaviour
     public event Action<AchievementFlags> OnAchievementUnlocked;
 
     // --- Offline earnings ---
-    public double OfflineWoodEarned  { get; private set; }
-    public double OfflineBloodEarned { get; private set; }
+    public double OfflineWoodEarned    { get; private set; }
+    public double OfflineBloodEarned   { get; private set; }
+    public double OfflineBankInterest  { get; private set; }
 
     // --- Workers unlock ---
     public bool WorkersUnlocked { get; private set; }
@@ -707,7 +708,7 @@ public class GameManager : MonoBehaviour
     public void SetSurgeActiveForTest(bool active)           { SurgeActive = active; SurgeTimeRemaining = active ? 999f : 0f; }
     public void SetSSDoubleChestLevelForTest(int l)          => SSDoubleChestLevel = l;
     public void SetPIronWallLevelForTest(int l)              => PIronWallLevel = l;
-    public void ClearOfflineEarningsForTest()                            { OfflineWoodEarned = 0; OfflineBloodEarned = 0; }
+    public void ClearOfflineEarningsForTest()                            { OfflineWoodEarned = 0; OfflineBloodEarned = 0; OfflineBankInterest = 0; }
     public void SetOfflineEarningsForTest(double blood, double wood)     { OfflineBloodEarned = blood; OfflineWoodEarned = wood; }
     public void SetTalentsForTest(TalentFlags t)                         => Talents = t;
     public void SetCorruptionLevelForTest(int l)                         => CorruptionLevel = l;
@@ -2036,7 +2037,7 @@ public class GameManager : MonoBehaviour
         AutoDesecrate = false; AutoBuyRituals = false; AutoBankDeposit = false;
         AutoWarCry = false; AutoHexCurse = false; AutoBloodOath = false; AutoBloodShield = false;
         SoundEnabled = true; NotificationsEnabled = true;
-        DailyBonusAvailable = false; OfflineWoodEarned = 0; OfflineBloodEarned = 0;
+        DailyBonusAvailable = false; OfflineWoodEarned = 0; OfflineBloodEarned = 0; OfflineBankInterest = 0;
         Talents = TalentFlags.None; PendingPrestige = false; PendingTalentChoices = new TalentFlags[0];
         CorruptionLevel = 0; DailyChallengeActive = false; DailyChallengeAvailable = false; ChallengeTimeRemaining = 0f;
         WavePreviewActive = false; _flawlessTimer = 0f; _undyingUsedThisWave = false;
@@ -2345,7 +2346,10 @@ public class GameManager : MonoBehaviour
                     Wood               -= woodForWells;
                 }
                 if (BloodBankDeposit > 0)
-                    BloodBankAccrued += BloodBankDeposit * (BankInterestRatePerHour / 3600.0) * secs;
+                {
+                    OfflineBankInterest = BloodBankDeposit * (BankInterestRatePerHour / 3600.0) * secs;
+                    BloodBankAccrued += OfflineBankInterest;
+                }
                 Blood            += OfflineBloodEarned;
                 TotalBloodEarned += OfflineBloodEarned;
             }
@@ -2367,8 +2371,9 @@ public class GameManager : MonoBehaviour
 
     public void ClearOfflineEarnings()
     {
-        OfflineWoodEarned  = 0;
-        OfflineBloodEarned = 0;
+        OfflineWoodEarned   = 0;
+        OfflineBloodEarned  = 0;
+        OfflineBankInterest = 0;
     }
 
     public static string FormatNumber(double value)
