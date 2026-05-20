@@ -50,7 +50,7 @@ public class GameManager : MonoBehaviour
     public double Blood { get; private set; }
     public double TotalBloodEarned { get; private set; }
     public const double BloodPerClick = 1.0;
-    public double EffectiveBloodPerClick => (BloodPerClick + PClickBonusLevel * 0.5 + ClickPowerLevel) * PrestigeMultiplier;
+    public double EffectiveBloodPerClick => (BloodPerClick + PClickBonusLevel * 0.5 + ClickPowerLevel + AchievementClickBonus) * PrestigeMultiplier;
     public const double ClickPowerBaseCost  = 15.0;
     public const double ClickPowerCostMult  = 2.0;
     public const int    ClickPowerMaxLevel  = 5;
@@ -131,9 +131,9 @@ public class GameManager : MonoBehaviour
             + EquipArmorBonus
             + (HasTalent(TalentFlags.IronSkin) ? TalentIronSkinHP : 0f)
             - CorruptionLevel * CorruptionHPPenalty);
-    public float TotalAttack         => (TankCount     * (SoldierAttack   + EquipAttackBonus + VeteranAttackBonus)
-                                       + BerserkerCount * (BerserkerAttack + EquipAttackBonus + VeteranAttackBonus)
-                                       + PaladinCount   * (PaladinAttack   + EquipAttackBonus + VeteranAttackBonus))
+    public float TotalAttack         => (TankCount     * (SoldierAttack   + EquipAttackBonus + VeteranAttackBonus + AchievementAttackBonus)
+                                       + BerserkerCount * (BerserkerAttack + EquipAttackBonus + VeteranAttackBonus + AchievementAttackBonus)
+                                       + PaladinCount   * (PaladinAttack   + EquipAttackBonus + VeteranAttackBonus + AchievementAttackBonus))
                                        * (1f + PrestigeMilestoneDmgBonus) * MoraleBonusMult;
     public float EffectiveAttack     => TotalAttack
                                        * (SurgeActive        ? SurgeMultiplier   : 1f)
@@ -210,10 +210,10 @@ public class GameManager : MonoBehaviour
     // --- Blood Ritual ---
     public int    BloodRitualCount { get; private set; }
     public double BloodRitualCost  { get; private set; } = BloodRitualBaseCost;
-    public double BloodPerSec      => BloodRitualCount * (BloodRitualBloodPerSec + PRitualEffLevel * 0.5) * PrestigeMultiplier
+    public double BloodPerSec      => (BloodRitualCount * (BloodRitualBloodPerSec + PRitualEffLevel * 0.5) * PrestigeMultiplier
                                     * (HasTalent(TalentFlags.Glutton) ? TalentGluttonMult : 1f)
                                     + BloodTithePerSec + BloodTapPerSec + KillIncomePerSec
-                                    + ShrineCount * ShrineBloodPerSec;
+                                    + ShrineCount * ShrineBloodPerSec) * AchievementBloodIncomeMult;
     public const double ShrineWoodCost   = 20.0;
     public const double ShrineBloodPerSec = 0.5;
     public const int    ShrineMaxCount   = 3;
@@ -470,6 +470,28 @@ public class GameManager : MonoBehaviour
 
     // --- Achievements ---
     public AchievementFlags Achievements { get; private set; }
+    bool HasAchievement(AchievementFlags f) => (Achievements & f) != 0;
+
+    public double AchievementBloodIncomeMult =>
+        1.0
+        + (HasAchievement(AchievementFlags.Wave10)       ? 0.05 : 0)
+        + (HasAchievement(AchievementFlags.Wave25)       ? 0.05 : 0)
+        + (HasAchievement(AchievementFlags.Wave50)       ? 0.10 : 0)
+        + (HasAchievement(AchievementFlags.Wave100)      ? 0.15 : 0)
+        + (HasAchievement(AchievementFlags.Untouchable)  ? 0.05 : 0);
+
+    public double AchievementClickBonus =>
+        (HasAchievement(AchievementFlags.Blood1K)        ? 0.5  : 0)
+        + (HasAchievement(AchievementFlags.Blood10K)     ? 1.0  : 0)
+        + (HasAchievement(AchievementFlags.Blood100K)    ? 2.0  : 0)
+        + (HasAchievement(AchievementFlags.BloodMillion) ? 3.0  : 0);
+
+    public float AchievementAttackBonus =>
+        (HasAchievement(AchievementFlags.FirstSoldier)   ? 1f  : 0f)
+        + (HasAchievement(AchievementFlags.FullLegion)   ? 2f  : 0f)
+        + (HasAchievement(AchievementFlags.BossSlayer)   ? 3f  : 0f)
+        + (HasAchievement(AchievementFlags.FirstPrestige)? 2f  : 0f)
+        + (HasAchievement(AchievementFlags.Prestige3)    ? 5f  : 0f);
     public event Action<AchievementFlags> OnAchievementUnlocked;
 
     // --- Offline earnings ---

@@ -950,6 +950,14 @@ public class UIManager : MonoBehaviour
         sb.AppendLine($"Time Played:       {h}h {m}m {s}s");
         sb.AppendLine($"Prestige Level:    {gm.PrestigeCount}  (milestones: {gm.PrestigeMilestonesReached}/4)");
         sb.AppendLine();
+        sb.AppendLine("── Achievement Bonuses ────────────");
+        if (gm.AchievementBloodIncomeMult > 1.0)
+            sb.AppendLine($"  Passive income:  ×{gm.AchievementBloodIncomeMult:F2}");
+        if (gm.AchievementClickBonus > 0)
+            sb.AppendLine($"  Click bonus:     +{gm.AchievementClickBonus:F1}/tap");
+        if (gm.AchievementAttackBonus > 0)
+            sb.AppendLine($"  Attack bonus:    +{gm.AchievementAttackBonus:F0}/soldier");
+        sb.AppendLine();
         sb.AppendLine("── Achievements ──────────────────");
         foreach (var (flag, title, _, _) in k_AchievDefs)
             sb.AppendLine($"  {((gm.Achievements & flag) != 0 ? "✓" : "○")}  {title}");
