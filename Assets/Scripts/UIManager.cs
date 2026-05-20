@@ -429,7 +429,12 @@ public class UIManager : MonoBehaviour
             }
             else if (gm.CurrentEnemyModifier != EnemyModifier.None)
             {
-                enemyModifierText.text  = gm.EnemyModifierDisplay;
+                string counter = "";
+                if (gm.CurrentEnemyModifier == EnemyModifier.Armored && gm.IsAllBerserker)
+                    counter = "  ⚡ Berserker bypasses armor";
+                else if (gm.CurrentEnemyModifier == EnemyModifier.Cursed && gm.PaladinCount > 0)
+                    counter = "  ✚ Paladin +25% vs cursed";
+                enemyModifierText.text  = gm.EnemyModifierDisplay + counter;
                 enemyModifierText.color = gm.CurrentEnemyModifier == EnemyModifier.Spectral
                     ? new Color(0.2f, 0.9f, 0.9f)
                     : new Color(1f, 0.65f, 0.1f);
