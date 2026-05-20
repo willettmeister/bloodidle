@@ -486,6 +486,10 @@ public class GameManager : MonoBehaviour
     public int[]  DailyQuestProgress { get; private set; } = new int[DailyQuestCount];
     public bool[] DailyQuestClaimed  { get; private set; } = new bool[DailyQuestCount];
     public bool   DailyQuestsReady   { get; private set; }
+    public int    DailyQuestStreak   { get; private set; }
+    public int    BestQuestStreak    { get; private set; }
+    public bool   AllQuestsClaimed   => DailyQuestsReady && DailyQuestClaimed[0] && DailyQuestClaimed[1] && DailyQuestClaimed[2];
+    public static int QuestStreakBonusShards(int streak) => Math.Min(5, 1 + streak / 5);
 
     int    _dailyKillCount;
     int    _dailyFarmCount;
@@ -1537,6 +1541,10 @@ public class GameManager : MonoBehaviour
     // --- Daily quest logic ---
     void GenerateDailyQuests(string today)
     {
+        // If the previous day's quests weren't all claimed, break the streak.
+        if (DailyQuestsReady && !AllQuestsClaimed)
+            DailyQuestStreak = 0;
+
         _questDate = today;
         int seed = DateTime.UtcNow.DayOfYear + DateTime.UtcNow.Year * 1000;
         var rng  = new System.Random(seed);
@@ -1586,6 +1594,12 @@ public class GameManager : MonoBehaviour
         DailyQuestClaimed[index] = true;
         AddBlood(def.BloodReward);
         if (def.ShardReward > 0) SoulShards += def.ShardReward;
+        if (AllQuestsClaimed)
+        {
+            DailyQuestStreak++;
+            if (DailyQuestStreak > BestQuestStreak) BestQuestStreak = DailyQuestStreak;
+            SoulShards += QuestStreakBonusShards(DailyQuestStreak);
+        }
         OnStateChanged?.Invoke();
         return true;
     }
@@ -2123,6 +2137,7 @@ public class GameManager : MonoBehaviour
         AutoWarCry = false; AutoHexCurse = false; AutoBloodOath = false; AutoBloodShield = false;
         SoundEnabled = true; NotificationsEnabled = true;
         DailyBonusAvailable = false; OfflineWoodEarned = 0; OfflineBloodEarned = 0; OfflineBankInterest = 0;
+        DailyQuestStreak = 0; BestQuestStreak = 0;
         Talents = TalentFlags.None; PendingPrestige = false; PendingTalentChoices = new TalentFlags[0];
         CorruptionLevel = 0; DailyChallengeActive = false; DailyChallengeAvailable = false; ChallengeTimeRemaining = 0f;
         WavePreviewActive = false; _flawlessTimer = 0f; _undyingUsedThisWave = false;
@@ -2289,6 +2304,8 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("AdsRemoved",           AdsRemoved       ? 1 : 0);
         PlayerPrefs.SetInt   ("StarterPackOwned",     StarterPackOwned  ? 1 : 0);
         PlayerPrefs.SetString("QuestDate",            _questDate);
+        PlayerPrefs.SetInt   ("DailyQuestStreak",     DailyQuestStreak);
+        PlayerPrefs.SetInt   ("BestQuestStreak",      BestQuestStreak);
         PlayerPrefs.SetInt   ("DailyKillCount",       _dailyKillCount);
         PlayerPrefs.SetInt   ("DailyFarmCount",       _dailyFarmCount);
         PlayerPrefs.SetInt   ("DailySpellCount",      _dailySpellCount);
@@ -2399,6 +2416,8 @@ public class GameManager : MonoBehaviour
 
         string questToday = DateTime.UtcNow.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         string savedQDate = PlayerPrefs.GetString("QuestDate", "");
+        DailyQuestStreak = PlayerPrefs.GetInt("DailyQuestStreak", 0);
+        BestQuestStreak  = PlayerPrefs.GetInt("BestQuestStreak",  0);
         if (savedQDate == questToday)
         {
             _questDate       = questToday;

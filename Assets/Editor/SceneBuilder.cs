@@ -1165,6 +1165,11 @@ public static class SceneBuilder
         var questClaim2GO = Btn(questsCard, "QuestClaimButton2", "Locked", 30, HC("2A2A4A"));
         PT(questClaim2GO, 312, 66, +330, 220);
 
+        var questStreakGO = Label(questsCard, "QuestStreakText",
+            "Streak: 0 days\nComplete all 3 today: +1 bonus ⬡",
+            28, new Color(1f, 0.85f, 0.3f), TextAnchor.MiddleCenter);
+        PT(questStreakGO, 398, 72, 0, 900);
+
         var questsCloseGO = Btn(questsCard, "QuestsCloseButton", "Close", 42, HC("252440"));
         PT(questsCloseGO, 686, 80, 0, 400);
 
@@ -1503,6 +1508,7 @@ public static class SceneBuilder
         uim.questClaimButtonText0   = questClaim0GO.GetComponentInChildren<Text>();
         uim.questClaimButtonText1   = questClaim1GO.GetComponentInChildren<Text>();
         uim.questClaimButtonText2   = questClaim2GO.GetComponentInChildren<Text>();
+        uim.questStreakText         = questStreakGO.GetComponent<Text>();
         uim.adBoostRow              = adBoostRowGO;
         uim.watchAdButton           = watchAdBtnGO.GetComponent<Button>();
         uim.adBoostButtonText       = watchAdBtnGO.GetComponentInChildren<Text>();

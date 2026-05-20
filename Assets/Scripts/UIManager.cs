@@ -264,6 +264,7 @@ public class UIManager : MonoBehaviour
     public Text       questInfoText0, questInfoText1, questInfoText2;
     public Button     questClaimButton0, questClaimButton1, questClaimButton2;
     public Text       questClaimButtonText0, questClaimButtonText1, questClaimButtonText2;
+    public Text       questStreakText;
 
     [Header("Ads & IAP")]
     public GameObject adBoostRow;
@@ -1305,6 +1306,18 @@ public class UIManager : MonoBehaviour
                     claimTexts[i].text = claimed ? "Claimed" : complete ? "Claim!" : "Locked";
             }
         }
+        if (questStreakText != null)
+        {
+            int streak = gm.DailyQuestStreak;
+            int bonus  = GameManager.QuestStreakBonusShards(streak + 1);
+            string streakLine = streak > 0
+                ? $"Streak: {streak} day{(streak == 1 ? "" : "s")}  (best: {gm.BestQuestStreak})"
+                : $"No active streak";
+            string bonusLine  = gm.AllQuestsClaimed
+                ? $"All quests done!"
+                : $"Complete all 3 today: +{bonus} bonus ⬡";
+            questStreakText.text = $"{streakLine}\n{bonusLine}";
+        }
     }
 
     // ── Settings Panel ────────────────────────────────────────────────────────
@@ -1385,6 +1398,7 @@ public class UIManager : MonoBehaviour
         sb.AppendLine($"Blood Bank:        {GameManager.FormatNumber(gm.BloodBankDeposit)} (+{GameManager.FormatNumber(gm.BloodBankAccrued)})");
         sb.AppendLine($"Best Wave:         {gm.BestWave}");
         sb.AppendLine($"Best Streak:       {gm.BestStreak}  (current: {gm.WaveStreak})");
+        sb.AppendLine($"Quest Streak:      {gm.DailyQuestStreak}  (best: {gm.BestQuestStreak})");
         sb.AppendLine($"Veteran Bonus:     +{gm.VeteranAttackBonus}/{GameManager.VeteranAttackCap} atk (from boss kills)");
         sb.AppendLine($"Soul Shards:       {GameManager.FormatNumber(gm.SoulShards)}");
         sb.AppendLine($"Time Played:       {h}h {m}m {s}s");
