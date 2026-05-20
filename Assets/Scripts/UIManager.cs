@@ -168,6 +168,7 @@ public class UIManager : MonoBehaviour
     public GameObject settingsPanel;
     public Text soundToggleText;
     public Text notifToggleText;
+    public Text speedToggleText;
 
     [Header("Blood Bank")]
     public GameObject bloodBankPanel;
@@ -1297,6 +1298,8 @@ public class UIManager : MonoBehaviour
             soundToggleText.text = gm.SoundEnabled ? "Sound: ON" : "Sound: OFF";
         if (notifToggleText != null)
             notifToggleText.text = gm.NotificationsEnabled ? "Notifications: ON" : "Notifications: OFF";
+        if (speedToggleText != null)
+            speedToggleText.text = gm.GameSpeedMult >= GameManager.GameSpeedFast ? "Speed: 2×" : "Speed: 1×";
     }
 
     void RefreshStats()

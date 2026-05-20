@@ -520,6 +520,8 @@ public class GameManager : MonoBehaviour
     // --- Settings ---
     public bool SoundEnabled         { get; private set; } = true;
     public bool NotificationsEnabled { get; private set; } = true;
+    public float GameSpeedMult       { get; private set; } = 1f;
+    public const float GameSpeedFast = 2f;
     bool _resetPending;
 
     // --- Prestige Milestones ---
@@ -705,6 +707,7 @@ public class GameManager : MonoBehaviour
     public void SetHealUpgradeLevelForTest(int l)            => HealUpgradeLevel = l;
     public void SetSSBloodTapLevelForTest(int l)             => SSBloodTapLevel = l;
     public void TickCombatForTest(float dt)                  => RunCombat(dt);
+    public void SetGameSpeedForTest(float s)                 => GameSpeedMult = s;
     public void SetSurgeActiveForTest(bool active)           { SurgeActive = active; SurgeTimeRemaining = active ? 999f : 0f; }
     public void SetSSDoubleChestLevelForTest(int l)          => SSDoubleChestLevel = l;
     public void SetPIronWallLevelForTest(int l)              => PIronWallLevel = l;
@@ -775,12 +778,12 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        float dt = Time.deltaTime;
+        float rawDt = Time.deltaTime;
         bool changed = false;
 
-        TimePlayed += dt;
+        TimePlayed += rawDt;
 
-        _dailyCheckTimer -= dt;
+        _dailyCheckTimer -= rawDt;
         if (_dailyCheckTimer <= 0f)
         {
             _dailyCheckTimer = DailyCheckInterval;
@@ -791,6 +794,8 @@ public class GameManager : MonoBehaviour
                 changed = true;
             }
         }
+
+        float dt = rawDt * GameSpeedMult;
 
         if (SurgeActive)
         {
@@ -1995,6 +2000,12 @@ public class GameManager : MonoBehaviour
         CorruptionLevel--;
         OnStateChanged?.Invoke();
         return true;
+    }
+
+    public void ToggleGameSpeed()
+    {
+        GameSpeedMult = GameSpeedMult >= GameSpeedFast ? 1f : GameSpeedFast;
+        OnStateChanged?.Invoke();
     }
 
     public void ToggleSound()

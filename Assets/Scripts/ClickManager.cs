@@ -74,6 +74,7 @@ public class ClickManager : MonoBehaviour
     public void OnOpenStats()              => uiManager.ShowStatsPanel();
     public void OnOpenSettings()           => uiManager.ShowSettingsPanel();
     public void OnOpenSuggest()            => uiManager.ShowFeaturePanel();
+    public void OnToggleGameSpeed()        => GameManager.Instance.ToggleGameSpeed();
     public void OnToggleSound()            => GameManager.Instance.ToggleSound();
     public void OnToggleNotifications()    => GameManager.Instance.ToggleNotifications();
     public void OnResetData()              => GameManager.Instance.ResetAllData();

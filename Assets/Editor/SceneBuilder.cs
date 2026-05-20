@@ -42,7 +42,7 @@ using System.IO;
 //
 // ── SETTINGS TAB (y in settingsContent) ─────────────────────────────────────
 //   10–240   Utility buttons (Stats | Settings row, Suggest | Shop row)
-//  250–330   blank / future
+//  250–330   Speed toggle button
 // settingsContent height: 400
 //
 // overlay  StatsPanel, SettingsPanel, IAPShopPanel, QuestsPanel, FeatureRequestOverlay
@@ -877,6 +877,9 @@ public static class SceneBuilder
         var shopBtnGO = Btn(content, "ShopButton", "Shop", 32, HC("8B0000"));
         PT(shopBtnGO, 130, 110, +265, 508);
 
+        var speedToggleTabGO = Btn(content, "SpeedToggleButton", "Speed: 1×", 36, HC("2A3A1A"));
+        PT(speedToggleTabGO, 250, 80, 0, 680);
+
         // ════════════════════════════════════════════════════════════════════
         // FIXED TAB BAR  (canvas bottom 100px)
         // ════════════════════════════════════════════════════════════════════
@@ -1423,6 +1426,7 @@ public static class SceneBuilder
         uim.settingsPanel           = settingsOverlay;
         uim.soundToggleText         = soundToggleGO.GetComponentInChildren<Text>();
         uim.notifToggleText         = notifToggleGO.GetComponentInChildren<Text>();
+        uim.speedToggleText         = speedToggleTabGO.GetComponentInChildren<Text>();
         uim.barracksInfoText        = barracksInfoGO.GetComponent<Text>();
         uim.upgradeBarracksButton   = upgradeBarracksGO.GetComponent<Button>();
         uim.barracksUpgradeCostText = upgradeBarracksGO.GetComponentInChildren<Text>();
@@ -1568,6 +1572,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(questClaim2GO.GetComponent<Button>().onClick,           clk.OnClaimQuest2);
         UnityEventTools.AddPersistentListener(statsCloseGO.GetComponent<Button>().onClick,            uim.HideStatsPanel);
         UnityEventTools.AddPersistentListener(settingsCloseGO.GetComponent<Button>().onClick,         uim.HideSettingsPanel);
+        UnityEventTools.AddPersistentListener(speedToggleTabGO.GetComponent<Button>().onClick,         clk.OnToggleGameSpeed);
         UnityEventTools.AddPersistentListener(soundToggleGO.GetComponent<Button>().onClick,           clk.OnToggleSound);
         UnityEventTools.AddPersistentListener(notifToggleGO.GetComponent<Button>().onClick,           clk.OnToggleNotifications);
         UnityEventTools.AddPersistentListener(resetDataGO.GetComponent<Button>().onClick,             clk.OnResetData);
