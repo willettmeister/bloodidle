@@ -291,6 +291,8 @@ public class UIManager : MonoBehaviour
         (AchievementFlags.Wave100,       "Centurion (Wave 100)",  2000.0, 0),
         (AchievementFlags.BloodMillion,  "Blood Millionaire",     2000.0, 0),
         (AchievementFlags.BossSlayer,    "Boss Slayer (×25)",     0.0,    1),
+        (AchievementFlags.BloodBillion,  "Blood Billionaire (1B)", 5000.0, 1),
+        (AchievementFlags.Wave200,       "Legend (Wave 200)",     5000.0, 1),
     };
 
     void Start()
@@ -1268,6 +1270,9 @@ public class UIManager : MonoBehaviour
             sb.AppendLine($"  Click bonus:     +{gm.AchievementClickBonus:F1}/tap");
         if (gm.AchievementAttackBonus > 0)
             sb.AppendLine($"  Attack bonus:    +{gm.AchievementAttackBonus:F0}/soldier");
+        int completedAchieves = 0;
+        foreach (var (flag, _, _, _) in k_AchievDefs) if ((gm.Achievements & flag) != 0) completedAchieves++;
+        sb.AppendLine($"  Completed:       {completedAchieves}/{k_AchievDefs.Length}");
         sb.AppendLine();
         sb.AppendLine("── Achievements ──────────────────");
         foreach (var (flag, title, _, _) in k_AchievDefs)

@@ -23,6 +23,8 @@ public enum AchievementFlags
     Wave100       = 1 << 13,
     BloodMillion  = 1 << 14,
     BossSlayer    = 1 << 15,
+    BloodBillion  = 1 << 16,
+    Wave200       = 1 << 17,
 }
 
 public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral }
@@ -539,22 +541,25 @@ public class GameManager : MonoBehaviour
 
     public double AchievementBloodIncomeMult =>
         1.0
-        + (HasAchievement(AchievementFlags.Wave10)       ? 0.05 : 0)
-        + (HasAchievement(AchievementFlags.Wave25)       ? 0.05 : 0)
-        + (HasAchievement(AchievementFlags.Wave50)       ? 0.10 : 0)
-        + (HasAchievement(AchievementFlags.Wave100)      ? 0.15 : 0)
-        + (HasAchievement(AchievementFlags.Untouchable)  ? 0.05 : 0);
+        + (HasAchievement(AchievementFlags.Wave10)        ? 0.05 : 0)
+        + (HasAchievement(AchievementFlags.Wave25)        ? 0.05 : 0)
+        + (HasAchievement(AchievementFlags.Wave50)        ? 0.10 : 0)
+        + (HasAchievement(AchievementFlags.Wave100)       ? 0.15 : 0)
+        + (HasAchievement(AchievementFlags.Untouchable)   ? 0.05 : 0)
+        + (HasAchievement(AchievementFlags.BloodBillion)  ? 0.20 : 0);
 
     public double AchievementClickBonus =>
-        (HasAchievement(AchievementFlags.Blood1K)        ? 0.5  : 0)
-        + (HasAchievement(AchievementFlags.Blood10K)     ? 1.0  : 0)
-        + (HasAchievement(AchievementFlags.Blood100K)    ? 2.0  : 0)
-        + (HasAchievement(AchievementFlags.BloodMillion) ? 3.0  : 0);
+        (HasAchievement(AchievementFlags.Blood1K)         ? 0.5  : 0)
+        + (HasAchievement(AchievementFlags.Blood10K)      ? 1.0  : 0)
+        + (HasAchievement(AchievementFlags.Blood100K)     ? 2.0  : 0)
+        + (HasAchievement(AchievementFlags.BloodMillion)  ? 3.0  : 0)
+        + (HasAchievement(AchievementFlags.BloodBillion)  ? 5.0  : 0);
 
     public float AchievementAttackBonus =>
-        (HasAchievement(AchievementFlags.FirstSoldier)   ? 1f  : 0f)
-        + (HasAchievement(AchievementFlags.FullLegion)   ? 2f  : 0f)
-        + (HasAchievement(AchievementFlags.BossSlayer)   ? 3f  : 0f)
+        (HasAchievement(AchievementFlags.FirstSoldier)    ? 1f  : 0f)
+        + (HasAchievement(AchievementFlags.FullLegion)    ? 2f  : 0f)
+        + (HasAchievement(AchievementFlags.BossSlayer)    ? 3f  : 0f)
+        + (HasAchievement(AchievementFlags.Wave200)       ? 5f  : 0f)
         + (HasAchievement(AchievementFlags.FirstPrestige)? 2f  : 0f)
         + (HasAchievement(AchievementFlags.Prestige3)    ? 5f  : 0f);
     public event Action<AchievementFlags> OnAchievementUnlocked;
@@ -1029,6 +1034,7 @@ public class GameManager : MonoBehaviour
             if (Wave >= 25)  TryUnlock(AchievementFlags.Wave25);
             if (Wave >= 50)  TryUnlock(AchievementFlags.Wave50);
             if (Wave >= 100) TryUnlock(AchievementFlags.Wave100);
+            if (Wave >= 200) TryUnlock(AchievementFlags.Wave200);
             if (WaveStreak >= 10) TryUnlock(AchievementFlags.Untouchable);
             if (TotalBossesKilled >= 25) TryUnlock(AchievementFlags.BossSlayer);
 
@@ -1296,6 +1302,7 @@ public class GameManager : MonoBehaviour
         if (TotalBloodEarned >= 10_000)      TryUnlock(AchievementFlags.Blood10K);
         if (TotalBloodEarned >= 100_000)     TryUnlock(AchievementFlags.Blood100K);
         if (TotalBloodEarned >= 1_000_000)   TryUnlock(AchievementFlags.BloodMillion);
+        if (TotalBloodEarned >= 1_000_000_000) TryUnlock(AchievementFlags.BloodBillion);
     }
 
     void TryUnlock(AchievementFlags flag)
@@ -1330,8 +1337,9 @@ public class GameManager : MonoBehaviour
         WaveStreak = 0;
         Wave++;
         if (Wave > BestWave) BestWave = Wave;
-        if (Wave >= 10) TryUnlock(AchievementFlags.Wave10);
-        if (Wave >= 25) TryUnlock(AchievementFlags.Wave25);
+        if (Wave >= 10)  TryUnlock(AchievementFlags.Wave10);
+        if (Wave >= 25)  TryUnlock(AchievementFlags.Wave25);
+        if (Wave >= 200) TryUnlock(AchievementFlags.Wave200);
         WavePreviewActive = true;
         _previewTimer     = WavePreviewDuration;
         _dmgTimer         = 0f;
