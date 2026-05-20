@@ -29,7 +29,8 @@ using System.IO;
 //  915–1160  Equipment card (hidden until WorkersUnlocked)
 // 1170–1385  Blood Ritual + Blood Pact (hidden until WorkersUnlocked)
 // 1395–1560  Blood Bank card
-// buildContent height: 1580
+// 1570–1660  Cursed Blood toggle (hidden until wave 7)
+// buildContent height: 1670
 //
 // ── PROGRESS TAB (y in progressContent) ─────────────────────────────────────
 //   10–195   Prestige card (hidden until wave 20)
@@ -195,7 +196,7 @@ public static class SceneBuilder
         }
 
         var (battleScrollGO,   battleContent)   = MakeTabScroll(tabAreaGO, "BattleTab",   2110f);
-        var (buildScrollGO,    buildContent)    = MakeTabScroll(tabAreaGO, "BuildTab",    1580f);
+        var (buildScrollGO,    buildContent)    = MakeTabScroll(tabAreaGO, "BuildTab",    1670f);
         var (progressScrollGO, progressContent) = MakeTabScroll(tabAreaGO, "ProgressTab", 1245f);
         var (settingsScrollGO, settingsContent) = MakeTabScroll(tabAreaGO, "SettingsTab", 400f);
 
@@ -634,6 +635,24 @@ public static class SceneBuilder
 
         var withdrawBtnGO = Btn(bloodBankPanel, "WithdrawBloodButton", "Withdraw\nAll", 30, Green);
         PT(withdrawBtnGO, 52, 100, +380, 210);
+
+        // ════════════════════════════════════════════════════════════════════
+        // CURSED BLOOD TOGGLE  (buildContent y 1570–1660) — hidden until wave 7
+        // ════════════════════════════════════════════════════════════════════
+        var cursedBloodPanel = content.CreateChild("CursedBloodPanel");
+        cursedBloodPanel.AddImage(Color.clear);
+        PF(cursedBloodPanel, 1570, 90);
+
+        Panel(cursedBloodPanel, "CursedBloodCardBg", 0, 90, HC("2A0A0A"), 24);
+
+        var cursedBloodInfoGO = Label(cursedBloodPanel, "CursedBloodInfoText",
+            "Cursed Blood: damage taken → 10% blood", 30, HC("FF6666"), TextAnchor.MiddleLeft);
+        PT(cursedBloodInfoGO, 8, 34, -160, 560);
+
+        var cursedBloodBtnGO = Btn(cursedBloodPanel, "CursedBloodButton", "Cursed Blood: OFF", 30, HC("8B0000"));
+        PF(cursedBloodBtnGO, 46, 38, 20);
+
+        cursedBloodPanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
         // Switch to PROGRESS tab content
@@ -1333,6 +1352,9 @@ public static class SceneBuilder
         uim.bloodBankAccruedText    = bankAccruedGO.GetComponent<Text>();
         uim.depositBloodButton      = depositBtnGO.GetComponent<Button>();
         uim.withdrawBloodButton     = withdrawBtnGO.GetComponent<Button>();
+        uim.cursedBloodPanel        = cursedBloodPanel;
+        uim.cursedBloodButton       = cursedBloodBtnGO.GetComponent<Button>();
+        uim.cursedBloodButtonText   = cursedBloodBtnGO.GetComponentInChildren<Text>();
         uim.soulShardShopPanel      = soulShardShopPanel;
         uim.soulShardShopPointsText = ssShopPtsGO.GetComponent<Text>();
         uim.ssBossTimerInfoText     = ssBossTimerInfoGO.GetComponent<Text>();
@@ -1464,6 +1486,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(upgradeHealBtnGO.GetComponent<Button>().onClick,       clk.OnUpgradeHealSelf);
         UnityEventTools.AddPersistentListener(depositBtnGO.GetComponent<Button>().onClick,            clk.OnDepositToBank);
         UnityEventTools.AddPersistentListener(withdrawBtnGO.GetComponent<Button>().onClick,           clk.OnWithdrawFromBank);
+        UnityEventTools.AddPersistentListener(cursedBloodBtnGO.GetComponent<Button>().onClick,        clk.OnToggleCursedBlood);
         UnityEventTools.AddPersistentListener(statsBtnGO.GetComponent<Button>().onClick,              clk.OnOpenStats);
         UnityEventTools.AddPersistentListener(settingsBtnGO.GetComponent<Button>().onClick,           clk.OnOpenSettings);
         UnityEventTools.AddPersistentListener(suggestBtnGO.GetComponent<Button>().onClick,            clk.OnOpenSuggest);

@@ -24,6 +24,7 @@ public class ClickManager : MonoBehaviour
     public void OnUpgradeTalisman()        => GameManager.Instance.UpgradeTalisman();
     public void OnToggleFormation()        => GameManager.Instance.ToggleFormation();
     public void OnToggleAutoBuy()          => GameManager.Instance.ToggleAutoBuySoldiers();
+    public void OnToggleCursedBlood()      => GameManager.Instance.ToggleCursedBlood();
     public void OnPrestige()               => GameManager.Instance.RequestPrestige();
     public void OnConfirmTalent0()         => GameManager.Instance.ConfirmPrestige(0);
     public void OnConfirmTalent1()         => GameManager.Instance.ConfirmPrestige(1);

@@ -159,6 +159,11 @@ public class UIManager : MonoBehaviour
     public Button depositBloodButton;
     public Button withdrawBloodButton;
 
+    [Header("Cursed Blood")]
+    public GameObject cursedBloodPanel;
+    public Button cursedBloodButton;
+    public Text   cursedBloodButtonText;
+
     [Header("Prestige Milestone")]
     public Text prestigeMilestoneText;
 
@@ -839,6 +844,13 @@ public class UIManager : MonoBehaviour
                     && gm.BloodBankDeposit < GameManager.BankMaxDeposit;
             if (withdrawBloodButton != null)
                 withdrawBloodButton.interactable = gm.BloodBankDeposit > 0 || gm.BloodBankAccrued > 0;
+        }
+
+        if (cursedBloodPanel != null)
+        {
+            cursedBloodPanel.SetActive(gm.CursedBloodUnlocked);
+            if (cursedBloodButtonText != null)
+                cursedBloodButtonText.text = gm.CursedBloodEnabled ? "Cursed Blood: ON" : "Cursed Blood: OFF";
         }
 
         barracksInfoText.text        = $"Barracks  Lv.{gm.BarracksLevel}  —  Max {gm.MaxSoldiers} soldiers";
