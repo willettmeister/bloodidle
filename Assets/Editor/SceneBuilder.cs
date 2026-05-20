@@ -650,10 +650,13 @@ public static class SceneBuilder
         PT(bankAccruedGO, 104, 36, -175, 520);
 
         var depositBtnGO = Btn(bloodBankPanel, "DepositBloodButton", "Deposit\n10%", 30, Brown);
-        PT(depositBtnGO, 52, 100, +260, 210);
+        PT(depositBtnGO, 52, 100, +162, 130);
 
         var withdrawBtnGO = Btn(bloodBankPanel, "WithdrawBloodButton", "Withdraw\nAll", 30, Green);
-        PT(withdrawBtnGO, 52, 100, +380, 210);
+        PT(withdrawBtnGO, 52, 100, +302, 130);
+
+        var autoBankBtnGO = Btn(bloodBankPanel, "AutoDepositButton", "Auto: OFF", 26, HC("3A2A00"));
+        PT(autoBankBtnGO, 52, 100, +442, 130);
 
         // ════════════════════════════════════════════════════════════════════
         // CURSED BLOOD TOGGLE  (buildContent y 1570–1660) — hidden until wave 7
@@ -1380,6 +1383,8 @@ public static class SceneBuilder
         uim.bloodBankAccruedText    = bankAccruedGO.GetComponent<Text>();
         uim.depositBloodButton      = depositBtnGO.GetComponent<Button>();
         uim.withdrawBloodButton     = withdrawBtnGO.GetComponent<Button>();
+        uim.autoBankButton          = autoBankBtnGO.GetComponent<Button>();
+        uim.autoBankButtonText      = autoBankBtnGO.GetComponentInChildren<Text>();
         uim.cursedBloodPanel        = cursedBloodPanel;
         uim.cursedBloodButton       = cursedBloodBtnGO.GetComponent<Button>();
         uim.cursedBloodButtonText   = cursedBloodBtnGO.GetComponentInChildren<Text>();
@@ -1520,6 +1525,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(autoHealBtnGO.GetComponent<Button>().onClick,          clk.OnToggleAutoHeal);
         UnityEventTools.AddPersistentListener(depositBtnGO.GetComponent<Button>().onClick,            clk.OnDepositToBank);
         UnityEventTools.AddPersistentListener(withdrawBtnGO.GetComponent<Button>().onClick,           clk.OnWithdrawFromBank);
+        UnityEventTools.AddPersistentListener(autoBankBtnGO.GetComponent<Button>().onClick,          clk.OnToggleAutoBank);
         UnityEventTools.AddPersistentListener(cursedBloodBtnGO.GetComponent<Button>().onClick,        clk.OnToggleCursedBlood);
         UnityEventTools.AddPersistentListener(statsBtnGO.GetComponent<Button>().onClick,              clk.OnOpenStats);
         UnityEventTools.AddPersistentListener(settingsBtnGO.GetComponent<Button>().onClick,           clk.OnOpenSettings);

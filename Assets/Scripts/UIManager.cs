@@ -167,6 +167,8 @@ public class UIManager : MonoBehaviour
     public Text bloodBankAccruedText;
     public Button depositBloodButton;
     public Button withdrawBloodButton;
+    public Button autoBankButton;
+    public Text   autoBankButtonText;
 
     [Header("Cursed Blood")]
     public GameObject cursedBloodPanel;
@@ -914,6 +916,12 @@ public class UIManager : MonoBehaviour
                     && gm.BloodBankDeposit < gm.BankMaxDeposit;
             if (withdrawBloodButton != null)
                 withdrawBloodButton.interactable = gm.BloodBankDeposit > 0 || gm.BloodBankAccrued > 0;
+            if (autoBankButton != null)
+            {
+                autoBankButton.interactable = true;
+                if (autoBankButtonText != null)
+                    autoBankButtonText.text = gm.AutoBankDeposit ? "Auto: ON" : "Auto: OFF";
+            }
         }
 
         if (cursedBloodPanel != null)
