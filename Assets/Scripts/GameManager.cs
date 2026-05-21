@@ -298,7 +298,8 @@ public class GameManager : MonoBehaviour
     public int PWeaponHeadStartLevel { get; private set; }
     public int PBloodTitheLevel      { get; private set; }
     public int PIronWallLevel        { get; private set; }
-    public int PBountyBonusLevel     { get; private set; }
+    public int PBountyBonusLevel         { get; private set; }
+    public int PBloodRitualStartLevel    { get; private set; }
     public double EffectiveBountyMult => BountyRewardMult + PBountyBonusLevel;
     public const int   PrestigeShopCost      = 1;
     public const float IronWallDmgReduction  = 0.10f;
@@ -1982,6 +1983,15 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuyPBloodRitualStart()
+    {
+        if (PrestigePoints < PrestigeShopCost) return false;
+        PrestigePoints -= PrestigeShopCost;
+        PBloodRitualStartLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public bool BuySSBossTimer()
     {
         if (SoulShards < SSUpgradeCost || SSBossTimerLevel >= SSMaxLevel) return false;
@@ -2234,7 +2244,7 @@ public class GameManager : MonoBehaviour
         BloodShieldUnlocked = false; BloodShieldHP = 0f;
         PrestigeCount = 0; PrestigePoints = 0;
         PSoldierCapLevel = 0; PClickBonusLevel = 0; PRitualEffLevel = 0;
-        PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0; PBountyBonusLevel = 0;
+        PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0; PBountyBonusLevel = 0; PBloodRitualStartLevel = 0;
         WeaponLevel = 0; ArmorLevel = 0; TalismanLevel = 0;
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
@@ -2287,8 +2297,8 @@ public class GameManager : MonoBehaviour
         PaladinCount        = 0;
         SoldierHP           = 0f;
         WorkerCount         = 0;
-        BloodRitualCount    = 0;
-        BloodRitualCost     = BloodRitualBaseCost;
+        BloodRitualCount    = PBloodRitualStartLevel;
+        BloodRitualCost     = BloodRitualBaseCost * Math.Pow(BloodRitualCostMultiplier, PBloodRitualStartLevel);
         BloodWellCount      = 0;
         BloodWellCost       = BloodWellBaseCost;
         Wave                = 1;
@@ -2368,7 +2378,8 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("PWeaponHeadStartLevel", PWeaponHeadStartLevel);
         PlayerPrefs.SetInt   ("PBloodTitheLevel",    PBloodTitheLevel);
         PlayerPrefs.SetInt   ("PIronWallLevel",      PIronWallLevel);
-        PlayerPrefs.SetInt   ("PBountyBonusLevel",   PBountyBonusLevel);
+        PlayerPrefs.SetInt   ("PBountyBonusLevel",       PBountyBonusLevel);
+        PlayerPrefs.SetInt   ("PBloodRitualStartLevel",  PBloodRitualStartLevel);
         PlayerPrefs.SetInt   ("WeaponLevel",         WeaponLevel);
         PlayerPrefs.SetInt   ("ArmorLevel",          ArmorLevel);
         PlayerPrefs.SetInt   ("TalismanLevel",       TalismanLevel);
@@ -2480,7 +2491,8 @@ public class GameManager : MonoBehaviour
         PWeaponHeadStartLevel = PlayerPrefs.GetInt ("PWeaponHeadStartLevel", 0);
         PBloodTitheLevel    = PlayerPrefs.GetInt   ("PBloodTitheLevel",    0);
         PIronWallLevel      = PlayerPrefs.GetInt   ("PIronWallLevel",      0);
-        PBountyBonusLevel   = PlayerPrefs.GetInt   ("PBountyBonusLevel",   0);
+        PBountyBonusLevel          = PlayerPrefs.GetInt("PBountyBonusLevel",      0);
+        PBloodRitualStartLevel     = PlayerPrefs.GetInt("PBloodRitualStartLevel", 0);
         WeaponLevel         = PlayerPrefs.GetInt   ("WeaponLevel",         0);
         ArmorLevel          = PlayerPrefs.GetInt   ("ArmorLevel",          0);
         TalismanLevel       = PlayerPrefs.GetInt   ("TalismanLevel",       0);

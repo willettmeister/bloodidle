@@ -157,6 +157,8 @@ public class UIManager : MonoBehaviour
     public Button pIronWallButton;
     public Text pBountyBonusInfoText;
     public Button pBountyBonusButton;
+    public Text pBloodRitualStartInfoText;
+    public Button pBloodRitualStartButton;
 
     [Header("Soul Shard Shop")]
     public GameObject soulShardShopPanel;
@@ -967,6 +969,10 @@ public class UIManager : MonoBehaviour
             if (pBountyBonusInfoText != null)
                 pBountyBonusInfoText.text = $"Bounty Mastery +1x  (Lv.{gm.PBountyBonusLevel})";
             if (pBountyBonusButton != null)  pBountyBonusButton.interactable  = canSpend;
+
+            if (pBloodRitualStartInfoText != null)
+                pBloodRitualStartInfoText.text = $"Crimson Rite +1 Ritual  (Lv.{gm.PBloodRitualStartLevel})";
+            if (pBloodRitualStartButton != null) pBloodRitualStartButton.interactable = canSpend;
         }
 
         // Soul Shard Shop

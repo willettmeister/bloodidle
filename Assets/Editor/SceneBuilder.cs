@@ -35,11 +35,11 @@ using System.IO;
 //
 // ── PROGRESS TAB (y in progressContent) ─────────────────────────────────────
 //   10–195   Prestige card (hidden until wave 20)
-//  205–690   Prestige Shop (hidden until prestige 1)
-//  700–1140  Soul Shard Shop (hidden until first boss)
-// 1150–1215  Daily Quests row
-// 1220–1285  Watch Ad row
-// progressContent height: 1305
+//  205–748   Prestige Shop (hidden until prestige 1)
+//  758–1198  Soul Shard Shop (hidden until first boss)
+// 1208–1273  Daily Quests row
+// 1278–1343  Watch Ad row
+// progressContent height: 1363
 //
 // ── SETTINGS TAB (y in settingsContent) ─────────────────────────────────────
 //   10–240   Utility buttons (Stats | Settings row, Suggest | Shop row)
@@ -198,7 +198,7 @@ public static class SceneBuilder
 
         var (battleScrollGO,   battleContent)   = MakeTabScroll(tabAreaGO, "BattleTab",   2410f);
         var (buildScrollGO,    buildContent)    = MakeTabScroll(tabAreaGO, "BuildTab",    1825f);
-        var (progressScrollGO, progressContent) = MakeTabScroll(tabAreaGO, "ProgressTab", 1305f);
+        var (progressScrollGO, progressContent) = MakeTabScroll(tabAreaGO, "ProgressTab", 1363f);
         var (settingsScrollGO, settingsContent) = MakeTabScroll(tabAreaGO, "SettingsTab", 400f);
 
         buildScrollGO.SetActive(false);
@@ -775,9 +775,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var prestigeShopPanel = content.CreateChild("PrestigeShopPanel");
         prestigeShopPanel.AddImage(Color.clear);
-        PF(prestigeShopPanel, 205, 485);
+        PF(prestigeShopPanel, 205, 543);
 
-        Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 485, HC("150A30"), 24);
+        Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 543, HC("150A30"), 24);
 
         var shopTitleGO = Label(prestigeShopPanel, "PrestigeShopTitle",
             "Prestige Shop", 40, Gold, TextAnchor.MiddleLeft);
@@ -836,6 +836,13 @@ public static class SceneBuilder
         var pBountyBonusBtnGO = Btn(prestigeShopPanel, "PBountyBonusButton", "Buy (1 PP)", 30, HC("E65100"));
         PT(pBountyBonusBtnGO, 406, 54, +245, 260);
 
+        // Row 8 — Crimson Rite
+        var pBloodRitualStartInfoGO = Label(prestigeShopPanel, "PBloodRitualStartInfoText",
+            "Crimson Rite +1 Ritual  (Lv.0)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(pBloodRitualStartInfoGO, 466, 48, -175, 500);
+        var pBloodRitualStartBtnGO = Btn(prestigeShopPanel, "PBloodRitualStartButton", "Buy (1 PP)", 30, HC("B71C1C"));
+        PT(pBloodRitualStartBtnGO, 464, 54, +245, 260);
+
         prestigeShopPanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
@@ -843,7 +850,7 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var soulShardShopPanel = content.CreateChild("SoulShardShopPanel");
         soulShardShopPanel.AddImage(Color.clear);
-        PF(soulShardShopPanel, 700, 440);
+        PF(soulShardShopPanel, 758, 440);
 
         Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 440, HC("0A1A30"), 24);
 
@@ -903,7 +910,7 @@ public static class SceneBuilder
         // DAILY QUESTS BUTTON ROW  (y 4200–4265)
         // ════════════════════════════════════════════════════════════════════
         var questsRowGO = content.CreateChild("DailyQuestsRow");
-        questsRowGO.AddImage(HC("0A1A0A")); PF(questsRowGO, 1150, 65, 20);
+        questsRowGO.AddImage(HC("0A1A0A")); PF(questsRowGO, 1208, 65, 20);
 
         var openQuestsBtnGO = Btn(questsRowGO, "OpenQuestsButton", "Daily Quests", 34, HC("1B5E20"));
         openQuestsBtnGO.Stretch();
@@ -912,7 +919,7 @@ public static class SceneBuilder
         // WATCH AD ROW  (y 4275–4345)
         // ════════════════════════════════════════════════════════════════════
         var adBoostRowGO = content.CreateChild("AdBoostRow");
-        adBoostRowGO.AddImage(HC("1A0A2E")); PF(adBoostRowGO, 1220, 65, 20);
+        adBoostRowGO.AddImage(HC("1A0A2E")); PF(adBoostRowGO, 1278, 65, 20);
 
         var watchAdBtnGO = Btn(adBoostRowGO, "WatchAdButton", "Watch Ad  →  2× Blood (5 min)", 34, Purple);
         watchAdBtnGO.Stretch();
@@ -1472,8 +1479,10 @@ public static class SceneBuilder
         uim.pBloodTitheButton       = pBloodTitheBtnGO.GetComponent<Button>();
         uim.pIronWallInfoText       = pIronWallInfoGO.GetComponent<Text>();
         uim.pIronWallButton         = pIronWallBtnGO.GetComponent<Button>();
-        uim.pBountyBonusInfoText    = pBountyBonusInfoGO.GetComponent<Text>();
-        uim.pBountyBonusButton      = pBountyBonusBtnGO.GetComponent<Button>();
+        uim.pBountyBonusInfoText         = pBountyBonusInfoGO.GetComponent<Text>();
+        uim.pBountyBonusButton           = pBountyBonusBtnGO.GetComponent<Button>();
+        uim.pBloodRitualStartInfoText    = pBloodRitualStartInfoGO.GetComponent<Text>();
+        uim.pBloodRitualStartButton      = pBloodRitualStartBtnGO.GetComponent<Button>();
         uim.bloodBankPanel          = bloodBankPanel;
         uim.bloodBankInfoText       = bankInfoGO.GetComponent<Text>();
         uim.bloodBankAccruedText    = bankAccruedGO.GetComponent<Text>();
@@ -1628,7 +1637,8 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(pWeaponHeadStartBtnGO.GetComponent<Button>().onClick,   clk.OnBuyPWeaponHeadStart);
         UnityEventTools.AddPersistentListener(pBloodTitheBtnGO.GetComponent<Button>().onClick,        clk.OnBuyPBloodTithe);
         UnityEventTools.AddPersistentListener(pIronWallBtnGO.GetComponent<Button>().onClick,          clk.OnBuyPIronWall);
-        UnityEventTools.AddPersistentListener(pBountyBonusBtnGO.GetComponent<Button>().onClick,      clk.OnBuyPBountyBonus);
+        UnityEventTools.AddPersistentListener(pBountyBonusBtnGO.GetComponent<Button>().onClick,         clk.OnBuyPBountyBonus);
+        UnityEventTools.AddPersistentListener(pBloodRitualStartBtnGO.GetComponent<Button>().onClick,    clk.OnBuyPBloodRitualStart);
         UnityEventTools.AddPersistentListener(ssBossTimerBtnGO.GetComponent<Button>().onClick,        clk.OnBuySSBossTimer);
         UnityEventTools.AddPersistentListener(ssDoubleChestBtnGO.GetComponent<Button>().onClick,      clk.OnBuySSDoubleChest);
         UnityEventTools.AddPersistentListener(ssRollbackBtnGO.GetComponent<Button>().onClick,         clk.OnBuySSRollback);
