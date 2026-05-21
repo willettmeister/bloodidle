@@ -171,6 +171,8 @@ public class UIManager : MonoBehaviour
     public Button ssBloodTapButton;
     public Text ssShardHungerInfoText;
     public Button ssShardHungerButton;
+    public Text ssSoulHarvestInfoText;
+    public Button ssSoulHarvestButton;
 
     [Header("Settings")]
     public GameObject settingsPanel;
@@ -999,6 +1001,10 @@ public class UIManager : MonoBehaviour
                 ssShardHungerInfoText.text = $"Shard Hunger +20% boss blood  (Lv.{gm.SSShardHungerLevel}/{GameManager.SSMaxLevel})";
             if (ssShardHungerButton != null)
                 ssShardHungerButton.interactable = canBuySS && gm.SSShardHungerLevel < GameManager.SSMaxLevel;
+            if (ssSoulHarvestInfoText != null)
+                ssSoulHarvestInfoText.text = $"Soul Harvest {gm.EffectiveSoulHarvestPct * 100:F2}% enemy HP → blood  (Lv.{gm.SSSoulHarvestLevel}/{GameManager.SSMaxLevel})";
+            if (ssSoulHarvestButton != null)
+                ssSoulHarvestButton.interactable = canBuySS && gm.SSSoulHarvestLevel < GameManager.SSMaxLevel;
         }
 
         // Blood Bank
@@ -1481,7 +1487,7 @@ public class UIManager : MonoBehaviour
         sb.AppendLine();
         sb.AppendLine("── Passive Unlocks ────────────────");
         if (gm.SiphonUnlocked)       sb.AppendLine($"  ⚕ Siphon (wave {GameManager.SiphonUnlockWave}+):       {GameManager.SiphonRate * 100:F0}% dmg dealt → HP");
-        if (gm.SoulHarvestUnlocked)  sb.AppendLine($"  🌾 Soul Harvest (10 kills):   +{GameManager.SoulHarvestPct * 100:F0}% enemy HP → reward");
+        if (gm.SoulHarvestUnlocked)  sb.AppendLine($"  🌾 Soul Harvest (10 kills):   +{gm.EffectiveSoulHarvestPct * 100:F2}% enemy HP → reward");
         if (gm.CursedBloodUnlocked)  sb.AppendLine($"  🩸 Cursed Blood (wave {GameManager.CursedBloodUnlockWave}+):  {(gm.CursedBloodEnabled ? "ON" : "OFF")}  ({GameManager.CursedBloodConversionRate * 100:F0}% dmg taken → blood)");
         sb.AppendLine();
         sb.AppendLine("── Achievement Bonuses ────────────");

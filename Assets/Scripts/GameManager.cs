@@ -126,7 +126,7 @@ public class GameManager : MonoBehaviour
             if (IsBossWave)    r *= 3;
             if (HasTalent(TalentFlags.BloodFrenzy)) r = Math.Floor(r * (1.0 + TalentBloodFrenzyBonus));
             r = Math.Floor(r * StreakMultiplier * KillStreakBonusMult);
-            if (SoulHarvestUnlocked) r += Math.Floor(EnemyMaxHP * SoulHarvestPct);
+            if (SoulHarvestUnlocked) r += Math.Floor(EnemyMaxHP * EffectiveSoulHarvestPct);
             return r;
         }
     }
@@ -684,6 +684,8 @@ public class GameManager : MonoBehaviour
     public const double SoulHarvestPct        = 0.01;
     public const int    SoulHarvestUnlockWave = 10;
     public bool SoulHarvestUnlocked => TotalEnemiesKilled >= 10;
+    public int    SSSoulHarvestLevel      { get; private set; }
+    public double EffectiveSoulHarvestPct => SoulHarvestPct * (1.0 + SSSoulHarvestLevel * 0.25);
     bool _crimsonPactCharged;
     public bool CrimsonPactCharged => _crimsonPactCharged;
     public const float SacrificeDmgMult = 3f;
@@ -1139,7 +1141,7 @@ public class GameManager : MonoBehaviour
             if (WaveStreak >= 10) TryUnlock(AchievementFlags.StreakMaster);
             if (wasBoss)          BloodEchoCount = HasTalent(TalentFlags.EchoMastery) ? TalentEchoWaves : BloodEchoWaves;
             else if (BloodEchoCount > 0) BloodEchoCount--;
-            if (SoulHarvestUnlocked) reward += Math.Floor(EnemyMaxHP * SoulHarvestPct);
+            if (SoulHarvestUnlocked) reward += Math.Floor(EnemyMaxHP * EffectiveSoulHarvestPct);
             if (HasTalent(TalentFlags.Bloodlust) && SoldierCount > 0)
                 SoldierHP = Mathf.Min(SoldierHP + EnemyMaxHP * TalentBloodlustHealPct, FrontlineMaxHP);
             AddBlood(reward);
@@ -2068,6 +2070,15 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuySSSoulHarvest()
+    {
+        if (SoulShards < SSUpgradeCost || SSSoulHarvestLevel >= SSMaxLevel) return false;
+        SoulShards -= SSUpgradeCost;
+        SSSoulHarvestLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public void RequestPrestige()
     {
         if (Wave < PrestigeWaveRequirement || PendingPrestige) return;
@@ -2196,7 +2207,7 @@ public class GameManager : MonoBehaviour
         WeaponLevel = 0; ArmorLevel = 0; TalismanLevel = 0;
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
-        SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0;
+        SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0; SSSoulHarvestLevel = 0;
         BloodBankDeposit = 0; BloodBankAccrued = 0; BankInterestLevel = 0; KillIncomeUpgradeLevel = 0; WaveStreak = 0;
         SurgeUpgradeLevel = 0; HealUpgradeLevel = 0; BloodStormUpgradeLevel = 0; WarCryUpgradeLevel = 0; HexCurseUpgradeLevel = 0; BloodOathUpgradeLevel = 0; DesecrateUpgradeLevel = 0;
         TotalEnemiesKilled = 0; TotalSpellsCast = 0; TotalBossesKilled = 0; VeteranAttackBonus = 0f; TimePlayed = 0; Achievements = AchievementFlags.None;
@@ -2343,7 +2354,8 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("SSDoubleChestLevel",  SSDoubleChestLevel);
         PlayerPrefs.SetInt   ("SSRollbackLevel",     SSRollbackLevel);
         PlayerPrefs.SetInt   ("SSBloodTapLevel",     SSBloodTapLevel);
-        PlayerPrefs.SetInt   ("SSShardHungerLevel",  SSShardHungerLevel);
+        PlayerPrefs.SetInt   ("SSShardHungerLevel",   SSShardHungerLevel);
+        PlayerPrefs.SetInt   ("SSSoulHarvestLevel",   SSSoulHarvestLevel);
         PlayerPrefs.SetInt   ("SurgeUpgradeLevel",        SurgeUpgradeLevel);
         PlayerPrefs.SetInt   ("HealUpgradeLevel",         HealUpgradeLevel);
         PlayerPrefs.SetInt   ("BloodStormUpgradeLevel",   BloodStormUpgradeLevel);
@@ -2454,7 +2466,8 @@ public class GameManager : MonoBehaviour
         SSDoubleChestLevel  = PlayerPrefs.GetInt   ("SSDoubleChestLevel",  0);
         SSRollbackLevel     = PlayerPrefs.GetInt   ("SSRollbackLevel",     0);
         SSBloodTapLevel     = PlayerPrefs.GetInt   ("SSBloodTapLevel",     0);
-        SSShardHungerLevel  = PlayerPrefs.GetInt   ("SSShardHungerLevel",  0);
+        SSShardHungerLevel  = PlayerPrefs.GetInt("SSShardHungerLevel",  0);
+        SSSoulHarvestLevel  = PlayerPrefs.GetInt("SSSoulHarvestLevel",  0);
         SurgeUpgradeLevel        = PlayerPrefs.GetInt   ("SurgeUpgradeLevel",        0);
         HealUpgradeLevel         = PlayerPrefs.GetInt   ("HealUpgradeLevel",         0);
         BloodStormUpgradeLevel   = PlayerPrefs.GetInt   ("BloodStormUpgradeLevel",   0);

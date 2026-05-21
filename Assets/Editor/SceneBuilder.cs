@@ -36,10 +36,10 @@ using System.IO;
 // ── PROGRESS TAB (y in progressContent) ─────────────────────────────────────
 //   10–195   Prestige card (hidden until wave 20)
 //  205–690   Prestige Shop (hidden until prestige 1)
-//  700–1080  Soul Shard Shop (hidden until first boss)
-// 1090–1155  Daily Quests row
-// 1160–1225  Watch Ad row
-// progressContent height: 1245
+//  700–1140  Soul Shard Shop (hidden until first boss)
+// 1150–1215  Daily Quests row
+// 1220–1285  Watch Ad row
+// progressContent height: 1305
 //
 // ── SETTINGS TAB (y in settingsContent) ─────────────────────────────────────
 //   10–240   Utility buttons (Stats | Settings row, Suggest | Shop row)
@@ -198,7 +198,7 @@ public static class SceneBuilder
 
         var (battleScrollGO,   battleContent)   = MakeTabScroll(tabAreaGO, "BattleTab",   2410f);
         var (buildScrollGO,    buildContent)    = MakeTabScroll(tabAreaGO, "BuildTab",    1825f);
-        var (progressScrollGO, progressContent) = MakeTabScroll(tabAreaGO, "ProgressTab", 1245f);
+        var (progressScrollGO, progressContent) = MakeTabScroll(tabAreaGO, "ProgressTab", 1305f);
         var (settingsScrollGO, settingsContent) = MakeTabScroll(tabAreaGO, "SettingsTab", 400f);
 
         buildScrollGO.SetActive(false);
@@ -843,9 +843,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var soulShardShopPanel = content.CreateChild("SoulShardShopPanel");
         soulShardShopPanel.AddImage(Color.clear);
-        PF(soulShardShopPanel, 700, 380);
+        PF(soulShardShopPanel, 700, 440);
 
-        Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 380, HC("0A1A30"), 24);
+        Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 440, HC("0A1A30"), 24);
 
         var ssShopTitleGO = Label(soulShardShopPanel, "SoulShardShopTitle",
             "Soul Shard Shop", 40, new Color(0.7f, 0.85f, 1f), TextAnchor.MiddleLeft);
@@ -890,13 +890,20 @@ public static class SceneBuilder
         var ssShardHungerBtnGO = Btn(soulShardShopPanel, "SSShardHungerButton", "Buy (1 ⬡)", 30, HC("6A1B9A"));
         PT(ssShardHungerBtnGO, 292, 54, +245, 260);
 
+        // Row 6 — Soul Harvest
+        var ssSoulHarvestInfoGO = Label(soulShardShopPanel, "SSSoulHarvestInfoText",
+            "Soul Harvest 1.00% enemy HP → blood  (Lv.0/3)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(ssSoulHarvestInfoGO, 352, 48, -175, 500);
+        var ssSoulHarvestBtnGO = Btn(soulShardShopPanel, "SSSoulHarvestButton", "Buy (1 ⬡)", 30, HC("BF360C"));
+        PT(ssSoulHarvestBtnGO, 350, 54, +245, 260);
+
         soulShardShopPanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
         // DAILY QUESTS BUTTON ROW  (y 4200–4265)
         // ════════════════════════════════════════════════════════════════════
         var questsRowGO = content.CreateChild("DailyQuestsRow");
-        questsRowGO.AddImage(HC("0A1A0A")); PF(questsRowGO, 1090, 65, 20);
+        questsRowGO.AddImage(HC("0A1A0A")); PF(questsRowGO, 1150, 65, 20);
 
         var openQuestsBtnGO = Btn(questsRowGO, "OpenQuestsButton", "Daily Quests", 34, HC("1B5E20"));
         openQuestsBtnGO.Stretch();
@@ -905,7 +912,7 @@ public static class SceneBuilder
         // WATCH AD ROW  (y 4275–4345)
         // ════════════════════════════════════════════════════════════════════
         var adBoostRowGO = content.CreateChild("AdBoostRow");
-        adBoostRowGO.AddImage(HC("1A0A2E")); PF(adBoostRowGO, 1160, 65, 20);
+        adBoostRowGO.AddImage(HC("1A0A2E")); PF(adBoostRowGO, 1220, 65, 20);
 
         var watchAdBtnGO = Btn(adBoostRowGO, "WatchAdButton", "Watch Ad  →  2× Blood (5 min)", 34, Purple);
         watchAdBtnGO.Stretch();
@@ -1494,6 +1501,8 @@ public static class SceneBuilder
         uim.ssBloodTapButton        = ssBloodTapBtnGO.GetComponent<Button>();
         uim.ssShardHungerInfoText   = ssShardHungerInfoGO.GetComponent<Text>();
         uim.ssShardHungerButton     = ssShardHungerBtnGO.GetComponent<Button>();
+        uim.ssSoulHarvestInfoText   = ssSoulHarvestInfoGO.GetComponent<Text>();
+        uim.ssSoulHarvestButton     = ssSoulHarvestBtnGO.GetComponent<Button>();
         uim.settingsPanel           = settingsOverlay;
         uim.soundToggleText         = soundToggleGO.GetComponentInChildren<Text>();
         uim.notifToggleText         = notifToggleGO.GetComponentInChildren<Text>();
@@ -1625,6 +1634,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(ssRollbackBtnGO.GetComponent<Button>().onClick,         clk.OnBuySSRollback);
         UnityEventTools.AddPersistentListener(ssBloodTapBtnGO.GetComponent<Button>().onClick,        clk.OnBuySSBloodTap);
         UnityEventTools.AddPersistentListener(ssShardHungerBtnGO.GetComponent<Button>().onClick,    clk.OnBuySSShardHunger);
+        UnityEventTools.AddPersistentListener(ssSoulHarvestBtnGO.GetComponent<Button>().onClick,    clk.OnBuySSSoulHarvest);
         UnityEventTools.AddPersistentListener(upgradeSurgeBtnGO.GetComponent<Button>().onClick,      clk.OnUpgradeSurge);
         UnityEventTools.AddPersistentListener(autoSurgeBtnGO.GetComponent<Button>().onClick,         clk.OnToggleAutoSurge);
         UnityEventTools.AddPersistentListener(upgradeHealBtnGO.GetComponent<Button>().onClick,       clk.OnUpgradeHealSelf);
