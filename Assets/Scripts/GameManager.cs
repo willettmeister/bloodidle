@@ -30,6 +30,8 @@ public enum AchievementFlags
     StreakMaster  = 1 << 20,  // reach a 10-wave kill streak
     Prestige5     = 1 << 21,  // reach prestige 5
     Prestige10    = 1 << 22,  // reach prestige 10
+    Wave500       = 1 << 23,  // reach wave 500
+    BloodLegend   = 1 << 24,  // earn 10 billion blood total
 }
 
 public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral }
@@ -591,14 +593,16 @@ public class GameManager : MonoBehaviour
         + (HasAchievement(AchievementFlags.Wave50)        ? 0.10 : 0)
         + (HasAchievement(AchievementFlags.Wave100)       ? 0.15 : 0)
         + (HasAchievement(AchievementFlags.Untouchable)   ? 0.05 : 0)
-        + (HasAchievement(AchievementFlags.BloodBillion)  ? 0.20 : 0);
+        + (HasAchievement(AchievementFlags.BloodBillion)  ? 0.20 : 0)
+        + (HasAchievement(AchievementFlags.Wave500)       ? 0.25 : 0);
 
     public double AchievementClickBonus =>
         (HasAchievement(AchievementFlags.Blood1K)         ? 0.5  : 0)
         + (HasAchievement(AchievementFlags.Blood10K)      ? 1.0  : 0)
         + (HasAchievement(AchievementFlags.Blood100K)     ? 2.0  : 0)
         + (HasAchievement(AchievementFlags.BloodMillion)  ? 3.0  : 0)
-        + (HasAchievement(AchievementFlags.BloodBillion)  ? 5.0  : 0);
+        + (HasAchievement(AchievementFlags.BloodBillion)  ? 5.0  : 0)
+        + (HasAchievement(AchievementFlags.BloodLegend)  ? 7.0  : 0);
 
     public float AchievementAttackBonus =>
         (HasAchievement(AchievementFlags.FirstSoldier)    ? 1f  : 0f)
@@ -606,7 +610,8 @@ public class GameManager : MonoBehaviour
         + (HasAchievement(AchievementFlags.BossSlayer)    ? 3f  : 0f)
         + (HasAchievement(AchievementFlags.Wave200)       ? 5f  : 0f)
         + (HasAchievement(AchievementFlags.FirstPrestige)? 2f  : 0f)
-        + (HasAchievement(AchievementFlags.Prestige3)    ? 5f  : 0f);
+        + (HasAchievement(AchievementFlags.Prestige3)    ? 5f  : 0f)
+        + (HasAchievement(AchievementFlags.Wave500)      ? 10f : 0f);
     public event Action<AchievementFlags> OnAchievementUnlocked;
 
     // --- Offline earnings ---
@@ -1144,6 +1149,7 @@ public class GameManager : MonoBehaviour
             if (Wave >= 50)  TryUnlock(AchievementFlags.Wave50);
             if (Wave >= 100) TryUnlock(AchievementFlags.Wave100);
             if (Wave >= 200) TryUnlock(AchievementFlags.Wave200);
+            if (Wave >= 500) TryUnlock(AchievementFlags.Wave500);
             if (WaveStreak >= 10) TryUnlock(AchievementFlags.Untouchable);
             if (TotalBossesKilled >= 25) TryUnlock(AchievementFlags.BossSlayer);
 
@@ -1411,7 +1417,8 @@ public class GameManager : MonoBehaviour
         if (TotalBloodEarned >= 10_000)      TryUnlock(AchievementFlags.Blood10K);
         if (TotalBloodEarned >= 100_000)     TryUnlock(AchievementFlags.Blood100K);
         if (TotalBloodEarned >= 1_000_000)   TryUnlock(AchievementFlags.BloodMillion);
-        if (TotalBloodEarned >= 1_000_000_000) TryUnlock(AchievementFlags.BloodBillion);
+        if (TotalBloodEarned >= 1_000_000_000)    TryUnlock(AchievementFlags.BloodBillion);
+        if (TotalBloodEarned >= 10_000_000_000.0) TryUnlock(AchievementFlags.BloodLegend);
     }
 
     void TryUnlock(AchievementFlags flag)
@@ -1456,6 +1463,7 @@ public class GameManager : MonoBehaviour
         if (Wave >= 10)  TryUnlock(AchievementFlags.Wave10);
         if (Wave >= 25)  TryUnlock(AchievementFlags.Wave25);
         if (Wave >= 200) TryUnlock(AchievementFlags.Wave200);
+        if (Wave >= 500) TryUnlock(AchievementFlags.Wave500);
         WavePreviewActive = true;
         _previewTimer     = WavePreviewDuration;
         _dmgTimer         = 0f;

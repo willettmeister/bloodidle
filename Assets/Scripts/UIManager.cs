@@ -324,6 +324,8 @@ public class UIManager : MonoBehaviour
         (AchievementFlags.StreakMaster,  "Streak Master (×10)",    500.0,  0),
         (AchievementFlags.Prestige5,     "Veteran (Prestige 5)",    0.0,   1),
         (AchievementFlags.Prestige10,    "Warlord (Prestige 10)",   0.0,   2),
+        (AchievementFlags.Wave500,       "Eternal (Wave 500)",      10000.0, 1),
+        (AchievementFlags.BloodLegend,   "Blood Legend (10B)",      10000.0, 1),
     };
 
     void Start()
@@ -1479,9 +1481,41 @@ public class UIManager : MonoBehaviour
         sb.AppendLine();
         sb.AppendLine("── Achievements ──────────────────");
         foreach (var (flag, title, _, _) in k_AchievDefs)
-            sb.AppendLine($"  {((gm.Achievements & flag) != 0 ? "✓" : "○")}  {title}");
+        {
+            bool done = (gm.Achievements & flag) != 0;
+            string prog = done ? "" : AchievementProgress(gm, flag);
+            sb.AppendLine($"  {(done ? "✓" : "○")}  {title}{prog}");
+        }
 
         statsText.text = sb.ToString();
+    }
+
+    static string AchievementProgress(GameManager gm, AchievementFlags f)
+    {
+        switch (f)
+        {
+            case AchievementFlags.Wave10:        return $"  [{gm.BestWave}/10]";
+            case AchievementFlags.Wave25:        return $"  [{gm.BestWave}/25]";
+            case AchievementFlags.Wave50:        return $"  [{gm.BestWave}/50]";
+            case AchievementFlags.Wave100:       return $"  [{gm.BestWave}/100]";
+            case AchievementFlags.Wave200:       return $"  [{gm.BestWave}/200]";
+            case AchievementFlags.Wave500:       return $"  [{gm.BestWave}/500]";
+            case AchievementFlags.Blood1K:       return $"  [{GameManager.FormatNumber(gm.TotalBloodEarned)}/1K]";
+            case AchievementFlags.Blood10K:      return $"  [{GameManager.FormatNumber(gm.TotalBloodEarned)}/10K]";
+            case AchievementFlags.Blood100K:     return $"  [{GameManager.FormatNumber(gm.TotalBloodEarned)}/100K]";
+            case AchievementFlags.BloodMillion:  return $"  [{GameManager.FormatNumber(gm.TotalBloodEarned)}/1M]";
+            case AchievementFlags.BloodBillion:  return $"  [{GameManager.FormatNumber(gm.TotalBloodEarned)}/1B]";
+            case AchievementFlags.BloodLegend:   return $"  [{GameManager.FormatNumber(gm.TotalBloodEarned)}/10B]";
+            case AchievementFlags.Untouchable:   return $"  [{gm.BestStreak}/10]";
+            case AchievementFlags.StreakMaster:  return $"  [{gm.BestStreak}/10]";
+            case AchievementFlags.BossSlayer:    return $"  [{gm.TotalBossesKilled}/25]";
+            case AchievementFlags.SpellCaster:   return $"  [{gm.TotalSpellsCast}/50]";
+            case AchievementFlags.GrandWizard:   return $"  [{gm.TotalSpellsCast}/500]";
+            case AchievementFlags.Prestige3:     return $"  [{gm.PrestigeCount}/3]";
+            case AchievementFlags.Prestige5:     return $"  [{gm.PrestigeCount}/5]";
+            case AchievementFlags.Prestige10:    return $"  [{gm.PrestigeCount}/10]";
+            default: return "";
+        }
     }
 
     // ── Toasts ────────────────────────────────────────────────────────────────
