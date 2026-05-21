@@ -1522,20 +1522,26 @@ public class UIManager : MonoBehaviour
             case AchievementFlags.Wave100:       return $"  [{gm.BestWave}/100]";
             case AchievementFlags.Wave200:       return $"  [{gm.BestWave}/200]";
             case AchievementFlags.Wave500:       return $"  [{gm.BestWave}/500]";
+            case AchievementFlags.Wave1000:      return $"  [{gm.BestWave}/1000]";
             case AchievementFlags.Blood1K:       return $"  [{GameManager.FormatNumber(gm.TotalBloodEarned)}/1K]";
             case AchievementFlags.Blood10K:      return $"  [{GameManager.FormatNumber(gm.TotalBloodEarned)}/10K]";
             case AchievementFlags.Blood100K:     return $"  [{GameManager.FormatNumber(gm.TotalBloodEarned)}/100K]";
             case AchievementFlags.BloodMillion:  return $"  [{GameManager.FormatNumber(gm.TotalBloodEarned)}/1M]";
             case AchievementFlags.BloodBillion:  return $"  [{GameManager.FormatNumber(gm.TotalBloodEarned)}/1B]";
-            case AchievementFlags.BloodLegend:   return $"  [{GameManager.FormatNumber(gm.TotalBloodEarned)}/10B]";
-            case AchievementFlags.Untouchable:   return $"  [{gm.BestStreak}/10]";
-            case AchievementFlags.StreakMaster:  return $"  [{gm.BestStreak}/10]";
-            case AchievementFlags.BossSlayer:    return $"  [{gm.TotalBossesKilled}/25]";
-            case AchievementFlags.SpellCaster:   return $"  [{gm.TotalSpellsCast}/50]";
-            case AchievementFlags.GrandWizard:   return $"  [{gm.TotalSpellsCast}/500]";
-            case AchievementFlags.Prestige3:     return $"  [{gm.PrestigeCount}/3]";
-            case AchievementFlags.Prestige5:     return $"  [{gm.PrestigeCount}/5]";
-            case AchievementFlags.Prestige10:    return $"  [{gm.PrestigeCount}/10]";
+            case AchievementFlags.BloodLegend:    return $"  [{GameManager.FormatNumber(gm.TotalBloodEarned)}/10B]";
+            case AchievementFlags.BloodTrillion:  return $"  [{GameManager.FormatNumber(gm.TotalBloodEarned)}/1T]";
+            case AchievementFlags.Untouchable:    return $"  [{gm.BestStreak}/10]";
+            case AchievementFlags.StreakMaster:   return $"  [{gm.BestStreak}/10]";
+            case AchievementFlags.StreakLegend:   return $"  [{gm.BestStreak}/25]";
+            case AchievementFlags.BossSlayer:     return $"  [{gm.TotalBossesKilled}/25]";
+            case AchievementFlags.BossHunter100:  return $"  [{gm.TotalBossesKilled}/100]";
+            case AchievementFlags.SpellCaster:    return $"  [{gm.TotalSpellsCast}/50]";
+            case AchievementFlags.GrandWizard:    return $"  [{gm.TotalSpellsCast}/500]";
+            case AchievementFlags.SpellLord:      return $"  [{gm.TotalSpellsCast}/5000]";
+            case AchievementFlags.Prestige3:      return $"  [{gm.PrestigeCount}/3]";
+            case AchievementFlags.Prestige5:      return $"  [{gm.PrestigeCount}/5]";
+            case AchievementFlags.Prestige10:     return $"  [{gm.PrestigeCount}/10]";
+            case AchievementFlags.Prestige20:     return $"  [{gm.PrestigeCount}/20]";
             default: return "";
         }
     }

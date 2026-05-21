@@ -32,6 +32,12 @@ public enum AchievementFlags
     Prestige10    = 1 << 22,  // reach prestige 10
     Wave500       = 1 << 23,  // reach wave 500
     BloodLegend   = 1 << 24,  // earn 10 billion blood total
+    Wave1000      = 1 << 25,  // reach wave 1000
+    Prestige20    = 1 << 26,  // reach prestige 20
+    BloodTrillion = 1 << 27,  // earn 1 trillion blood total
+    BossHunter100 = 1 << 28,  // kill 100 bosses
+    SpellLord     = 1 << 29,  // cast 5000 spells lifetime
+    StreakLegend  = 1 << 30,  // achieve wave streak ×25
 }
 
 public struct AchievementDef
@@ -735,8 +741,14 @@ public class GameManager : MonoBehaviour
         new AchievementDef { Flag = AchievementFlags.StreakMaster, Title = "Streak Master (×10)",    BloodReward = 500.0 },
         new AchievementDef { Flag = AchievementFlags.Prestige5,    Title = "Veteran (Prestige 5)",   PPReward = 1 },
         new AchievementDef { Flag = AchievementFlags.Prestige10,   Title = "Warlord (Prestige 10)",  PPReward = 2 },
-        new AchievementDef { Flag = AchievementFlags.Wave500,      Title = "Eternal (Wave 500)",     BloodReward = 10000.0, PPReward = 1,  IncomeMult = 0.25, AttackBonus = 10f },
-        new AchievementDef { Flag = AchievementFlags.BloodLegend,  Title = "Blood Legend (10B)",     BloodReward = 10000.0, PPReward = 1,  ClickBonus = 7.0 },
+        new AchievementDef { Flag = AchievementFlags.Wave500,       Title = "Eternal (Wave 500)",      BloodReward = 10000.0, PPReward = 1,  IncomeMult = 0.25, AttackBonus = 10f },
+        new AchievementDef { Flag = AchievementFlags.BloodLegend,  Title = "Blood Legend (10B)",      BloodReward = 10000.0, PPReward = 1,  ClickBonus = 7.0 },
+        new AchievementDef { Flag = AchievementFlags.Wave1000,      Title = "Immortal (Wave 1000)",   BloodReward = 20000.0, PPReward = 2,  IncomeMult = 0.30, AttackBonus = 15f },
+        new AchievementDef { Flag = AchievementFlags.Prestige20,    Title = "Ascendant (Prestige 20)", PPReward = 3,          AttackBonus = 10f },
+        new AchievementDef { Flag = AchievementFlags.BloodTrillion, Title = "Blood God (1T)",          BloodReward = 20000.0, PPReward = 2,  ClickBonus = 10.0 },
+        new AchievementDef { Flag = AchievementFlags.BossHunter100, Title = "Boss Hunter (×100)",      PPReward = 1,          AttackBonus = 8f },
+        new AchievementDef { Flag = AchievementFlags.SpellLord,     Title = "Spell Lord (5000)",       BloodReward = 5000.0,  PPReward = 1 },
+        new AchievementDef { Flag = AchievementFlags.StreakLegend,  Title = "Streak Legend (×25)",     BloodReward = 3000.0,  IncomeMult = 0.10 },
     };
 
 #if UNITY_INCLUDE_TESTS
@@ -1139,6 +1151,7 @@ public class GameManager : MonoBehaviour
             if (wasBoss) TotalBossesKilled++;
             WaveStreak++;
             if (WaveStreak >= 10) TryUnlock(AchievementFlags.StreakMaster);
+        if (WaveStreak >= 25) TryUnlock(AchievementFlags.StreakLegend);
             if (wasBoss)          BloodEchoCount = HasTalent(TalentFlags.EchoMastery) ? TalentEchoWaves : BloodEchoWaves;
             else if (BloodEchoCount > 0) BloodEchoCount--;
             if (SoulHarvestUnlocked) reward += Math.Floor(EnemyMaxHP * EffectiveSoulHarvestPct);
@@ -1166,9 +1179,12 @@ public class GameManager : MonoBehaviour
             if (Wave >= 50)  TryUnlock(AchievementFlags.Wave50);
             if (Wave >= 100) TryUnlock(AchievementFlags.Wave100);
             if (Wave >= 200) TryUnlock(AchievementFlags.Wave200);
-            if (Wave >= 500) TryUnlock(AchievementFlags.Wave500);
+            if (Wave >= 500)  TryUnlock(AchievementFlags.Wave500);
+            if (Wave >= 1000) TryUnlock(AchievementFlags.Wave1000);
             if (WaveStreak >= 10) TryUnlock(AchievementFlags.Untouchable);
-            if (TotalBossesKilled >= 25) TryUnlock(AchievementFlags.BossSlayer);
+            if (WaveStreak >= 25) TryUnlock(AchievementFlags.StreakLegend);
+            if (TotalBossesKilled >= 25)  TryUnlock(AchievementFlags.BossSlayer);
+            if (TotalBossesKilled >= 100) TryUnlock(AchievementFlags.BossHunter100);
 
             if (wasBoss) NextBossWave = Wave + UnityEngine.Random.Range(5, 11);
             WavePreviewActive = true;
@@ -1435,7 +1451,8 @@ public class GameManager : MonoBehaviour
         if (TotalBloodEarned >= 100_000)     TryUnlock(AchievementFlags.Blood100K);
         if (TotalBloodEarned >= 1_000_000)   TryUnlock(AchievementFlags.BloodMillion);
         if (TotalBloodEarned >= 1_000_000_000)    TryUnlock(AchievementFlags.BloodBillion);
-        if (TotalBloodEarned >= 10_000_000_000.0) TryUnlock(AchievementFlags.BloodLegend);
+        if (TotalBloodEarned >= 10_000_000_000.0)    TryUnlock(AchievementFlags.BloodLegend);
+        if (TotalBloodEarned >= 1_000_000_000_000.0) TryUnlock(AchievementFlags.BloodTrillion);
     }
 
     void TryUnlock(AchievementFlags flag)
@@ -1480,7 +1497,8 @@ public class GameManager : MonoBehaviour
         if (Wave >= 10)  TryUnlock(AchievementFlags.Wave10);
         if (Wave >= 25)  TryUnlock(AchievementFlags.Wave25);
         if (Wave >= 200) TryUnlock(AchievementFlags.Wave200);
-        if (Wave >= 500) TryUnlock(AchievementFlags.Wave500);
+        if (Wave >= 500)  TryUnlock(AchievementFlags.Wave500);
+        if (Wave >= 1000) TryUnlock(AchievementFlags.Wave1000);
         WavePreviewActive = true;
         _previewTimer     = WavePreviewDuration;
         _dmgTimer         = 0f;
@@ -1529,8 +1547,9 @@ public class GameManager : MonoBehaviour
         _bloodStormTimer = BloodStormCooldownEffective;
         _dailySpellCount++;
         TotalSpellsCast++;
-        if (TotalSpellsCast >= 50)  TryUnlock(AchievementFlags.SpellCaster);
-        if (TotalSpellsCast >= 500) TryUnlock(AchievementFlags.GrandWizard);
+        if (TotalSpellsCast >= 50)   TryUnlock(AchievementFlags.SpellCaster);
+        if (TotalSpellsCast >= 500)  TryUnlock(AchievementFlags.GrandWizard);
+        if (TotalSpellsCast >= 5000) TryUnlock(AchievementFlags.SpellLord);
         CheckQuestProgress(QuestTrackType.Spells);
         OnDamageDealt?.Invoke(dmg, true);
         OnStateChanged?.Invoke();
@@ -1547,8 +1566,9 @@ public class GameManager : MonoBehaviour
         _desecrateTimer = DesecrateCooldownEffective;
         _dailySpellCount++;
         TotalSpellsCast++;
-        if (TotalSpellsCast >= 50)  TryUnlock(AchievementFlags.SpellCaster);
-        if (TotalSpellsCast >= 500) TryUnlock(AchievementFlags.GrandWizard);
+        if (TotalSpellsCast >= 50)   TryUnlock(AchievementFlags.SpellCaster);
+        if (TotalSpellsCast >= 500)  TryUnlock(AchievementFlags.GrandWizard);
+        if (TotalSpellsCast >= 5000) TryUnlock(AchievementFlags.SpellLord);
         CheckQuestProgress(QuestTrackType.Spells);
         OnDamageDealt?.Invoke(dmg, true);
         OnStateChanged?.Invoke();
@@ -1565,8 +1585,9 @@ public class GameManager : MonoBehaviour
         _bloodOathTimer = BloodOathCooldown;
         _dailySpellCount++;
         TotalSpellsCast++;
-        if (TotalSpellsCast >= 50)  TryUnlock(AchievementFlags.SpellCaster);
-        if (TotalSpellsCast >= 500) TryUnlock(AchievementFlags.GrandWizard);
+        if (TotalSpellsCast >= 50)   TryUnlock(AchievementFlags.SpellCaster);
+        if (TotalSpellsCast >= 500)  TryUnlock(AchievementFlags.GrandWizard);
+        if (TotalSpellsCast >= 5000) TryUnlock(AchievementFlags.SpellLord);
         CheckQuestProgress(QuestTrackType.Spells);
         OnStateChanged?.Invoke();
         return true;
@@ -1799,8 +1820,9 @@ public class GameManager : MonoBehaviour
         SurgeTimeRemaining = SurgeDurationEffective;
         _dailySpellCount++;
         TotalSpellsCast++;
-        if (TotalSpellsCast >= 50)  TryUnlock(AchievementFlags.SpellCaster);
-        if (TotalSpellsCast >= 500) TryUnlock(AchievementFlags.GrandWizard);
+        if (TotalSpellsCast >= 50)   TryUnlock(AchievementFlags.SpellCaster);
+        if (TotalSpellsCast >= 500)  TryUnlock(AchievementFlags.GrandWizard);
+        if (TotalSpellsCast >= 5000) TryUnlock(AchievementFlags.SpellLord);
         CheckQuestProgress(QuestTrackType.Spells);
         OnStateChanged?.Invoke();
         return true;
@@ -2246,6 +2268,7 @@ public class GameManager : MonoBehaviour
         if (PrestigeCount >= 3)  TryUnlock(AchievementFlags.Prestige3);
         if (PrestigeCount >= 5)  TryUnlock(AchievementFlags.Prestige5);
         if (PrestigeCount >= 10) TryUnlock(AchievementFlags.Prestige10);
+        if (PrestigeCount >= 20) TryUnlock(AchievementFlags.Prestige20);
         if (PrestigeMilestonesReached > milestonesBefore)
             OnMilestoneChest?.Invoke($"⭐ Prestige Milestone! +{PrestigeMilestoneDmgBonus * 100:F0}% attack!");
         Blood               = 0;
