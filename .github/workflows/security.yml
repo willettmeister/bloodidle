@@ -39,6 +39,9 @@ jobs:
       - name: Install secator
         run: pip install secator
 
+      - name: Add Go bin to PATH
+        run: echo "/home/runner/go/bin" >> $GITHUB_PATH
+
       - name: Install secator tools (nuclei, gitleaks, trivy)
         run: |
           secator install tools nuclei
@@ -147,6 +150,9 @@ jobs:
 
       - name: Install secator
         run: pip install secator
+
+      - name: Add Go bin to PATH
+        run: echo "/home/runner/go/bin" >> $GITHUB_PATH
 
       - name: Install secator tools (httpx, nuclei)
         run: |
