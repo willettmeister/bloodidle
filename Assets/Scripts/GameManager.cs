@@ -34,6 +34,17 @@ public enum AchievementFlags
     BloodLegend   = 1 << 24,  // earn 10 billion blood total
 }
 
+public struct AchievementDef
+{
+    public AchievementFlags Flag;
+    public string  Title;
+    public double  BloodReward;  // blood granted on unlock
+    public int     PPReward;     // prestige points granted on unlock
+    public double  IncomeMult;   // additive bonus to passive income multiplier
+    public double  ClickBonus;   // additive bonus to blood per click
+    public float   AttackBonus;  // additive bonus to attack per soldier
+}
+
 public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral }
 public enum BossAbility    { None, Shield, Berserk, Drain }
 public enum QuestTrackType { Kills, Farms, Wave, Spells }
@@ -586,32 +597,21 @@ public class GameManager : MonoBehaviour
     public AchievementFlags Achievements { get; private set; }
     bool HasAchievement(AchievementFlags f) => (Achievements & f) != 0;
 
-    public double AchievementBloodIncomeMult =>
-        1.0
-        + (HasAchievement(AchievementFlags.Wave10)        ? 0.05 : 0)
-        + (HasAchievement(AchievementFlags.Wave25)        ? 0.05 : 0)
-        + (HasAchievement(AchievementFlags.Wave50)        ? 0.10 : 0)
-        + (HasAchievement(AchievementFlags.Wave100)       ? 0.15 : 0)
-        + (HasAchievement(AchievementFlags.Untouchable)   ? 0.05 : 0)
-        + (HasAchievement(AchievementFlags.BloodBillion)  ? 0.20 : 0)
-        + (HasAchievement(AchievementFlags.Wave500)       ? 0.25 : 0);
-
-    public double AchievementClickBonus =>
-        (HasAchievement(AchievementFlags.Blood1K)         ? 0.5  : 0)
-        + (HasAchievement(AchievementFlags.Blood10K)      ? 1.0  : 0)
-        + (HasAchievement(AchievementFlags.Blood100K)     ? 2.0  : 0)
-        + (HasAchievement(AchievementFlags.BloodMillion)  ? 3.0  : 0)
-        + (HasAchievement(AchievementFlags.BloodBillion)  ? 5.0  : 0)
-        + (HasAchievement(AchievementFlags.BloodLegend)  ? 7.0  : 0);
-
-    public float AchievementAttackBonus =>
-        (HasAchievement(AchievementFlags.FirstSoldier)    ? 1f  : 0f)
-        + (HasAchievement(AchievementFlags.FullLegion)    ? 2f  : 0f)
-        + (HasAchievement(AchievementFlags.BossSlayer)    ? 3f  : 0f)
-        + (HasAchievement(AchievementFlags.Wave200)       ? 5f  : 0f)
-        + (HasAchievement(AchievementFlags.FirstPrestige)? 2f  : 0f)
-        + (HasAchievement(AchievementFlags.Prestige3)    ? 5f  : 0f)
-        + (HasAchievement(AchievementFlags.Wave500)      ? 10f : 0f);
+    public double AchievementBloodIncomeMult { get {
+        double v = 1.0;
+        foreach (var d in AchievementDefs) if (HasAchievement(d.Flag)) v += d.IncomeMult;
+        return v;
+    }}
+    public double AchievementClickBonus { get {
+        double v = 0.0;
+        foreach (var d in AchievementDefs) if (HasAchievement(d.Flag)) v += d.ClickBonus;
+        return v;
+    }}
+    public float AchievementAttackBonus { get {
+        float v = 0f;
+        foreach (var d in AchievementDefs) if (HasAchievement(d.Flag)) v += d.AttackBonus;
+        return v;
+    }}
     public event Action<AchievementFlags> OnAchievementUnlocked;
 
     // --- Offline earnings ---
@@ -695,31 +695,36 @@ public class GameManager : MonoBehaviour
     AudioSource _audio;
     AudioClip   _clipFarm, _clipKill, _clipBossKill;
 
-    static readonly (AchievementFlags flag, double blood, int pp)[] k_AchievRewards =
+    // Single source of truth for all achievement data.
+    // To add a new achievement: (1) add a flag to AchievementFlags, (2) add one row here,
+    // (3) add a TryUnlock() call at the relevant event site.
+    public static readonly AchievementDef[] AchievementDefs =
     {
-        (AchievementFlags.FirstKill,     50.0,  0),
-        (AchievementFlags.Wave10,        200.0, 0),
-        (AchievementFlags.Wave25,        500.0, 0),
-        (AchievementFlags.Blood1K,       100.0, 0),
-        (AchievementFlags.Blood10K,      500.0, 0),
-        (AchievementFlags.FirstSoldier,  25.0,  0),
-        (AchievementFlags.FullLegion,    300.0, 0),
-        (AchievementFlags.FirstRitual,   100.0, 0),
-        (AchievementFlags.FirstPrestige, 0.0,   1),
-        (AchievementFlags.Wave50,        1000.0, 0),
-        (AchievementFlags.Blood100K,     1000.0, 0),
-        (AchievementFlags.Untouchable,   500.0,  0),
-        (AchievementFlags.Prestige3,     0.0,    1),
-        (AchievementFlags.Wave100,       2000.0, 0),
-        (AchievementFlags.BloodMillion,  2000.0, 0),
-        (AchievementFlags.BossSlayer,    0.0,    1),
-        (AchievementFlags.BloodBillion,  5000.0, 1),
-        (AchievementFlags.Wave200,       5000.0, 1),
-        (AchievementFlags.SpellCaster,   300.0,  0),
-        (AchievementFlags.GrandWizard,   2000.0, 1),
-        (AchievementFlags.StreakMaster,  500.0,  0),
-        (AchievementFlags.Prestige5,     0.0,    1),
-        (AchievementFlags.Prestige10,    0.0,    2),
+        new AchievementDef { Flag = AchievementFlags.FirstKill,    Title = "First Blood",            BloodReward = 50.0 },
+        new AchievementDef { Flag = AchievementFlags.Wave10,       Title = "Wave 10 Reached",        BloodReward = 200.0,   IncomeMult = 0.05 },
+        new AchievementDef { Flag = AchievementFlags.Wave25,       Title = "Wave 25 Reached",        BloodReward = 500.0,   IncomeMult = 0.05 },
+        new AchievementDef { Flag = AchievementFlags.Blood1K,      Title = "Blood Hoarder (1K)",     BloodReward = 100.0,   ClickBonus = 0.5 },
+        new AchievementDef { Flag = AchievementFlags.Blood10K,     Title = "Blood Baron (10K)",      BloodReward = 500.0,   ClickBonus = 1.0 },
+        new AchievementDef { Flag = AchievementFlags.FirstSoldier, Title = "First Recruit",          BloodReward = 25.0,    AttackBonus = 1f },
+        new AchievementDef { Flag = AchievementFlags.FullLegion,   Title = "Full Legion",            BloodReward = 300.0,   AttackBonus = 2f },
+        new AchievementDef { Flag = AchievementFlags.FirstRitual,  Title = "Blood Ritualist",        BloodReward = 100.0 },
+        new AchievementDef { Flag = AchievementFlags.FirstPrestige,Title = "Reborn in Blood",        PPReward = 1,          AttackBonus = 2f },
+        new AchievementDef { Flag = AchievementFlags.Wave50,       Title = "Wave 50 Reached",        BloodReward = 1000.0,  IncomeMult = 0.10 },
+        new AchievementDef { Flag = AchievementFlags.Blood100K,    Title = "Blood Empire (100K)",    BloodReward = 1000.0,  ClickBonus = 2.0 },
+        new AchievementDef { Flag = AchievementFlags.Untouchable,  Title = "Untouchable (×10)",      BloodReward = 500.0,   IncomeMult = 0.05 },
+        new AchievementDef { Flag = AchievementFlags.Prestige3,    Title = "Reborn Thrice",          PPReward = 1,          AttackBonus = 5f },
+        new AchievementDef { Flag = AchievementFlags.Wave100,      Title = "Centurion (Wave 100)",   BloodReward = 2000.0,  IncomeMult = 0.15 },
+        new AchievementDef { Flag = AchievementFlags.BloodMillion, Title = "Blood Millionaire",      BloodReward = 2000.0,  ClickBonus = 3.0 },
+        new AchievementDef { Flag = AchievementFlags.BossSlayer,   Title = "Boss Slayer (×25)",      PPReward = 1,          AttackBonus = 3f },
+        new AchievementDef { Flag = AchievementFlags.BloodBillion, Title = "Blood Billionaire (1B)", BloodReward = 5000.0,  PPReward = 1,  IncomeMult = 0.20,  ClickBonus = 5.0 },
+        new AchievementDef { Flag = AchievementFlags.Wave200,      Title = "Legend (Wave 200)",      BloodReward = 5000.0,  PPReward = 1,  AttackBonus = 5f },
+        new AchievementDef { Flag = AchievementFlags.SpellCaster,  Title = "Spell Caster (50)",      BloodReward = 300.0 },
+        new AchievementDef { Flag = AchievementFlags.GrandWizard,  Title = "Grand Wizard (500)",     BloodReward = 2000.0,  PPReward = 1 },
+        new AchievementDef { Flag = AchievementFlags.StreakMaster, Title = "Streak Master (×10)",    BloodReward = 500.0 },
+        new AchievementDef { Flag = AchievementFlags.Prestige5,    Title = "Veteran (Prestige 5)",   PPReward = 1 },
+        new AchievementDef { Flag = AchievementFlags.Prestige10,   Title = "Warlord (Prestige 10)",  PPReward = 2 },
+        new AchievementDef { Flag = AchievementFlags.Wave500,      Title = "Eternal (Wave 500)",     BloodReward = 10000.0, PPReward = 1,  IncomeMult = 0.25, AttackBonus = 10f },
+        new AchievementDef { Flag = AchievementFlags.BloodLegend,  Title = "Blood Legend (10B)",     BloodReward = 10000.0, PPReward = 1,  ClickBonus = 7.0 },
     };
 
 #if UNITY_INCLUDE_TESTS
@@ -1425,11 +1430,11 @@ public class GameManager : MonoBehaviour
     {
         if ((Achievements & flag) != 0) return;
         Achievements |= flag;
-        foreach (var (f, blood, pp) in k_AchievRewards)
+        foreach (var d in AchievementDefs)
         {
-            if (f != flag) continue;
-            if (blood > 0) AddBlood(blood);
-            if (pp    > 0) PrestigePoints += pp;
+            if (d.Flag != flag) continue;
+            if (d.BloodReward > 0) AddBlood(d.BloodReward);
+            if (d.PPReward    > 0) PrestigePoints += d.PPReward;
             break;
         }
         OnAchievementUnlocked?.Invoke(flag);

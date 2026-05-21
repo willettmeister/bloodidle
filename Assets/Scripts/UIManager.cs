@@ -299,34 +299,7 @@ public class UIManager : MonoBehaviour
     double _lastBloodDisplay;
     bool   _tutorialWasActive;
 
-    static readonly (AchievementFlags flag, string title, double bloodReward, int ppReward)[] k_AchievDefs =
-    {
-        (AchievementFlags.FirstKill,     "First Blood",         50.0,  0),
-        (AchievementFlags.Wave10,        "Wave 10 Reached",     200.0, 0),
-        (AchievementFlags.Wave25,        "Wave 25 Reached",     500.0, 0),
-        (AchievementFlags.Blood1K,       "Blood Hoarder (1K)",  100.0, 0),
-        (AchievementFlags.Blood10K,      "Blood Baron (10K)",   500.0, 0),
-        (AchievementFlags.FirstSoldier,  "First Recruit",       25.0,  0),
-        (AchievementFlags.FullLegion,    "Full Legion",         300.0, 0),
-        (AchievementFlags.FirstRitual,   "Blood Ritualist",     100.0, 0),
-        (AchievementFlags.FirstPrestige, "Reborn in Blood",     0.0,   1),
-        (AchievementFlags.Wave50,        "Wave 50 Reached",       1000.0, 0),
-        (AchievementFlags.Blood100K,     "Blood Empire (100K)",   1000.0, 0),
-        (AchievementFlags.Untouchable,   "Untouchable (×10)",     500.0,  0),
-        (AchievementFlags.Prestige3,     "Reborn Thrice",         0.0,    1),
-        (AchievementFlags.Wave100,       "Centurion (Wave 100)",  2000.0, 0),
-        (AchievementFlags.BloodMillion,  "Blood Millionaire",     2000.0, 0),
-        (AchievementFlags.BossSlayer,    "Boss Slayer (×25)",     0.0,    1),
-        (AchievementFlags.BloodBillion,  "Blood Billionaire (1B)", 5000.0, 1),
-        (AchievementFlags.Wave200,       "Legend (Wave 200)",     5000.0, 1),
-        (AchievementFlags.SpellCaster,   "Spell Caster (50)",      300.0,  0),
-        (AchievementFlags.GrandWizard,   "Grand Wizard (500)",    2000.0,  1),
-        (AchievementFlags.StreakMaster,  "Streak Master (×10)",    500.0,  0),
-        (AchievementFlags.Prestige5,     "Veteran (Prestige 5)",    0.0,   1),
-        (AchievementFlags.Prestige10,    "Warlord (Prestige 10)",   0.0,   2),
-        (AchievementFlags.Wave500,       "Eternal (Wave 500)",      10000.0, 1),
-        (AchievementFlags.BloodLegend,   "Blood Legend (10B)",      10000.0, 1),
-    };
+    // Achievement definitions live in GameManager.AchievementDefs — no duplicate table here.
 
     void Start()
     {
@@ -1476,15 +1449,15 @@ public class UIManager : MonoBehaviour
         if (gm.AchievementAttackBonus > 0)
             sb.AppendLine($"  Attack bonus:    +{gm.AchievementAttackBonus:F0}/soldier");
         int completedAchieves = 0;
-        foreach (var (flag, _, _, _) in k_AchievDefs) if ((gm.Achievements & flag) != 0) completedAchieves++;
-        sb.AppendLine($"  Completed:       {completedAchieves}/{k_AchievDefs.Length}");
+        foreach (var d in GameManager.AchievementDefs) if ((gm.Achievements & d.Flag) != 0) completedAchieves++;
+        sb.AppendLine($"  Completed:       {completedAchieves}/{GameManager.AchievementDefs.Length}");
         sb.AppendLine();
         sb.AppendLine("── Achievements ──────────────────");
-        foreach (var (flag, title, _, _) in k_AchievDefs)
+        foreach (var d in GameManager.AchievementDefs)
         {
-            bool done = (gm.Achievements & flag) != 0;
-            string prog = done ? "" : AchievementProgress(gm, flag);
-            sb.AppendLine($"  {(done ? "✓" : "○")}  {title}{prog}");
+            bool done = (gm.Achievements & d.Flag) != 0;
+            string prog = done ? "" : AchievementProgress(gm, d.Flag);
+            sb.AppendLine($"  {(done ? "✓" : "○")}  {d.Title}{prog}");
         }
 
         statsText.text = sb.ToString();
@@ -1523,12 +1496,12 @@ public class UIManager : MonoBehaviour
     void ShowAchievementToast(AchievementFlags flag)
     {
         string title = flag.ToString(), reward = "";
-        foreach (var (f, t, blood, pp) in k_AchievDefs)
+        foreach (var d in GameManager.AchievementDefs)
         {
-            if (f != flag) continue;
-            title = t;
-            if (blood > 0) reward = $" (+{GameManager.FormatNumber(blood)} blood)";
-            else if (pp > 0) reward = " (+1 PP)";
+            if (d.Flag != flag) continue;
+            title = d.Title;
+            if (d.BloodReward > 0) reward = $" (+{GameManager.FormatNumber(d.BloodReward)} blood)";
+            else if (d.PPReward > 0) reward = " (+1 PP)";
             break;
         }
         StartCoroutine(ToastRoutine($"Achievement: {title}{reward}"));
