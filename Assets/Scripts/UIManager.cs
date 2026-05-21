@@ -193,6 +193,9 @@ public class UIManager : MonoBehaviour
     public GameObject cursedBloodPanel;
     public Button cursedBloodButton;
     public Text   cursedBloodButtonText;
+    public GameObject killIncomePanel;
+    public Button killIncomeUpgradeButton;
+    public Text   killIncomeUpgradeCostText;
 
     [Header("Prestige Milestone")]
     public Text prestigeMilestoneText;
@@ -1041,6 +1044,28 @@ public class UIManager : MonoBehaviour
             cursedBloodPanel.SetActive(gm.CursedBloodUnlocked);
             if (cursedBloodButtonText != null)
                 cursedBloodButtonText.text = gm.CursedBloodEnabled ? "Cursed Blood: ON" : "Cursed Blood: OFF";
+        }
+
+        if (killIncomePanel != null)
+        {
+            killIncomePanel.SetActive(gm.SoulHarvestUnlocked);
+            if (gm.SoulHarvestUnlocked)
+            {
+                bool maxed = gm.KillIncomeUpgradeLevel >= GameManager.KillIncomeMaxLevel;
+                if (killIncomeUpgradeButton != null)
+                    killIncomeUpgradeButton.interactable = !maxed && gm.Blood >= gm.KillIncomeUpgradeCost;
+                if (killIncomeUpgradeCostText != null)
+                {
+                    double rate = gm.EffectiveKillIncomeRate;
+                    if (maxed)
+                        killIncomeUpgradeCostText.text = $"Kill Income: {rate:F2}/kill  (MAX)";
+                    else
+                    {
+                        double nextRate = rate + GameManager.KillIncomeRatePerLevel;
+                        killIncomeUpgradeCostText.text = $"Kill Income Lv.{gm.KillIncomeUpgradeLevel}/{GameManager.KillIncomeMaxLevel}  {rate:F2}→{nextRate:F2}/kill  ({GameManager.FormatNumber(gm.KillIncomeUpgradeCost)} blood)";
+                    }
+                }
+            }
         }
 
         barracksInfoText.text        = $"Barracks  Lv.{gm.BarracksLevel}  —  Max {gm.MaxSoldiers} soldiers";

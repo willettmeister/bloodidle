@@ -30,7 +30,8 @@ using System.IO;
 // 1170–1385  Blood Ritual + Blood Pact (hidden until WorkersUnlocked)
 // 1395–1615  Blood Bank card (+ Interest Upgrade row)
 // 1625–1715  Cursed Blood toggle (hidden until wave 7)
-// buildContent height: 1725
+// 1725–1815  Kill Income upgrade card (hidden until 10 kills)
+// buildContent height: 1825
 //
 // ── PROGRESS TAB (y in progressContent) ─────────────────────────────────────
 //   10–195   Prestige card (hidden until wave 20)
@@ -196,7 +197,7 @@ public static class SceneBuilder
         }
 
         var (battleScrollGO,   battleContent)   = MakeTabScroll(tabAreaGO, "BattleTab",   2410f);
-        var (buildScrollGO,    buildContent)    = MakeTabScroll(tabAreaGO, "BuildTab",    1725f);
+        var (buildScrollGO,    buildContent)    = MakeTabScroll(tabAreaGO, "BuildTab",    1825f);
         var (progressScrollGO, progressContent) = MakeTabScroll(tabAreaGO, "ProgressTab", 1245f);
         var (settingsScrollGO, settingsContent) = MakeTabScroll(tabAreaGO, "SettingsTab", 400f);
 
@@ -719,6 +720,26 @@ public static class SceneBuilder
         PF(cursedBloodBtnGO, 46, 38, 20);
 
         cursedBloodPanel.SetActive(false);
+
+        // ════════════════════════════════════════════════════════════════════
+        // KILL INCOME UPGRADE CARD  (buildContent y 1725–1815) — hidden until 10 kills
+        // ════════════════════════════════════════════════════════════════════
+        var killIncomePanel = content.CreateChild("KillIncomePanel");
+        killIncomePanel.AddImage(Color.clear);
+        PF(killIncomePanel, 1725, 90);
+
+        Panel(killIncomePanel, "KillIncomeBg", 0, 90, Surface1, 24);
+        { var a = killIncomePanel.CreateChild("KillIncomeAccent"); a.AddImage(Crimson); PF(a, 0, 4, 24); }
+
+        var killIncomeUpgradeBtnGO = Btn(killIncomePanel, "KillIncomeUpgradeButton",
+            "Upgrade\n(200 blood)", 28, HC("5A0A0A"));
+        PT(killIncomeUpgradeBtnGO, 12, 62, +232, 200);
+
+        var killIncomeCostGO = Label(killIncomePanel, "KillIncomeUpgradeCostText",
+            "Kill Income Lv.0/3  0.01→0.02/kill  (200 blood)", 26, Color.white, TextAnchor.MiddleLeft);
+        PT(killIncomeCostGO, 18, 52, -175, 390);
+
+        killIncomePanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
         // Switch to PROGRESS tab content
@@ -1458,6 +1479,9 @@ public static class SceneBuilder
         uim.cursedBloodPanel        = cursedBloodPanel;
         uim.cursedBloodButton       = cursedBloodBtnGO.GetComponent<Button>();
         uim.cursedBloodButtonText   = cursedBloodBtnGO.GetComponentInChildren<Text>();
+        uim.killIncomePanel             = killIncomePanel;
+        uim.killIncomeUpgradeButton     = killIncomeUpgradeBtnGO.GetComponent<Button>();
+        uim.killIncomeUpgradeCostText   = killIncomeCostGO.GetComponent<Text>();
         uim.soulShardShopPanel      = soulShardShopPanel;
         uim.soulShardShopPointsText = ssShopPtsGO.GetComponent<Text>();
         uim.ssBossTimerInfoText     = ssBossTimerInfoGO.GetComponent<Text>();
@@ -1609,7 +1633,8 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(withdrawBtnGO.GetComponent<Button>().onClick,           clk.OnWithdrawFromBank);
         UnityEventTools.AddPersistentListener(autoBankBtnGO.GetComponent<Button>().onClick,               clk.OnToggleAutoBank);
         UnityEventTools.AddPersistentListener(bankInterestUpgradeBtnGO.GetComponent<Button>().onClick,    clk.OnBuyBankInterestUpgrade);
-        UnityEventTools.AddPersistentListener(cursedBloodBtnGO.GetComponent<Button>().onClick,        clk.OnToggleCursedBlood);
+        UnityEventTools.AddPersistentListener(cursedBloodBtnGO.GetComponent<Button>().onClick,          clk.OnToggleCursedBlood);
+        UnityEventTools.AddPersistentListener(killIncomeUpgradeBtnGO.GetComponent<Button>().onClick,   clk.OnBuyKillIncomeUpgrade);
         UnityEventTools.AddPersistentListener(statsBtnGO.GetComponent<Button>().onClick,              clk.OnOpenStats);
         UnityEventTools.AddPersistentListener(settingsBtnGO.GetComponent<Button>().onClick,           clk.OnOpenSettings);
         UnityEventTools.AddPersistentListener(suggestBtnGO.GetComponent<Button>().onClick,            clk.OnOpenSuggest);

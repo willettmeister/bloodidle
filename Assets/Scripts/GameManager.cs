@@ -104,8 +104,13 @@ public class GameManager : MonoBehaviour
     public double Wood { get; private set; }
     public int WorkerCount { get; private set; }
     public double WorkerEfficiencyMult => 1.0 + Math.Floor(WorkerCount / 5.0) * 0.1;
-    public const double KillIncomeRate  = 0.01;
-    public double KillIncomePerSec      => TotalEnemiesKilled * KillIncomeRate;
+    public const double KillIncomeRate         = 0.01;
+    public const double KillIncomeRatePerLevel = 0.01;
+    public const int    KillIncomeMaxLevel     = 3;
+    public int    KillIncomeUpgradeLevel { get; private set; }
+    public double KillIncomeUpgradeCost  => Math.Floor(200.0 * Math.Pow(3, KillIncomeUpgradeLevel));
+    public double EffectiveKillIncomeRate => KillIncomeRate + KillIncomeUpgradeLevel * KillIncomeRatePerLevel;
+    public double KillIncomePerSec        => TotalEnemiesKilled * EffectiveKillIncomeRate;
     public bool   IsBloodyWave          => Wave > 0 && Wave % 10 == 0 && !IsBossWave;
     public const double BloodMoonMult   = 2.0;
     public double WaveBloodPreview
@@ -1837,6 +1842,15 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuyKillIncomeUpgrade()
+    {
+        if (KillIncomeUpgradeLevel >= KillIncomeMaxLevel || !SoulHarvestUnlocked || Blood < KillIncomeUpgradeCost) return false;
+        Blood -= KillIncomeUpgradeCost;
+        KillIncomeUpgradeLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public bool UpgradeWeapon()
     {
         if (WeaponLevel >= MaxEquipLevel || Wood < WeaponUpgradeCost) return false;
@@ -2183,7 +2197,7 @@ public class GameManager : MonoBehaviour
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
         SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0;
-        BloodBankDeposit = 0; BloodBankAccrued = 0; BankInterestLevel = 0; WaveStreak = 0;
+        BloodBankDeposit = 0; BloodBankAccrued = 0; BankInterestLevel = 0; KillIncomeUpgradeLevel = 0; WaveStreak = 0;
         SurgeUpgradeLevel = 0; HealUpgradeLevel = 0; BloodStormUpgradeLevel = 0; WarCryUpgradeLevel = 0; HexCurseUpgradeLevel = 0; BloodOathUpgradeLevel = 0; DesecrateUpgradeLevel = 0;
         TotalEnemiesKilled = 0; TotalSpellsCast = 0; TotalBossesKilled = 0; VeteranAttackBonus = 0f; TimePlayed = 0; Achievements = AchievementFlags.None;
         AutoBuySoldiers = false; AutoSurge = false; AutoHeal = false; AutoStorm = false;
@@ -2341,7 +2355,8 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("NotificationsEnabled",NotificationsEnabled ? 1 : 0);
         PlayerPrefs.SetString("BloodBankDeposit",    BloodBankDeposit.ToString("R", ic));
         PlayerPrefs.SetString("BloodBankAccrued",    BloodBankAccrued.ToString("R", ic));
-        PlayerPrefs.SetInt   ("BankInterestLevel",   BankInterestLevel);
+        PlayerPrefs.SetInt   ("BankInterestLevel",        BankInterestLevel);
+        PlayerPrefs.SetInt   ("KillIncomeUpgradeLevel",   KillIncomeUpgradeLevel);
         PlayerPrefs.SetInt   ("WaveStreak",          WaveStreak);
         PlayerPrefs.SetInt   ("BestWave",            BestWave);
         PlayerPrefs.SetInt   ("BestStreak",          BestStreak);
@@ -2451,7 +2466,8 @@ public class GameManager : MonoBehaviour
         NotificationsEnabled = PlayerPrefs.GetInt  ("NotificationsEnabled",1) == 1;
         BloodBankDeposit    = double.Parse(PlayerPrefs.GetString("BloodBankDeposit", "0"), ic);
         BloodBankAccrued    = double.Parse(PlayerPrefs.GetString("BloodBankAccrued", "0"), ic);
-        BankInterestLevel   = PlayerPrefs.GetInt   ("BankInterestLevel",   0);
+        BankInterestLevel         = PlayerPrefs.GetInt("BankInterestLevel",      0);
+        KillIncomeUpgradeLevel    = PlayerPrefs.GetInt("KillIncomeUpgradeLevel", 0);
         WaveStreak          = PlayerPrefs.GetInt   ("WaveStreak",          0);
         BestWave            = PlayerPrefs.GetInt   ("BestWave",            0);
         BestStreak          = PlayerPrefs.GetInt   ("BestStreak",          0);
