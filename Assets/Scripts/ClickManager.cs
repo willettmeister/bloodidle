@@ -63,6 +63,7 @@ public class ClickManager : MonoBehaviour
     public void OnBuySSBloodTap()          => GameManager.Instance.BuySSBloodTap();
     public void OnBuySSShardHunger()       => GameManager.Instance.BuySSShardHunger();
     public void OnDepositToBank()          => GameManager.Instance.DepositToBank(Math.Floor(GameManager.Instance.Blood * 0.1));
+    public void OnBuyBankInterestUpgrade() => GameManager.Instance.BuyBankInterestUpgrade();
     public void OnWithdrawFromBank()       => GameManager.Instance.WithdrawFromBank();
     public void OnBuyPaladin()             => GameManager.Instance.BuyPaladin();
     public void OnUpgradeSurge()           => GameManager.Instance.UpgradeSurge();

@@ -28,9 +28,9 @@ using System.IO;
 //  400–905   Workers card (hidden until WorkersUnlocked)
 //  915–1160  Equipment card (hidden until WorkersUnlocked)
 // 1170–1385  Blood Ritual + Blood Pact (hidden until WorkersUnlocked)
-// 1395–1560  Blood Bank card
-// 1570–1660  Cursed Blood toggle (hidden until wave 7)
-// buildContent height: 1670
+// 1395–1615  Blood Bank card (+ Interest Upgrade row)
+// 1625–1715  Cursed Blood toggle (hidden until wave 7)
+// buildContent height: 1725
 //
 // ── PROGRESS TAB (y in progressContent) ─────────────────────────────────────
 //   10–195   Prestige card (hidden until wave 20)
@@ -196,7 +196,7 @@ public static class SceneBuilder
         }
 
         var (battleScrollGO,   battleContent)   = MakeTabScroll(tabAreaGO, "BattleTab",   2410f);
-        var (buildScrollGO,    buildContent)    = MakeTabScroll(tabAreaGO, "BuildTab",    1670f);
+        var (buildScrollGO,    buildContent)    = MakeTabScroll(tabAreaGO, "BuildTab",    1725f);
         var (progressScrollGO, progressContent) = MakeTabScroll(tabAreaGO, "ProgressTab", 1245f);
         var (settingsScrollGO, settingsContent) = MakeTabScroll(tabAreaGO, "SettingsTab", 400f);
 
@@ -662,20 +662,20 @@ public static class SceneBuilder
         bloodRitualPanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
-        // BLOOD BANK CARD  (buildContent y 1355–1520)
+        // BLOOD BANK CARD  (buildContent y 1395–1615)
         // ════════════════════════════════════════════════════════════════════
         var bloodBankPanel = content.CreateChild("BloodBankPanel");
         bloodBankPanel.AddImage(Color.clear);
-        PF(bloodBankPanel, 1395, 165);
+        PF(bloodBankPanel, 1395, 220);
 
-        Panel(bloodBankPanel, "BloodBankCardBg", 0, 165, Surface1, 24);
+        Panel(bloodBankPanel, "BloodBankCardBg", 0, 220, Surface1, 24);
         { var a = bloodBankPanel.CreateChild("BankAccent"); a.AddImage(Gold); PF(a, 0, 4, 24); }
 
         var bankTitleGO = Label(bloodBankPanel, "BloodBankTitle", "Blood Bank", 40, Gold, TextAnchor.MiddleLeft);
         PT(bankTitleGO, 8, 44, -200, 400);
 
         var bankInfoGO = Label(bloodBankPanel, "BloodBankInfoText",
-            "Blood Bank  0/10,000  (+2%/hr)", 30, Color.white, TextAnchor.MiddleLeft);
+            "Blood Bank  0/10,000  (+2.0%/hr)", 30, Color.white, TextAnchor.MiddleLeft);
         PT(bankInfoGO, 58, 42, -175, 520);
 
         var bankAccruedGO = Label(bloodBankPanel, "BloodBankAccruedText",
@@ -691,12 +691,23 @@ public static class SceneBuilder
         var autoBankBtnGO = Btn(bloodBankPanel, "AutoDepositButton", "Auto: OFF", 26, HC("3A2A00"));
         PT(autoBankBtnGO, 52, 100, +442, 130);
 
+        var bankDiv = bloodBankPanel.CreateChild("BankDiv");
+        bankDiv.AddImage(HC("3A3A1A")); PT(bankDiv, 158, 2, 0, 640);
+
+        var bankInterestUpgradeBtnGO = Btn(bloodBankPanel, "BankInterestUpgradeButton",
+            "Upgrade\nInterest", 26, HC("4A3A00"));
+        PT(bankInterestUpgradeBtnGO, 162, 52, +232, 200);
+
+        var bankInterestCostGO = Label(bloodBankPanel, "BankInterestUpgradeCostText",
+            "Interest Lv.0/3  2.0%→2.5%  (500 blood)", 24, TextSec, TextAnchor.MiddleLeft);
+        PT(bankInterestCostGO, 166, 44, -175, 400);
+
         // ════════════════════════════════════════════════════════════════════
-        // CURSED BLOOD TOGGLE  (buildContent y 1570–1660) — hidden until wave 7
+        // CURSED BLOOD TOGGLE  (buildContent y 1625–1715) — hidden until wave 7
         // ════════════════════════════════════════════════════════════════════
         var cursedBloodPanel = content.CreateChild("CursedBloodPanel");
         cursedBloodPanel.AddImage(Color.clear);
-        PF(cursedBloodPanel, 1570, 90);
+        PF(cursedBloodPanel, 1625, 90);
 
         Panel(cursedBloodPanel, "CursedBloodCardBg", 0, 90, HC("2A0A0A"), 24);
 
@@ -1440,8 +1451,10 @@ public static class SceneBuilder
         uim.bloodBankAccruedText    = bankAccruedGO.GetComponent<Text>();
         uim.depositBloodButton      = depositBtnGO.GetComponent<Button>();
         uim.withdrawBloodButton     = withdrawBtnGO.GetComponent<Button>();
-        uim.autoBankButton          = autoBankBtnGO.GetComponent<Button>();
-        uim.autoBankButtonText      = autoBankBtnGO.GetComponentInChildren<Text>();
+        uim.autoBankButton               = autoBankBtnGO.GetComponent<Button>();
+        uim.autoBankButtonText           = autoBankBtnGO.GetComponentInChildren<Text>();
+        uim.bankInterestUpgradeButton    = bankInterestUpgradeBtnGO.GetComponent<Button>();
+        uim.bankInterestUpgradeCostText  = bankInterestCostGO.GetComponent<Text>();
         uim.cursedBloodPanel        = cursedBloodPanel;
         uim.cursedBloodButton       = cursedBloodBtnGO.GetComponent<Button>();
         uim.cursedBloodButtonText   = cursedBloodBtnGO.GetComponentInChildren<Text>();
@@ -1594,7 +1607,8 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(autoHealBtnGO.GetComponent<Button>().onClick,          clk.OnToggleAutoHeal);
         UnityEventTools.AddPersistentListener(depositBtnGO.GetComponent<Button>().onClick,            clk.OnDepositToBank);
         UnityEventTools.AddPersistentListener(withdrawBtnGO.GetComponent<Button>().onClick,           clk.OnWithdrawFromBank);
-        UnityEventTools.AddPersistentListener(autoBankBtnGO.GetComponent<Button>().onClick,          clk.OnToggleAutoBank);
+        UnityEventTools.AddPersistentListener(autoBankBtnGO.GetComponent<Button>().onClick,               clk.OnToggleAutoBank);
+        UnityEventTools.AddPersistentListener(bankInterestUpgradeBtnGO.GetComponent<Button>().onClick,    clk.OnBuyBankInterestUpgrade);
         UnityEventTools.AddPersistentListener(cursedBloodBtnGO.GetComponent<Button>().onClick,        clk.OnToggleCursedBlood);
         UnityEventTools.AddPersistentListener(statsBtnGO.GetComponent<Button>().onClick,              clk.OnOpenStats);
         UnityEventTools.AddPersistentListener(settingsBtnGO.GetComponent<Button>().onClick,           clk.OnOpenSettings);

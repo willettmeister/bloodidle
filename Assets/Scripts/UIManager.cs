@@ -186,6 +186,8 @@ public class UIManager : MonoBehaviour
     public Button withdrawBloodButton;
     public Button autoBankButton;
     public Text   autoBankButtonText;
+    public Button bankInterestUpgradeButton;
+    public Text   bankInterestUpgradeCostText;
 
     [Header("Cursed Blood")]
     public GameObject cursedBloodPanel;
@@ -1000,7 +1002,7 @@ public class UIManager : MonoBehaviour
         if (bloodBankPanel != null)
         {
             if (bloodBankInfoText != null)
-                bloodBankInfoText.text = $"Blood Bank  {GameManager.FormatNumber(gm.BloodBankDeposit)}/{GameManager.FormatNumber(gm.BankMaxDeposit)}  (+{GameManager.BankInterestRatePerHour * 100:F0}%/hr)";
+                bloodBankInfoText.text = $"Blood Bank  {GameManager.FormatNumber(gm.BloodBankDeposit)}/{GameManager.FormatNumber(gm.BankMaxDeposit)}  (+{gm.EffectiveBankInterestRate * 100:F1}%/hr)";
             if (bloodBankAccruedText != null)
                 bloodBankAccruedText.text = gm.BloodBankAccrued > 0
                     ? $"Interest accrued: +{GameManager.FormatNumber(gm.BloodBankAccrued)} blood"
@@ -1015,6 +1017,22 @@ public class UIManager : MonoBehaviour
                 autoBankButton.interactable = true;
                 if (autoBankButtonText != null)
                     autoBankButtonText.text = gm.AutoBankDeposit ? "Auto: ON" : "Auto: OFF";
+            }
+            if (bankInterestUpgradeButton != null)
+            {
+                bool maxed = gm.BankInterestLevel >= GameManager.BankInterestMaxLevel;
+                bankInterestUpgradeButton.gameObject.SetActive(true);
+                bankInterestUpgradeButton.interactable = !maxed && gm.Blood >= gm.BankInterestUpgradeCost;
+                if (bankInterestUpgradeCostText != null)
+                {
+                    if (maxed)
+                        bankInterestUpgradeCostText.text = $"Interest: {gm.EffectiveBankInterestRate * 100:F1}%/hr  (MAX)";
+                    else
+                    {
+                        double nextRate = (gm.EffectiveBankInterestRate + GameManager.BankInterestRatePerLevel) * 100;
+                        bankInterestUpgradeCostText.text = $"Interest Lv.{gm.BankInterestLevel}/{GameManager.BankInterestMaxLevel}  {gm.EffectiveBankInterestRate * 100:F1}%→{nextRate:F1}%  ({GameManager.FormatNumber(gm.BankInterestUpgradeCost)} blood)";
+                    }
+                }
             }
         }
 

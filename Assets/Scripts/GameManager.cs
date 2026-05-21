@@ -309,8 +309,13 @@ public class GameManager : MonoBehaviour
     // --- Blood Bank ---
     public double BloodBankDeposit { get; private set; }
     public double BloodBankAccrued { get; private set; }
-    public const double BankInterestRatePerHour = 0.02;
-    public const double BankMaxDepositBase      = 10_000.0;
+    public const double BankInterestRatePerHour  = 0.02;
+    public const double BankInterestRatePerLevel = 0.005;
+    public const int    BankInterestMaxLevel     = 3;
+    public const double BankMaxDepositBase       = 10_000.0;
+    public int    BankInterestLevel      { get; private set; }
+    public double BankInterestUpgradeCost => Math.Floor(500.0 * Math.Pow(3, BankInterestLevel));
+    public double EffectiveBankInterestRate => BankInterestRatePerHour + BankInterestLevel * BankInterestRatePerLevel;
     public double BankMaxDeposit => BankMaxDepositBase * Math.Pow(10.0, PrestigeCount * 0.5);
 
     // --- Wave Streak ---
@@ -988,7 +993,7 @@ public class GameManager : MonoBehaviour
 
         if (BloodBankDeposit > 0)
         {
-            BloodBankAccrued += BloodBankDeposit * (BankInterestRatePerHour / 3600.0) * dt;
+            BloodBankAccrued += BloodBankDeposit * (EffectiveBankInterestRate / 3600.0) * dt;
             changed = true;
         }
 
@@ -1823,6 +1828,15 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuyBankInterestUpgrade()
+    {
+        if (BankInterestLevel >= BankInterestMaxLevel || Blood < BankInterestUpgradeCost) return false;
+        Blood -= BankInterestUpgradeCost;
+        BankInterestLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public bool UpgradeWeapon()
     {
         if (WeaponLevel >= MaxEquipLevel || Wood < WeaponUpgradeCost) return false;
@@ -2169,7 +2183,7 @@ public class GameManager : MonoBehaviour
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
         SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0;
-        BloodBankDeposit = 0; BloodBankAccrued = 0; WaveStreak = 0;
+        BloodBankDeposit = 0; BloodBankAccrued = 0; BankInterestLevel = 0; WaveStreak = 0;
         SurgeUpgradeLevel = 0; HealUpgradeLevel = 0; BloodStormUpgradeLevel = 0; WarCryUpgradeLevel = 0; HexCurseUpgradeLevel = 0; BloodOathUpgradeLevel = 0; DesecrateUpgradeLevel = 0;
         TotalEnemiesKilled = 0; TotalSpellsCast = 0; TotalBossesKilled = 0; VeteranAttackBonus = 0f; TimePlayed = 0; Achievements = AchievementFlags.None;
         AutoBuySoldiers = false; AutoSurge = false; AutoHeal = false; AutoStorm = false;
@@ -2327,6 +2341,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("NotificationsEnabled",NotificationsEnabled ? 1 : 0);
         PlayerPrefs.SetString("BloodBankDeposit",    BloodBankDeposit.ToString("R", ic));
         PlayerPrefs.SetString("BloodBankAccrued",    BloodBankAccrued.ToString("R", ic));
+        PlayerPrefs.SetInt   ("BankInterestLevel",   BankInterestLevel);
         PlayerPrefs.SetInt   ("WaveStreak",          WaveStreak);
         PlayerPrefs.SetInt   ("BestWave",            BestWave);
         PlayerPrefs.SetInt   ("BestStreak",          BestStreak);
@@ -2436,6 +2451,7 @@ public class GameManager : MonoBehaviour
         NotificationsEnabled = PlayerPrefs.GetInt  ("NotificationsEnabled",1) == 1;
         BloodBankDeposit    = double.Parse(PlayerPrefs.GetString("BloodBankDeposit", "0"), ic);
         BloodBankAccrued    = double.Parse(PlayerPrefs.GetString("BloodBankAccrued", "0"), ic);
+        BankInterestLevel   = PlayerPrefs.GetInt   ("BankInterestLevel",   0);
         WaveStreak          = PlayerPrefs.GetInt   ("WaveStreak",          0);
         BestWave            = PlayerPrefs.GetInt   ("BestWave",            0);
         BestStreak          = PlayerPrefs.GetInt   ("BestStreak",          0);
@@ -2509,7 +2525,7 @@ public class GameManager : MonoBehaviour
                 }
                 if (BloodBankDeposit > 0)
                 {
-                    OfflineBankInterest = BloodBankDeposit * (BankInterestRatePerHour / 3600.0) * secs;
+                    OfflineBankInterest = BloodBankDeposit * (EffectiveBankInterestRate / 3600.0) * secs;
                     BloodBankAccrued += OfflineBankInterest;
                 }
                 Blood            += OfflineBloodEarned;
