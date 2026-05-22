@@ -76,6 +76,8 @@ public enum TalentFlags
     Glutton      = 1 << 5,  // Blood Rituals produce 25% more blood/s
     EchoMastery  = 1 << 6,  // Blood Echo lasts 8 waves instead of 5
     Bloodlust    = 1 << 7,  // heal frontline 5% of enemy max HP on each kill
+    Hemomancer   = 1 << 8,  // each ritual owned adds +0.2 blood per click
+    WarDrum      = 1 << 9,  // while streak ≥ 5, all soldiers gain +5 attack
 }
 
 public class GameManager : MonoBehaviour
@@ -86,7 +88,9 @@ public class GameManager : MonoBehaviour
     public double Blood { get; private set; }
     public double TotalBloodEarned { get; private set; }
     public const double BloodPerClick = 1.0;
-    public double EffectiveBloodPerClick => (BloodPerClick + PClickBonusLevel * 0.5 + ClickPowerLevel + AchievementClickBonus) * PrestigeMultiplier;
+    public double EffectiveBloodPerClick => (BloodPerClick + PClickBonusLevel * 0.5 + ClickPowerLevel + AchievementClickBonus
+                                             + (HasTalent(TalentFlags.Hemomancer) ? BloodRitualCount * TalentHemomancerClickBonus : 0))
+                                            * PrestigeMultiplier;
     public const double ClickPowerBaseCost  = 15.0;
     public const double ClickPowerCostMult  = 2.0;
     public const int    ClickPowerMaxLevel  = 5;
@@ -172,9 +176,9 @@ public class GameManager : MonoBehaviour
             + EquipArmorBonus
             + (HasTalent(TalentFlags.IronSkin) ? TalentIronSkinHP : 0f)
             - CorruptionLevel * CorruptionHPPenalty);
-    public float TotalAttack         => (TankCount     * (SoldierAttack   + EquipAttackBonus + VeteranAttackBonus + AchievementAttackBonus)
-                                       + BerserkerCount * (BerserkerAttack + EquipAttackBonus + VeteranAttackBonus + AchievementAttackBonus)
-                                       + PaladinCount   * (PaladinAttack   + EquipAttackBonus + VeteranAttackBonus + AchievementAttackBonus))
+    public float TotalAttack         => (TankCount     * (SoldierAttack   + EquipAttackBonus + VeteranAttackBonus + AchievementAttackBonus + WarDrumAttackBonus)
+                                       + BerserkerCount * (BerserkerAttack + EquipAttackBonus + VeteranAttackBonus + AchievementAttackBonus + WarDrumAttackBonus)
+                                       + PaladinCount   * (PaladinAttack   + EquipAttackBonus + VeteranAttackBonus + AchievementAttackBonus + WarDrumAttackBonus))
                                        * (1f + PrestigeMilestoneDmgBonus) * MoraleBonusMult;
     public float EffectiveAttack     => TotalAttack
                                        * (SurgeActive        ? SurgeMultiplier   : 1f)
@@ -385,10 +389,14 @@ public class GameManager : MonoBehaviour
     public bool          PendingPrestige      { get; private set; }
     public TalentFlags[] PendingTalentChoices { get; private set; } = new TalentFlags[0];
     public bool HasTalent(TalentFlags t)      => (Talents & t) != 0;
-    public const float  TalentIronSkinHP       = 15f;
-    public const double TalentBloodFrenzyBonus = 0.25;
-    public const float  TalentGluttonMult      = 1.25f;
-    public const float  TalentBloodlustHealPct = 0.05f;
+    public const float  TalentIronSkinHP            = 15f;
+    public const double TalentBloodFrenzyBonus      = 0.25;
+    public const float  TalentGluttonMult           = 1.25f;
+    public const float  TalentBloodlustHealPct      = 0.05f;
+    public const double TalentHemomancerClickBonus  = 0.2;   // per ritual owned
+    public const float  TalentWarDrumAttackBonus    = 5f;    // while streak ≥ 5
+    public const int    TalentWarDrumStreakThreshold = 5;
+    public float WarDrumAttackBonus => HasTalent(TalentFlags.WarDrum) && WaveStreak >= TalentWarDrumStreakThreshold ? TalentWarDrumAttackBonus : 0f;
 
     // --- Soul Sacrifice ---
     public bool SoulSacrificeUnlocked  => PrestigeCount >= 1;
@@ -2152,6 +2160,7 @@ public class GameManager : MonoBehaviour
             TalentFlags.BloodFrenzy, TalentFlags.Undying,    TalentFlags.ShardHunter,
             TalentFlags.IronSkin,    TalentFlags.BloodRush,  TalentFlags.Glutton,
             TalentFlags.EchoMastery, TalentFlags.Bloodlust,
+            TalentFlags.Hemomancer,  TalentFlags.WarDrum,
         };
         int availCount = 0;
         for (int k = 0; k < all.Length; k++)

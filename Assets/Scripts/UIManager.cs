@@ -1418,6 +1418,8 @@ public class UIManager : MonoBehaviour
         TalentFlags.Glutton      => "Glutton\nBlood Rituals produce 25% more blood/s",
         TalentFlags.EchoMastery  => "Echo Mastery\nBlood Echo lasts 8 waves instead of 5",
         TalentFlags.Bloodlust    => "Bloodlust\nHeal frontline for 5% of each enemy's max HP on kill",
+        TalentFlags.Hemomancer   => "Hemomancer\n+0.2 blood/click per ritual owned",
+        TalentFlags.WarDrum      => "War Drum\n+5 attack per soldier while streak ≥ 5",
         _                        => "",
     };
 
@@ -1432,6 +1434,8 @@ public class UIManager : MonoBehaviour
         if ((talents & TalentFlags.Glutton)        != 0) names.Add("Glutton");
         if ((talents & TalentFlags.EchoMastery)    != 0) names.Add("EchoMastery");
         if ((talents & TalentFlags.Bloodlust)      != 0) names.Add("Bloodlust");
+        if ((talents & TalentFlags.Hemomancer)     != 0) names.Add("Hemomancer");
+        if ((talents & TalentFlags.WarDrum)        != 0) names.Add("WarDrum");
         return names.Count > 0 ? "Talents: " + string.Join(" | ", names) : "";
     }
 
