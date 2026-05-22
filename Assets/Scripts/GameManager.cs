@@ -78,6 +78,8 @@ public enum TalentFlags
     Bloodlust    = 1 << 7,  // heal frontline 5% of enemy max HP on each kill
     Hemomancer   = 1 << 8,  // each ritual owned adds +0.2 blood per click
     WarDrum      = 1 << 9,  // while streak ≥ 5, all soldiers gain +5 attack
+    Warlord      = 1 << 10, // +0.1 blood/click per veteran attack bonus point
+    SoulDrain    = 1 << 11, // soldier death instantly deals 15% of enemy current HP
 }
 
 public class GameManager : MonoBehaviour
@@ -89,7 +91,8 @@ public class GameManager : MonoBehaviour
     public double TotalBloodEarned { get; private set; }
     public const double BloodPerClick = 1.0;
     public double EffectiveBloodPerClick => (BloodPerClick + PClickBonusLevel * 0.5 + ClickPowerLevel + AchievementClickBonus
-                                             + (HasTalent(TalentFlags.Hemomancer) ? BloodRitualCount * TalentHemomancerClickBonus : 0))
+                                             + (HasTalent(TalentFlags.Hemomancer) ? BloodRitualCount * TalentHemomancerClickBonus : 0)
+                                             + WarlordClickBonus)
                                             * PrestigeMultiplier;
     public const double ClickPowerBaseCost  = 15.0;
     public const double ClickPowerCostMult  = 2.0;
@@ -416,6 +419,9 @@ public class GameManager : MonoBehaviour
     public const float  TalentWarDrumAttackBonus    = 5f;    // while streak ≥ 5
     public const int    TalentWarDrumStreakThreshold = 5;
     public float WarDrumAttackBonus => HasTalent(TalentFlags.WarDrum) && WaveStreak >= TalentWarDrumStreakThreshold ? TalentWarDrumAttackBonus : 0f;
+    public const double TalentWarlordClickBonus     = 0.1;   // per veteran attack bonus point
+    public double WarlordClickBonus => HasTalent(TalentFlags.Warlord) ? VeteranAttackBonus * TalentWarlordClickBonus : 0.0;
+    public const float  TalentSoulDrainPct          = 0.15f; // fraction of enemy current HP on soldier death
 
     // --- Soul Sacrifice ---
     public bool SoulSacrificeUnlocked  => PrestigeCount >= 1;
@@ -1275,6 +1281,8 @@ public class GameManager : MonoBehaviour
                 else if (FrontlineIsBerserker) BerserkerCount--;
                 else                           PaladinCount--;
                 TotalSoldiersLost++;
+                if (HasTalent(TalentFlags.SoulDrain) && EnemyHP > 0)
+                    EnemyHP = Mathf.Max(float.Epsilon, EnemyHP - EnemyHP * TalentSoulDrainPct);
                 if (SoldierCount > 0 && _adrenalineStacks < AdrenalineMaxStack) { _adrenalineStacks++; _adrenalineTimer = AdrenalineDuration; }
                 SoldierHP  = SoldierCount > 0 ? FrontlineMaxHP : 0f;
                 if (WaveStreak > BestStreak) BestStreak = WaveStreak;
@@ -2231,6 +2239,7 @@ public class GameManager : MonoBehaviour
             TalentFlags.IronSkin,    TalentFlags.BloodRush,  TalentFlags.Glutton,
             TalentFlags.EchoMastery, TalentFlags.Bloodlust,
             TalentFlags.Hemomancer,  TalentFlags.WarDrum,
+            TalentFlags.Warlord,     TalentFlags.SoulDrain,
         };
         int availCount = 0;
         for (int k = 0; k < all.Length; k++)
