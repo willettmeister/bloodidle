@@ -176,9 +176,9 @@ public class GameManager : MonoBehaviour
             + EquipArmorBonus
             + (HasTalent(TalentFlags.IronSkin) ? TalentIronSkinHP : 0f)
             - CorruptionLevel * CorruptionHPPenalty);
-    public float TotalAttack         => (TankCount     * (SoldierAttack   + EquipAttackBonus + VeteranAttackBonus + AchievementAttackBonus + WarDrumAttackBonus)
-                                       + BerserkerCount * (BerserkerAttack + EquipAttackBonus + VeteranAttackBonus + AchievementAttackBonus + WarDrumAttackBonus)
-                                       + PaladinCount   * (PaladinAttack   + EquipAttackBonus + VeteranAttackBonus + AchievementAttackBonus + WarDrumAttackBonus))
+    public float TotalAttack         => (TankCount     * (SoldierAttack   + EquipAttackBonus + VeteranAttackBonus + AchievementAttackBonus + WarDrumAttackBonus + IronMarrowAttackBonus)
+                                       + BerserkerCount * (BerserkerAttack + EquipAttackBonus + VeteranAttackBonus + AchievementAttackBonus + WarDrumAttackBonus + IronMarrowAttackBonus)
+                                       + PaladinCount   * (PaladinAttack   + EquipAttackBonus + VeteranAttackBonus + AchievementAttackBonus + WarDrumAttackBonus + IronMarrowAttackBonus))
                                        * (1f + PrestigeMilestoneDmgBonus) * MoraleBonusMult;
     public float EffectiveAttack     => TotalAttack
                                        * (SurgeActive        ? SurgeMultiplier   : 1f)
@@ -332,6 +332,11 @@ public class GameManager : MonoBehaviour
     public int    SSBloodEchoLevel      { get; private set; }
     public const double SSBloodEchoBossBonus = 0.5;
     public double BloodEchoPerSec       => SSBloodEchoLevel * SSBloodEchoBossBonus * TotalBossesKilled * PrestigeMultiplier;
+    public int    SSIronMarrowLevel     { get; private set; }
+    public const float SSIronMarrowBonus = 3f;
+    public float  IronMarrowAttackBonus => SSIronMarrowLevel * SSIronMarrowBonus;
+    public int    SSWrathBloomLevel     { get; private set; }
+    public const float SSWrathBloomSurgeSecs = 10f;
 
     // --- Blood Bank ---
     public double BloodBankDeposit { get; private set; }
@@ -1196,6 +1201,8 @@ public class GameManager : MonoBehaviour
                 SurgeActive        = true;
                 SurgeTimeRemaining = SurgeDurationEffective;
             }
+            if (wasBoss && SSWrathBloomLevel > 0 && SurgeActive)
+                SurgeTimeRemaining += SSWrathBloomLevel * SSWrathBloomSurgeSecs;
 
             TotalEnemiesKilled++;
             TryUnlock(AchievementFlags.FirstKill);
@@ -2161,6 +2168,24 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuySSIronMarrow()
+    {
+        if (SoulShards < SSTier2Cost || SSIronMarrowLevel >= SSTier2MaxLevel) return false;
+        SoulShards -= SSTier2Cost;
+        SSIronMarrowLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    public bool BuySSWrathBloom()
+    {
+        if (SoulShards < SSTier2Cost || SSWrathBloomLevel >= SSTier2MaxLevel) return false;
+        SoulShards -= SSTier2Cost;
+        SSWrathBloomLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public void RequestPrestige()
     {
         if (Wave < PrestigeWaveRequirement || PendingPrestige) return;
@@ -2291,7 +2316,7 @@ public class GameManager : MonoBehaviour
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
         SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0; SSSoulHarvestLevel = 0;
-        SSVoidConduitLevel = 0; SSBloodEchoLevel = 0;
+        SSVoidConduitLevel = 0; SSBloodEchoLevel = 0; SSIronMarrowLevel = 0; SSWrathBloomLevel = 0;
         BloodBankDeposit = 0; BloodBankAccrued = 0; BankInterestLevel = 0; KillIncomeUpgradeLevel = 0; WaveStreak = 0;
         SurgeUpgradeLevel = 0; HealUpgradeLevel = 0; BloodStormUpgradeLevel = 0; WarCryUpgradeLevel = 0; HexCurseUpgradeLevel = 0; BloodOathUpgradeLevel = 0; DesecrateUpgradeLevel = 0;
         TotalEnemiesKilled = 0; TotalSpellsCast = 0; TotalBossesKilled = 0; VeteranAttackBonus = 0f; TimePlayed = 0; Achievements = AchievementFlags.None;
@@ -2444,6 +2469,8 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("SSSoulHarvestLevel",   SSSoulHarvestLevel);
         PlayerPrefs.SetInt   ("SSVoidConduitLevel",   SSVoidConduitLevel);
         PlayerPrefs.SetInt   ("SSBloodEchoLevel",     SSBloodEchoLevel);
+        PlayerPrefs.SetInt   ("SSIronMarrowLevel",    SSIronMarrowLevel);
+        PlayerPrefs.SetInt   ("SSWrathBloomLevel",    SSWrathBloomLevel);
         PlayerPrefs.SetInt   ("SurgeUpgradeLevel",        SurgeUpgradeLevel);
         PlayerPrefs.SetInt   ("HealUpgradeLevel",         HealUpgradeLevel);
         PlayerPrefs.SetInt   ("BloodStormUpgradeLevel",   BloodStormUpgradeLevel);
@@ -2559,6 +2586,8 @@ public class GameManager : MonoBehaviour
         SSSoulHarvestLevel  = PlayerPrefs.GetInt("SSSoulHarvestLevel",  0);
         SSVoidConduitLevel  = PlayerPrefs.GetInt("SSVoidConduitLevel",  0);
         SSBloodEchoLevel    = PlayerPrefs.GetInt("SSBloodEchoLevel",    0);
+        SSIronMarrowLevel   = PlayerPrefs.GetInt("SSIronMarrowLevel",   0);
+        SSWrathBloomLevel   = PlayerPrefs.GetInt("SSWrathBloomLevel",   0);
         SurgeUpgradeLevel        = PlayerPrefs.GetInt   ("SurgeUpgradeLevel",        0);
         HealUpgradeLevel         = PlayerPrefs.GetInt   ("HealUpgradeLevel",         0);
         BloodStormUpgradeLevel   = PlayerPrefs.GetInt   ("BloodStormUpgradeLevel",   0);

@@ -179,6 +179,10 @@ public class UIManager : MonoBehaviour
     public Button ssVoidConduitButton;
     public Text ssBloodEchoInfoText;
     public Button ssBloodEchoButton;
+    public Text ssIronMarrowInfoText;
+    public Button ssIronMarrowButton;
+    public Text ssWrathBloomInfoText;
+    public Button ssWrathBloomButton;
 
     [Header("Settings")]
     public GameObject settingsPanel;
@@ -1024,6 +1028,14 @@ public class UIManager : MonoBehaviour
                 ssBloodEchoInfoText.text = $"Blood Echo +{gm.BloodEchoPerSec:F1}/s from {gm.TotalBossesKilled} bosses  (Lv.{gm.SSBloodEchoLevel}/{GameManager.SSTier2MaxLevel})";
             if (ssBloodEchoButton != null)
                 ssBloodEchoButton.interactable = canBuyT2 && gm.SSBloodEchoLevel < GameManager.SSTier2MaxLevel;
+            if (ssIronMarrowInfoText != null)
+                ssIronMarrowInfoText.text = $"Iron Marrow +{GameManager.SSIronMarrowBonus:F0} atk all soldiers  (Lv.{gm.SSIronMarrowLevel}/{GameManager.SSTier2MaxLevel})";
+            if (ssIronMarrowButton != null)
+                ssIronMarrowButton.interactable = canBuyT2 && gm.SSIronMarrowLevel < GameManager.SSTier2MaxLevel;
+            if (ssWrathBloomInfoText != null)
+                ssWrathBloomInfoText.text = $"Wrath Bloom boss kill extends Surge +{GameManager.SSWrathBloomSurgeSecs:F0}s  (Lv.{gm.SSWrathBloomLevel}/{GameManager.SSTier2MaxLevel})";
+            if (ssWrathBloomButton != null)
+                ssWrathBloomButton.interactable = canBuyT2 && gm.SSWrathBloomLevel < GameManager.SSTier2MaxLevel;
         }
 
         // Blood Bank
