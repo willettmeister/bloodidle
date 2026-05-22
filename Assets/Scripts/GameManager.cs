@@ -51,7 +51,7 @@ public struct AchievementDef
     public float   AttackBonus;  // additive bonus to attack per soldier
 }
 
-public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral }
+public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral, Leech }
 public enum BossAbility    { None, Shield, Berserk, Drain, Regen, Thorns }
 public enum QuestTrackType { Kills, Farms, Wave, Spells }
 
@@ -133,6 +133,7 @@ public class GameManager : MonoBehaviour
             double r = Math.Floor(25 * Math.Pow(1.4, Wave - 1) * PrestigeMultiplier * (1.0 + EquipTalismanBonus));
             if (CurrentEnemyModifier == EnemyModifier.Cursed)   r = Math.Floor(r * EnemyCursedRewardMult);
             if (CurrentEnemyModifier == EnemyModifier.Spectral) r = Math.Floor(r * EnemySpectralRewardMult);
+            if (CurrentEnemyModifier == EnemyModifier.Leech)    r = Math.Floor(r * EnemyLeechRewardMult);
             if (IsBloodyWave)  r = Math.Floor(r * BloodMoonMult);
             if (_isBountyEnemy) r = Math.Floor(r * EffectiveBountyMult);
             if (_isEliteEnemy)  r = Math.Floor(r * EliteRewardMult);
@@ -607,6 +608,7 @@ public class GameManager : MonoBehaviour
         EnemyModifier.Regen    => "♻ Regen",
         EnemyModifier.Cursed   => "☠ Cursed",
         EnemyModifier.Spectral => "👻 Spectral",
+        EnemyModifier.Leech    => "🩸 Leeching",
         _                     => "",
     };
     public const float EnemyArmoredDmgMult    = 0.5f;
@@ -619,6 +621,8 @@ public class GameManager : MonoBehaviour
     public const float EnemySpectralHPMult    = 0.7f;
     public const float EnemySpectralAtkMult   = 1.5f;
     public const float EnemySpectralRewardMult = 1.25f;
+    public const float EnemyLeechHealPct      = 0.30f;
+    public const float EnemyLeechRewardMult   = 1.35f;
 
     // --- Wave preview ---
     public bool WavePreviewActive { get; private set; }
@@ -1168,6 +1172,8 @@ public class GameManager : MonoBehaviour
                 reward = Math.Floor(reward * EnemyCursedRewardMult);
             if (CurrentEnemyModifier == EnemyModifier.Spectral)
                 reward = Math.Floor(reward * EnemySpectralRewardMult);
+            if (CurrentEnemyModifier == EnemyModifier.Leech)
+                reward = Math.Floor(reward * EnemyLeechRewardMult);
             if (IsBloodyWave) reward = Math.Floor(reward * BloodMoonMult);
             if (_isBountyEnemy) reward = Math.Floor(reward * EffectiveBountyMult);
             if (_isEliteEnemy)  reward = Math.Floor(reward * EliteRewardMult);
@@ -1272,6 +1278,8 @@ public class GameManager : MonoBehaviour
             EnemyHP = Mathf.Max(float.Epsilon, EnemyHP - dmg * BloodOathReflectPct);
         if (dmg > 0) _meditationTimer = 0f;
         SoldierHP -= dmg;
+        if (CurrentEnemyModifier == EnemyModifier.Leech && dmg > 0 && EnemyHP > 0)
+            EnemyHP = Mathf.Min(EnemyHP + dmg * EnemyLeechHealPct, EnemyMaxHP);
 
         if (SoldierHP <= 0f)
         {
@@ -1440,7 +1448,7 @@ public class GameManager : MonoBehaviour
             _bossShieldHP      = 0f;
             if (UnityEngine.Random.value < 0.25f)
             {
-                CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 6);
+                CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 7);
                 if (CurrentEnemyModifier == EnemyModifier.Enraged)
                     EnemyAttack *= EnemyEnragedAtkMult;
                 else if (CurrentEnemyModifier == EnemyModifier.Spectral)
