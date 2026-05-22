@@ -52,7 +52,7 @@ public struct AchievementDef
 }
 
 public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral, Leech, Volatile }
-public enum BossAbility    { None, Shield, Berserk, Drain, Regen, Thorns }
+public enum BossAbility    { None, Shield, Berserk, Drain, Regen, Thorns, Haste }
 public enum QuestTrackType { Kills, Farms, Wave, Spells }
 
 public struct DailyQuestDef
@@ -487,7 +487,9 @@ public class GameManager : MonoBehaviour
     public const float BossShieldFraction  = 0.20f;
     public const float BossDrainPerSec     = 5f;
     public const float BossRegenPctPerSec  = 0.005f; // 0.5% of max HP per second
-    public const float BossThornsReflectPct = 0.25f;  // fraction of attacker damage reflected
+    public const float BossThornsReflectPct  = 0.25f;  // fraction of attacker damage reflected
+    public const float BossHasteAtkMult      = 2.0f;   // boss attacks twice as fast
+    public const float BossHasteRewardMult   = 1.40f;  // +40% kill reward
     public string BossAbilityDisplay => CurrentBossAbility switch
     {
         BossAbility.Shield  => "🛡 Shielded",
@@ -495,6 +497,7 @@ public class GameManager : MonoBehaviour
         BossAbility.Drain   => "🩸 Drain",
         BossAbility.Regen   => "💚 Regenerating",
         BossAbility.Thorns  => "🌵 Thorns",
+        BossAbility.Haste   => "⚡ Haste",
         _                   => "",
     };
 
@@ -1231,6 +1234,7 @@ public class GameManager : MonoBehaviour
             if (wasBoss)
             {
                 reward *= 3;
+                if (CurrentBossAbility == BossAbility.Haste) reward = Math.Floor(reward * BossHasteRewardMult);
                 if (SSShardHungerLevel > 0) reward = Math.Floor(reward * (1.0 + SSShardHungerLevel * SSShardHungerBonus));
                 if (VeteranAttackBonus < VeteranAttackCap) VeteranAttackBonus++;
                 SoulShards += HasTalent(TalentFlags.ShardHunter) ? 2 : 1;
@@ -1309,6 +1313,8 @@ public class GameManager : MonoBehaviour
         bool  isSpecialFoe  = IsBossWave || DailyChallengeActive;
         if (isSpecialFoe && CurrentBossAbility == BossAbility.Berserk && EnemyHP < EnemyMaxHP * 0.25f)
             incomingAtk *= 2f;
+        if (isSpecialFoe && CurrentBossAbility == BossAbility.Haste)
+            incomingAtk *= BossHasteAtkMult;
         if (IsMixedArmy)        incomingAtk *= (1f - MixedArmyDmgReduction);
         if (IsAllTank)          incomingAtk *= (1f - TankShieldWallReduction);
         if (PIronWallLevel > 0) incomingAtk *= (1f - PIronWallLevel * IronWallDmgReduction);
@@ -1465,7 +1471,7 @@ public class GameManager : MonoBehaviour
             EnemyAttack      = (float)(3   * Math.Pow(1.3, wave - 1) * 2.0);
             BossTimeRemaining = BossTimeLimit + SSBossTimerLevel * 15f;
             CurrentEnemyModifier = EnemyModifier.None;
-            CurrentBossAbility   = (BossAbility)UnityEngine.Random.Range(0, 6);
+            CurrentBossAbility   = (BossAbility)UnityEngine.Random.Range(0, 7);
             BossShieldActive     = CurrentBossAbility == BossAbility.Shield;
             _bossShieldHP        = BossShieldActive ? EnemyMaxHP * BossShieldFraction : 0f;
         }
