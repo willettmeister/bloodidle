@@ -159,6 +159,8 @@ public class UIManager : MonoBehaviour
     public Button pBountyBonusButton;
     public Text pBloodRitualStartInfoText;
     public Button pBloodRitualStartButton;
+    public Text pBloodMasteryInfoText;
+    public Button pBloodMasteryButton;
 
     [Header("Soul Shard Shop")]
     public GameObject soulShardShopPanel;
@@ -981,6 +983,9 @@ public class UIManager : MonoBehaviour
             if (pBloodRitualStartInfoText != null)
                 pBloodRitualStartInfoText.text = $"Crimson Rite +1 Ritual  (Lv.{gm.PBloodRitualStartLevel})";
             if (pBloodRitualStartButton != null) pBloodRitualStartButton.interactable = canSpend;
+            if (pBloodMasteryInfoText != null)
+                pBloodMasteryInfoText.text = $"Blood Mastery +{GameManager.PBloodMasteryBonus} Vet cap  (Lv.{gm.PBloodMasteryLevel}, cap {gm.VeteranAttackCap})";
+            if (pBloodMasteryButton != null) pBloodMasteryButton.interactable = canSpend;
         }
 
         // Soul Shard Shop
@@ -1495,7 +1500,7 @@ public class UIManager : MonoBehaviour
         sb.AppendLine($"Best Wave:         {gm.BestWave}");
         sb.AppendLine($"Best Streak:       {gm.BestStreak}  (current: {gm.WaveStreak})");
         sb.AppendLine($"Quest Streak:      {gm.DailyQuestStreak}  (best: {gm.BestQuestStreak})");
-        sb.AppendLine($"Veteran Bonus:     +{gm.VeteranAttackBonus}/{GameManager.VeteranAttackCap} atk (from boss kills)");
+        sb.AppendLine($"Veteran Bonus:     +{gm.VeteranAttackBonus}/{gm.VeteranAttackCap} atk (from boss kills)");
         sb.AppendLine($"Soul Shards:       {GameManager.FormatNumber(gm.SoulShards)}");
         sb.AppendLine($"Time Played:       {h}h {m}m {s}s");
         sb.AppendLine($"Prestige Level:    {gm.PrestigeCount}  (milestones: {gm.PrestigeMilestonesReached}/4)");

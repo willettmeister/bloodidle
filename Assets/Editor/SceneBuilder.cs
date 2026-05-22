@@ -775,9 +775,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var prestigeShopPanel = content.CreateChild("PrestigeShopPanel");
         prestigeShopPanel.AddImage(Color.clear);
-        PF(prestigeShopPanel, 205, 543);
+        PF(prestigeShopPanel, 205, 601);
 
-        Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 543, HC("150A30"), 24);
+        Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 601, HC("150A30"), 24);
 
         var shopTitleGO = Label(prestigeShopPanel, "PrestigeShopTitle",
             "Prestige Shop", 40, Gold, TextAnchor.MiddleLeft);
@@ -842,6 +842,13 @@ public static class SceneBuilder
         PT(pBloodRitualStartInfoGO, 466, 48, -175, 500);
         var pBloodRitualStartBtnGO = Btn(prestigeShopPanel, "PBloodRitualStartButton", "Buy (1 PP)", 30, HC("B71C1C"));
         PT(pBloodRitualStartBtnGO, 464, 54, +245, 260);
+
+        // Row 9 — Blood Mastery
+        var pBloodMasteryInfoGO = Label(prestigeShopPanel, "PBloodMasteryInfoText",
+            "Blood Mastery +5 Vet cap  (Lv.0, cap 10)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(pBloodMasteryInfoGO, 524, 48, -175, 500);
+        var pBloodMasteryBtnGO = Btn(prestigeShopPanel, "PBloodMasteryButton", "Buy (1 PP)", 30, HC("1A237E"));
+        PT(pBloodMasteryBtnGO, 522, 54, +245, 260);
 
         prestigeShopPanel.SetActive(false);
 
@@ -1511,6 +1518,8 @@ public static class SceneBuilder
         uim.pBountyBonusButton           = pBountyBonusBtnGO.GetComponent<Button>();
         uim.pBloodRitualStartInfoText    = pBloodRitualStartInfoGO.GetComponent<Text>();
         uim.pBloodRitualStartButton      = pBloodRitualStartBtnGO.GetComponent<Button>();
+        uim.pBloodMasteryInfoText        = pBloodMasteryInfoGO.GetComponent<Text>();
+        uim.pBloodMasteryButton          = pBloodMasteryBtnGO.GetComponent<Button>();
         uim.bloodBankPanel          = bloodBankPanel;
         uim.bloodBankInfoText       = bankInfoGO.GetComponent<Text>();
         uim.bloodBankAccruedText    = bankAccruedGO.GetComponent<Text>();
@@ -1675,6 +1684,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(pIronWallBtnGO.GetComponent<Button>().onClick,          clk.OnBuyPIronWall);
         UnityEventTools.AddPersistentListener(pBountyBonusBtnGO.GetComponent<Button>().onClick,         clk.OnBuyPBountyBonus);
         UnityEventTools.AddPersistentListener(pBloodRitualStartBtnGO.GetComponent<Button>().onClick,    clk.OnBuyPBloodRitualStart);
+        UnityEventTools.AddPersistentListener(pBloodMasteryBtnGO.GetComponent<Button>().onClick,        clk.OnBuyPBloodMastery);
         UnityEventTools.AddPersistentListener(ssBossTimerBtnGO.GetComponent<Button>().onClick,        clk.OnBuySSBossTimer);
         UnityEventTools.AddPersistentListener(ssDoubleChestBtnGO.GetComponent<Button>().onClick,      clk.OnBuySSDoubleChest);
         UnityEventTools.AddPersistentListener(ssRollbackBtnGO.GetComponent<Button>().onClick,         clk.OnBuySSRollback);
