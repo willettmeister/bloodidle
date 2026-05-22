@@ -164,6 +164,8 @@ public class UIManager : MonoBehaviour
     public Button pBloodRitualStartButton;
     public Text pBloodMasteryInfoText;
     public Button pBloodMasteryButton;
+    public Text pSacredGroundInfoText;
+    public Button pSacredGroundButton;
 
     [Header("Soul Shard Shop")]
     public GameObject soulShardShopPanel;
@@ -1006,6 +1008,9 @@ public class UIManager : MonoBehaviour
             if (pBloodMasteryInfoText != null)
                 pBloodMasteryInfoText.text = $"Blood Mastery +{GameManager.PBloodMasteryBonus} Vet cap  (Lv.{gm.PBloodMasteryLevel}, cap {gm.VeteranAttackCap})";
             if (pBloodMasteryButton != null) pBloodMasteryButton.interactable = canSpend;
+            if (pSacredGroundInfoText != null)
+                pSacredGroundInfoText.text = $"Sacred Ground +{GameManager.PSacredGroundBonus * 100:F0}% shrine income  (Lv.{gm.PSacredGroundLevel}/3)";
+            if (pSacredGroundButton != null) pSacredGroundButton.interactable = canSpend && gm.PSacredGroundLevel < 3;
         }
 
         // Soul Shard Shop
