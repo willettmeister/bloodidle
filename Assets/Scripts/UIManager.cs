@@ -175,6 +175,10 @@ public class UIManager : MonoBehaviour
     public Button ssShardHungerButton;
     public Text ssSoulHarvestInfoText;
     public Button ssSoulHarvestButton;
+    public Text ssVoidConduitInfoText;
+    public Button ssVoidConduitButton;
+    public Text ssBloodEchoInfoText;
+    public Button ssBloodEchoButton;
 
     [Header("Settings")]
     public GameObject settingsPanel;
@@ -1011,6 +1015,15 @@ public class UIManager : MonoBehaviour
                 ssSoulHarvestInfoText.text = $"Soul Harvest {gm.EffectiveSoulHarvestPct * 100:F2}% enemy HP → blood  (Lv.{gm.SSSoulHarvestLevel}/{GameManager.SSMaxLevel})";
             if (ssSoulHarvestButton != null)
                 ssSoulHarvestButton.interactable = canBuySS && gm.SSSoulHarvestLevel < GameManager.SSMaxLevel;
+            bool canBuyT2 = gm.SoulShards >= GameManager.SSTier2Cost;
+            if (ssVoidConduitInfoText != null)
+                ssVoidConduitInfoText.text = $"Void Conduit +{GameManager.SSVoidConduitBonus * 100:F0}% all income  (Lv.{gm.SSVoidConduitLevel}/{GameManager.SSTier2MaxLevel})";
+            if (ssVoidConduitButton != null)
+                ssVoidConduitButton.interactable = canBuyT2 && gm.SSVoidConduitLevel < GameManager.SSTier2MaxLevel;
+            if (ssBloodEchoInfoText != null)
+                ssBloodEchoInfoText.text = $"Blood Echo +{gm.BloodEchoPerSec:F1}/s from {gm.TotalBossesKilled} bosses  (Lv.{gm.SSBloodEchoLevel}/{GameManager.SSTier2MaxLevel})";
+            if (ssBloodEchoButton != null)
+                ssBloodEchoButton.interactable = canBuyT2 && gm.SSBloodEchoLevel < GameManager.SSTier2MaxLevel;
         }
 
         // Blood Bank

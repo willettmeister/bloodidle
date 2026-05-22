@@ -258,7 +258,8 @@ public class GameManager : MonoBehaviour
     public double BloodPerSec      => (BloodRitualCount * (BloodRitualBloodPerSec + PRitualEffLevel * 0.5) * PrestigeMultiplier
                                     * (HasTalent(TalentFlags.Glutton) ? TalentGluttonMult : 1f)
                                     + BloodTithePerSec + BloodTapPerSec + KillIncomePerSec
-                                    + ShrineCount * ShrineBloodPerSec) * AchievementBloodIncomeMult * AdBoostMult;
+                                    + ShrineCount * ShrineBloodPerSec
+                                    + BloodEchoPerSec) * AchievementBloodIncomeMult * AdBoostMult * VoidConduitIncomeMult;
     public const double ShrineWoodCost   = 20.0;
     public const double ShrineBloodPerSec = 0.5;
     public const int    ShrineMaxCount   = 3;
@@ -321,6 +322,16 @@ public class GameManager : MonoBehaviour
     public double BloodTapPerSec        => SSBloodTapLevel * 1.0 * PrestigeMultiplier;
     public int    SSShardHungerLevel    { get; private set; }
     public const double SSShardHungerBonus = 0.20;
+
+    // --- SS Tier-2 items (cost 2 shards/level, max 2 levels) ---
+    public const int    SSTier2MaxLevel = 2;
+    public const double SSTier2Cost     = 2.0;
+    public int    SSVoidConduitLevel    { get; private set; }
+    public const double SSVoidConduitBonus = 0.15;
+    public double VoidConduitIncomeMult => 1.0 + SSVoidConduitLevel * SSVoidConduitBonus;
+    public int    SSBloodEchoLevel      { get; private set; }
+    public const double SSBloodEchoBossBonus = 0.5;
+    public double BloodEchoPerSec       => SSBloodEchoLevel * SSBloodEchoBossBonus * TotalBossesKilled * PrestigeMultiplier;
 
     // --- Blood Bank ---
     public double BloodBankDeposit { get; private set; }
@@ -2132,6 +2143,24 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuySSVoidConduit()
+    {
+        if (SoulShards < SSTier2Cost || SSVoidConduitLevel >= SSTier2MaxLevel) return false;
+        SoulShards -= SSTier2Cost;
+        SSVoidConduitLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    public bool BuySSBloodEcho()
+    {
+        if (SoulShards < SSTier2Cost || SSBloodEchoLevel >= SSTier2MaxLevel) return false;
+        SoulShards -= SSTier2Cost;
+        SSBloodEchoLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public void RequestPrestige()
     {
         if (Wave < PrestigeWaveRequirement || PendingPrestige) return;
@@ -2262,6 +2291,7 @@ public class GameManager : MonoBehaviour
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
         SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0; SSSoulHarvestLevel = 0;
+        SSVoidConduitLevel = 0; SSBloodEchoLevel = 0;
         BloodBankDeposit = 0; BloodBankAccrued = 0; BankInterestLevel = 0; KillIncomeUpgradeLevel = 0; WaveStreak = 0;
         SurgeUpgradeLevel = 0; HealUpgradeLevel = 0; BloodStormUpgradeLevel = 0; WarCryUpgradeLevel = 0; HexCurseUpgradeLevel = 0; BloodOathUpgradeLevel = 0; DesecrateUpgradeLevel = 0;
         TotalEnemiesKilled = 0; TotalSpellsCast = 0; TotalBossesKilled = 0; VeteranAttackBonus = 0f; TimePlayed = 0; Achievements = AchievementFlags.None;
@@ -2412,6 +2442,8 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("SSBloodTapLevel",     SSBloodTapLevel);
         PlayerPrefs.SetInt   ("SSShardHungerLevel",   SSShardHungerLevel);
         PlayerPrefs.SetInt   ("SSSoulHarvestLevel",   SSSoulHarvestLevel);
+        PlayerPrefs.SetInt   ("SSVoidConduitLevel",   SSVoidConduitLevel);
+        PlayerPrefs.SetInt   ("SSBloodEchoLevel",     SSBloodEchoLevel);
         PlayerPrefs.SetInt   ("SurgeUpgradeLevel",        SurgeUpgradeLevel);
         PlayerPrefs.SetInt   ("HealUpgradeLevel",         HealUpgradeLevel);
         PlayerPrefs.SetInt   ("BloodStormUpgradeLevel",   BloodStormUpgradeLevel);
@@ -2525,6 +2557,8 @@ public class GameManager : MonoBehaviour
         SSBloodTapLevel     = PlayerPrefs.GetInt   ("SSBloodTapLevel",     0);
         SSShardHungerLevel  = PlayerPrefs.GetInt("SSShardHungerLevel",  0);
         SSSoulHarvestLevel  = PlayerPrefs.GetInt("SSSoulHarvestLevel",  0);
+        SSVoidConduitLevel  = PlayerPrefs.GetInt("SSVoidConduitLevel",  0);
+        SSBloodEchoLevel    = PlayerPrefs.GetInt("SSBloodEchoLevel",    0);
         SurgeUpgradeLevel        = PlayerPrefs.GetInt   ("SurgeUpgradeLevel",        0);
         HealUpgradeLevel         = PlayerPrefs.GetInt   ("HealUpgradeLevel",         0);
         BloodStormUpgradeLevel   = PlayerPrefs.GetInt   ("BloodStormUpgradeLevel",   0);

@@ -36,10 +36,10 @@ using System.IO;
 // ── PROGRESS TAB (y in progressContent) ─────────────────────────────────────
 //   10–195   Prestige card (hidden until wave 20)
 //  205–748   Prestige Shop (hidden until prestige 1)
-//  758–1198  Soul Shard Shop (hidden until first boss)
-// 1208–1273  Daily Quests row
-// 1278–1343  Watch Ad row
-// progressContent height: 1363
+//  758–1314  Soul Shard Shop (hidden until first boss)
+// 1324–1389  Daily Quests row
+// 1394–1459  Watch Ad row
+// progressContent height: 1479
 //
 // ── SETTINGS TAB (y in settingsContent) ─────────────────────────────────────
 //   10–240   Utility buttons (Stats | Settings row, Suggest | Shop row)
@@ -198,7 +198,7 @@ public static class SceneBuilder
 
         var (battleScrollGO,   battleContent)   = MakeTabScroll(tabAreaGO, "BattleTab",   2410f);
         var (buildScrollGO,    buildContent)    = MakeTabScroll(tabAreaGO, "BuildTab",    1825f);
-        var (progressScrollGO, progressContent) = MakeTabScroll(tabAreaGO, "ProgressTab", 1363f);
+        var (progressScrollGO, progressContent) = MakeTabScroll(tabAreaGO, "ProgressTab", 1479f);
         var (settingsScrollGO, settingsContent) = MakeTabScroll(tabAreaGO, "SettingsTab", 400f);
 
         buildScrollGO.SetActive(false);
@@ -850,9 +850,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var soulShardShopPanel = content.CreateChild("SoulShardShopPanel");
         soulShardShopPanel.AddImage(Color.clear);
-        PF(soulShardShopPanel, 758, 440);
+        PF(soulShardShopPanel, 758, 556);
 
-        Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 440, HC("0A1A30"), 24);
+        Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 556, HC("0A1A30"), 24);
 
         var ssShopTitleGO = Label(soulShardShopPanel, "SoulShardShopTitle",
             "Soul Shard Shop", 40, new Color(0.7f, 0.85f, 1f), TextAnchor.MiddleLeft);
@@ -904,13 +904,27 @@ public static class SceneBuilder
         var ssSoulHarvestBtnGO = Btn(soulShardShopPanel, "SSSoulHarvestButton", "Buy (1 ⬡)", 30, HC("BF360C"));
         PT(ssSoulHarvestBtnGO, 350, 54, +245, 260);
 
+        // Row 7 — Void Conduit (tier-2, costs 2 shards)
+        var ssVoidConduitInfoGO = Label(soulShardShopPanel, "SSVoidConduitInfoText",
+            "Void Conduit +15% all income  (Lv.0/2)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(ssVoidConduitInfoGO, 410, 48, -175, 500);
+        var ssVoidConduitBtnGO = Btn(soulShardShopPanel, "SSVoidConduitButton", "Buy (2 ⬡)", 30, HC("00695C"));
+        PT(ssVoidConduitBtnGO, 408, 54, +245, 260);
+
+        // Row 8 — Blood Echo (tier-2, costs 2 shards)
+        var ssBloodEchoInfoGO = Label(soulShardShopPanel, "SSBloodEchoInfoText",
+            "Blood Echo +0.5/s per boss killed  (Lv.0/2)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(ssBloodEchoInfoGO, 468, 48, -175, 500);
+        var ssBloodEchoBtnGO = Btn(soulShardShopPanel, "SSBloodEchoButton", "Buy (2 ⬡)", 30, HC("880E4F"));
+        PT(ssBloodEchoBtnGO, 466, 54, +245, 260);
+
         soulShardShopPanel.SetActive(false);
 
         // ════════════════════════════════════════════════════════════════════
         // DAILY QUESTS BUTTON ROW  (y 4200–4265)
         // ════════════════════════════════════════════════════════════════════
         var questsRowGO = content.CreateChild("DailyQuestsRow");
-        questsRowGO.AddImage(HC("0A1A0A")); PF(questsRowGO, 1208, 65, 20);
+        questsRowGO.AddImage(HC("0A1A0A")); PF(questsRowGO, 1324, 65, 20);
 
         var openQuestsBtnGO = Btn(questsRowGO, "OpenQuestsButton", "Daily Quests", 34, HC("1B5E20"));
         openQuestsBtnGO.Stretch();
@@ -919,7 +933,7 @@ public static class SceneBuilder
         // WATCH AD ROW  (y 4275–4345)
         // ════════════════════════════════════════════════════════════════════
         var adBoostRowGO = content.CreateChild("AdBoostRow");
-        adBoostRowGO.AddImage(HC("1A0A2E")); PF(adBoostRowGO, 1278, 65, 20);
+        adBoostRowGO.AddImage(HC("1A0A2E")); PF(adBoostRowGO, 1394, 65, 20);
 
         var watchAdBtnGO = Btn(adBoostRowGO, "WatchAdButton", "Watch Ad  →  2× Blood (5 min)", 34, Purple);
         watchAdBtnGO.Stretch();
@@ -1512,6 +1526,10 @@ public static class SceneBuilder
         uim.ssShardHungerButton     = ssShardHungerBtnGO.GetComponent<Button>();
         uim.ssSoulHarvestInfoText   = ssSoulHarvestInfoGO.GetComponent<Text>();
         uim.ssSoulHarvestButton     = ssSoulHarvestBtnGO.GetComponent<Button>();
+        uim.ssVoidConduitInfoText   = ssVoidConduitInfoGO.GetComponent<Text>();
+        uim.ssVoidConduitButton     = ssVoidConduitBtnGO.GetComponent<Button>();
+        uim.ssBloodEchoInfoText     = ssBloodEchoInfoGO.GetComponent<Text>();
+        uim.ssBloodEchoButton       = ssBloodEchoBtnGO.GetComponent<Button>();
         uim.settingsPanel           = settingsOverlay;
         uim.soundToggleText         = soundToggleGO.GetComponentInChildren<Text>();
         uim.notifToggleText         = notifToggleGO.GetComponentInChildren<Text>();
@@ -1645,6 +1663,8 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(ssBloodTapBtnGO.GetComponent<Button>().onClick,        clk.OnBuySSBloodTap);
         UnityEventTools.AddPersistentListener(ssShardHungerBtnGO.GetComponent<Button>().onClick,    clk.OnBuySSShardHunger);
         UnityEventTools.AddPersistentListener(ssSoulHarvestBtnGO.GetComponent<Button>().onClick,    clk.OnBuySSSoulHarvest);
+        UnityEventTools.AddPersistentListener(ssVoidConduitBtnGO.GetComponent<Button>().onClick,   clk.OnBuySSVoidConduit);
+        UnityEventTools.AddPersistentListener(ssBloodEchoBtnGO.GetComponent<Button>().onClick,     clk.OnBuySSBloodEcho);
         UnityEventTools.AddPersistentListener(upgradeSurgeBtnGO.GetComponent<Button>().onClick,      clk.OnUpgradeSurge);
         UnityEventTools.AddPersistentListener(autoSurgeBtnGO.GetComponent<Button>().onClick,         clk.OnToggleAutoSurge);
         UnityEventTools.AddPersistentListener(upgradeHealBtnGO.GetComponent<Button>().onClick,       clk.OnUpgradeHealSelf);
