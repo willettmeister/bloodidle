@@ -22,6 +22,7 @@ public class ClickManager : MonoBehaviour
     public void OnUpgradeWeapon()          => GameManager.Instance.UpgradeWeapon();
     public void OnUpgradeArmor()           => GameManager.Instance.UpgradeArmor();
     public void OnUpgradeTalisman()        => GameManager.Instance.UpgradeTalisman();
+    public void OnUpgradeBanner()          => GameManager.Instance.UpgradeBanner();
     public void OnToggleFormation()        => GameManager.Instance.ToggleFormation();
     public void OnToggleAutoBuy()          => GameManager.Instance.ToggleAutoBuySoldiers();
     public void OnToggleCursedBlood()      => GameManager.Instance.ToggleCursedBlood();

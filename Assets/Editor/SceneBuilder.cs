@@ -592,9 +592,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var equipmentPanel = content.CreateChild("EquipmentPanel");
         equipmentPanel.AddImage(Color.clear);
-        PF(equipmentPanel, 915, 245);
+        PF(equipmentPanel, 915, 303);
 
-        Panel(equipmentPanel, "EquipmentCardBg", 0, 245, Surface1, 24);
+        Panel(equipmentPanel, "EquipmentCardBg", 0, 303, Surface1, 24);
         { var a = equipmentPanel.CreateChild("EquipAccent"); a.AddImage(Blue); PF(a, 0, 4, 24); }
 
         var equipTitleGO = Label(equipmentPanel, "EquipmentTitle", "Equipment", 40, Gold, TextAnchor.MiddleLeft);
@@ -623,6 +623,13 @@ public static class SceneBuilder
 
         var upgradeTalismanGO = Btn(equipmentPanel, "UpgradeTalismanButton", "Upgrade\n(25 wood)", 28, HC("6A1B9A"));
         PT(upgradeTalismanGO, 178, 56, +232, 330);
+
+        // War Banner row
+        var bannerInfoGO = Label(equipmentPanel, "BannerInfoText",
+            "War Banner  Lv.0/5  (streak cap x3.0)", 28, Color.white, TextAnchor.MiddleLeft);
+        PT(bannerInfoGO, 242, 44, -175, 500);
+        var upgradeBannerGO = Btn(equipmentPanel, "UpgradeBannerButton", "Upgrade\n(30 wood)", 28, HC("BF360C"));
+        PT(upgradeBannerGO, 238, 56, +232, 330);
 
         equipmentPanel.SetActive(false);
 
@@ -1455,6 +1462,9 @@ public static class SceneBuilder
         uim.talismanInfoText        = talismanInfoGO.GetComponent<Text>();
         uim.upgradeTalismanButton   = upgradeTalismanGO.GetComponent<Button>();
         uim.talismanCostText        = upgradeTalismanGO.GetComponentInChildren<Text>();
+        uim.bannerInfoText          = bannerInfoGO.GetComponent<Text>();
+        uim.upgradeBannerButton     = upgradeBannerGO.GetComponent<Button>();
+        uim.bannerCostText          = upgradeBannerGO.GetComponentInChildren<Text>();
         uim.fortInfoText            = fortInfoGO.GetComponent<Text>();
         uim.upgradeFortButton       = upgradeFortGO.GetComponent<Button>();
         uim.fortCostText            = upgradeFortGO.GetComponentInChildren<Text>();
@@ -1682,6 +1692,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(upgradeWeaponGO.GetComponent<Button>().onClick,         clk.OnUpgradeWeapon);
         UnityEventTools.AddPersistentListener(upgradeArmorGO.GetComponent<Button>().onClick,          clk.OnUpgradeArmor);
         UnityEventTools.AddPersistentListener(upgradeTalismanGO.GetComponent<Button>().onClick,       clk.OnUpgradeTalisman);
+        UnityEventTools.AddPersistentListener(upgradeBannerGO.GetComponent<Button>().onClick,         clk.OnUpgradeBanner);
         UnityEventTools.AddPersistentListener(formationBtnGO.GetComponent<Button>().onClick,          clk.OnToggleFormation);
         UnityEventTools.AddPersistentListener(autoBuyBtnGO.GetComponent<Button>().onClick,            clk.OnToggleAutoBuy);
         UnityEventTools.AddPersistentListener(prestigeBtnGO.GetComponent<Button>().onClick,           clk.OnPrestige);

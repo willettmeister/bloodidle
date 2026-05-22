@@ -121,6 +121,9 @@ public class UIManager : MonoBehaviour
     public Text talismanInfoText;
     public Button upgradeTalismanButton;
     public Text talismanCostText;
+    public Text bannerInfoText;
+    public Button upgradeBannerButton;
+    public Text bannerCostText;
 
     [Header("Fortifications")]
     public Text fortInfoText;
@@ -887,6 +890,13 @@ public class UIManager : MonoBehaviour
             if (talismanCostText != null)
                 talismanCostText.text = gm.TalismanLevel < GameManager.MaxEquipLevel
                     ? $"Upgrade\n({GameManager.FormatNumber(gm.TalismanUpgradeCost)} wood)" : "MAX";
+            if (bannerInfoText != null)
+                bannerInfoText.text = $"War Banner  Lv.{gm.BannerLevel}/{GameManager.MaxEquipLevel}  (streak cap ×{gm.StreakMultiplierCap:F1})";
+            if (upgradeBannerButton != null)
+                upgradeBannerButton.interactable = gm.BannerLevel < GameManager.MaxEquipLevel && gm.Wood >= gm.BannerUpgradeCost;
+            if (bannerCostText != null)
+                bannerCostText.text = gm.BannerLevel < GameManager.MaxEquipLevel
+                    ? $"Upgrade\n({GameManager.FormatNumber(gm.BannerUpgradeCost)} wood)" : "MAX";
         }
 
         // Fortifications (always visible)

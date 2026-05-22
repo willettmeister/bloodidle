@@ -238,6 +238,9 @@ public class GameManager : MonoBehaviour
     public float  EquipAttackBonus    => WeaponLevel   * 3f;
     public float  EquipArmorBonus     => ArmorLevel    * 10f;
     public double EquipTalismanBonus  => TalismanLevel * 0.15;
+    public int    BannerLevel         { get; private set; }
+    public const float  BannerStreakCapBonus = 0.5f;
+    public double BannerUpgradeCost   => Math.Floor(30  * Math.Pow(2, BannerLevel));
     public double WeaponUpgradeCost   => Math.Floor(20  * Math.Pow(2, WeaponLevel));
     public double ArmorUpgradeCost    => Math.Floor(15  * Math.Pow(2, ArmorLevel));
     public double TalismanUpgradeCost => Math.Floor(25  * Math.Pow(2, TalismanLevel));
@@ -365,7 +368,8 @@ public class GameManager : MonoBehaviour
     public int   WaveStreak          { get; private set; }
     public int   BestWave            { get; private set; }
     public int   BestStreak          { get; private set; }
-    public float StreakMultiplier    => Mathf.Min(1f + WaveStreak * 0.1f, 3f);
+    public float StreakMultiplierCap => MaxStreakMultiplier + BannerLevel * BannerStreakCapBonus;
+    public float StreakMultiplier    => Mathf.Min(1f + WaveStreak * 0.1f, StreakMultiplierCap);
     public const float MaxStreakMultiplier = 3f;
     public float KillStreakBonusMult => 1f + Mathf.Min(WaveStreak, 5) * 0.05f;
     public float MoraleBonusMult     => WaveStreak >= 3 ? 1.15f : 1f;
@@ -1971,6 +1975,15 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool UpgradeBanner()
+    {
+        if (BannerLevel >= MaxEquipLevel || Wood < BannerUpgradeCost) return false;
+        Wood -= BannerUpgradeCost;
+        BannerLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public void ToggleFormation()
     {
         BerserkerFront = !BerserkerFront;
@@ -2359,7 +2372,7 @@ public class GameManager : MonoBehaviour
         PrestigeCount = 0; PrestigePoints = 0;
         PSoldierCapLevel = 0; PClickBonusLevel = 0; PRitualEffLevel = 0;
         PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0; PBountyBonusLevel = 0; PBloodRitualStartLevel = 0; PBloodMasteryLevel = 0;
-        WeaponLevel = 0; ArmorLevel = 0; TalismanLevel = 0;
+        WeaponLevel = 0; ArmorLevel = 0; TalismanLevel = 0; BannerLevel = 0;
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
         SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0; SSSoulHarvestLevel = 0; SSCrimsonPulseLevel = 0;
@@ -2428,6 +2441,7 @@ public class GameManager : MonoBehaviour
         WeaponLevel         = Math.Min(PWeaponHeadStartLevel, MaxEquipLevel);
         ArmorLevel          = 0;
         TalismanLevel       = 0;
+        BannerLevel         = 0;
         SpawnEnemy(1);
         OnStateChanged?.Invoke();
         return true;
@@ -2499,6 +2513,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("WeaponLevel",         WeaponLevel);
         PlayerPrefs.SetInt   ("ArmorLevel",          ArmorLevel);
         PlayerPrefs.SetInt   ("TalismanLevel",       TalismanLevel);
+        PlayerPrefs.SetInt   ("BannerLevel",         BannerLevel);
         PlayerPrefs.SetInt   ("BerserkerFront",      BerserkerFront ? 1 : 0);
         PlayerPrefs.SetInt   ("FortificationLevel",  FortificationLevel);
         PlayerPrefs.SetString("FortificationCost",   FortificationCost.ToString("R", ic));
@@ -2618,6 +2633,7 @@ public class GameManager : MonoBehaviour
         WeaponLevel         = PlayerPrefs.GetInt   ("WeaponLevel",         0);
         ArmorLevel          = PlayerPrefs.GetInt   ("ArmorLevel",          0);
         TalismanLevel       = PlayerPrefs.GetInt   ("TalismanLevel",       0);
+        BannerLevel         = PlayerPrefs.GetInt   ("BannerLevel",         0);
         BerserkerFront      = PlayerPrefs.GetInt   ("BerserkerFront",      0) == 1;
         FortificationLevel  = PlayerPrefs.GetInt   ("FortificationLevel",  0);
         FortificationCost   = double.Parse(PlayerPrefs.GetString("FortificationCost", FortBaseCost.ToString("R", ic)), ic);
