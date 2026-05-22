@@ -194,6 +194,8 @@ public class UIManager : MonoBehaviour
     public Button ssIronMarrowButton;
     public Text ssWrathBloomInfoText;
     public Button ssWrathBloomButton;
+    public Text ssBloodNovaInfoText;
+    public Button ssBloodNovaButton;
 
     [Header("Settings")]
     public GameObject settingsPanel;
@@ -1074,6 +1076,10 @@ public class UIManager : MonoBehaviour
                 ssWrathBloomInfoText.text = $"Wrath Bloom boss kill extends Surge +{GameManager.SSWrathBloomSurgeSecs:F0}s  (Lv.{gm.SSWrathBloomLevel}/{GameManager.SSTier2MaxLevel})";
             if (ssWrathBloomButton != null)
                 ssWrathBloomButton.interactable = canBuyT2 && gm.SSWrathBloomLevel < GameManager.SSTier2MaxLevel;
+            if (ssBloodNovaInfoText != null)
+                ssBloodNovaInfoText.text = $"Blood Nova Storm hits +{GameManager.SSBloodNovaPct * 100:F0}% enemy max HP  (Lv.{gm.SSBloodNovaLevel}/{GameManager.SSTier2MaxLevel})";
+            if (ssBloodNovaButton != null)
+                ssBloodNovaButton.interactable = canBuyT2 && gm.SSBloodNovaLevel < GameManager.SSTier2MaxLevel;
         }
 
         // Blood Bank

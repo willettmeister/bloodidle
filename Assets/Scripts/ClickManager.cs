@@ -73,6 +73,7 @@ public class ClickManager : MonoBehaviour
     public void OnBuySSBloodEcho()         => GameManager.Instance.BuySSBloodEcho();
     public void OnBuySSIronMarrow()        => GameManager.Instance.BuySSIronMarrow();
     public void OnBuySSWrathBloom()        => GameManager.Instance.BuySSWrathBloom();
+    public void OnBuySSBloodNova()         => GameManager.Instance.BuySSBloodNova();
     public void OnDepositToBank()          => GameManager.Instance.DepositToBank(Math.Floor(GameManager.Instance.Blood * 0.1));
     public void OnBuyBankInterestUpgrade() => GameManager.Instance.BuyBankInterestUpgrade();
     public void OnBuyKillIncomeUpgrade()   => GameManager.Instance.BuyKillIncomeUpgrade();
