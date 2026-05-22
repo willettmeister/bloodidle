@@ -1507,8 +1507,10 @@ public class UIManager : MonoBehaviour
         TalentFlags.Hemomancer   => "Hemomancer\n+0.2 blood/click per ritual owned",
         TalentFlags.WarDrum      => "War Drum\n+5 attack per soldier while streak ≥ 5",
         TalentFlags.Warlord      => "Warlord\n+0.1 blood/click per veteran attack bonus point",
-        TalentFlags.SoulDrain    => "Soul Drain\nSoldier death deals 15% of enemy current HP",
-        _                        => "",
+        TalentFlags.SoulDrain         => "Soul Drain\nSoldier death deals 15% of enemy current HP",
+        TalentFlags.FrenziedHarvest   => "Frenzied Harvest\n+0.5 blood/sec per ritual owned",
+        TalentFlags.RiftStrike        => "Rift Strike\nEntropy cooldown reduced by 10 seconds",
+        _                             => "",
     };
 
     public static string TalentSummaryLine(TalentFlags talents)
@@ -1525,7 +1527,9 @@ public class UIManager : MonoBehaviour
         if ((talents & TalentFlags.Hemomancer)     != 0) names.Add("Hemomancer");
         if ((talents & TalentFlags.WarDrum)        != 0) names.Add("WarDrum");
         if ((talents & TalentFlags.Warlord)        != 0) names.Add("Warlord");
-        if ((talents & TalentFlags.SoulDrain)      != 0) names.Add("SoulDrain");
+        if ((talents & TalentFlags.SoulDrain)        != 0) names.Add("SoulDrain");
+        if ((talents & TalentFlags.FrenziedHarvest)  != 0) names.Add("FrzHarvest");
+        if ((talents & TalentFlags.RiftStrike)       != 0) names.Add("RiftStrike");
         return names.Count > 0 ? "Talents: " + string.Join(" | ", names) : "";
     }
 

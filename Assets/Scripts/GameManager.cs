@@ -78,8 +78,10 @@ public enum TalentFlags
     Bloodlust    = 1 << 7,  // heal frontline 5% of enemy max HP on each kill
     Hemomancer   = 1 << 8,  // each ritual owned adds +0.2 blood per click
     WarDrum      = 1 << 9,  // while streak ≥ 5, all soldiers gain +5 attack
-    Warlord      = 1 << 10, // +0.1 blood/click per veteran attack bonus point
-    SoulDrain    = 1 << 11, // soldier death instantly deals 15% of enemy current HP
+    Warlord          = 1 << 10, // +0.1 blood/click per veteran attack bonus point
+    SoulDrain        = 1 << 11, // soldier death instantly deals 15% of enemy current HP
+    FrenziedHarvest  = 1 << 12, // +0.5 blood/sec per ritual owned
+    RiftStrike       = 1 << 13, // Entropy cooldown reduced by 10 seconds
 }
 
 public class GameManager : MonoBehaviour
@@ -264,7 +266,8 @@ public class GameManager : MonoBehaviour
     // --- Blood Ritual ---
     public int    BloodRitualCount { get; private set; }
     public double BloodRitualCost  { get; private set; } = BloodRitualBaseCost;
-    public double BloodPerSec      => (BloodRitualCount * (BloodRitualBloodPerSec + PRitualEffLevel * 0.5) * PrestigeMultiplier
+    public double BloodPerSec      => (BloodRitualCount * (BloodRitualBloodPerSec + PRitualEffLevel * 0.5
+                                        + (HasTalent(TalentFlags.FrenziedHarvest) ? TalentFrenziedHarvestBonus : 0.0)) * PrestigeMultiplier
                                     * (HasTalent(TalentFlags.Glutton) ? TalentGluttonMult : 1f)
                                     * CrimsonPulseMult
                                     + BloodTithePerSec + BloodTapPerSec + KillIncomePerSec
@@ -431,6 +434,8 @@ public class GameManager : MonoBehaviour
     public const double TalentWarlordClickBonus     = 0.1;   // per veteran attack bonus point
     public double WarlordClickBonus => HasTalent(TalentFlags.Warlord) ? VeteranAttackBonus * TalentWarlordClickBonus : 0.0;
     public const float  TalentSoulDrainPct          = 0.15f; // fraction of enemy current HP on soldier death
+    public const double TalentFrenziedHarvestBonus  = 0.5;   // extra blood/sec per ritual owned
+    public const float  TalentRiftStrikeCDReduction = 10f;   // seconds off Entropy cooldown
 
     // --- Soul Sacrifice ---
     public bool SoulSacrificeUnlocked  => PrestigeCount >= 1;
@@ -498,6 +503,7 @@ public class GameManager : MonoBehaviour
     public double EntropyUpgradeCost    => Math.Floor(EntropyUpgradeBaseCost * Math.Pow(2, EntropyUpgradeLevel));
     float _entropyTimer;
     public bool   EntropyUnlocked   => Wave >= EntropyUnlockWave;
+    public float  EntropyEffectiveCooldown => EntropyCooldown - (HasTalent(TalentFlags.RiftStrike) ? TalentRiftStrikeCDReduction : 0f);
     public bool   EntropyReady      => _entropyTimer <= 0f;
     public float  EntropyCooldownLeft => _entropyTimer;
     public bool   EntropyCanCast    => EntropyUnlocked && EntropyReady && Blood >= EntropyBaseCost && EnemyHP > 0;
@@ -2193,7 +2199,7 @@ public class GameManager : MonoBehaviour
         if (!EntropyCanCast) return false;
         Blood -= EntropyBaseCost;
         EnemyHP = Mathf.Max(float.Epsilon, EnemyHP - EnemyHP * EntropyEffectivePct);
-        _entropyTimer = EntropyCooldown;
+        _entropyTimer = EntropyEffectiveCooldown;
         TotalSpellsCast++;
         OnStateChanged?.Invoke();
         return true;
@@ -2314,6 +2320,7 @@ public class GameManager : MonoBehaviour
             TalentFlags.EchoMastery, TalentFlags.Bloodlust,
             TalentFlags.Hemomancer,  TalentFlags.WarDrum,
             TalentFlags.Warlord,     TalentFlags.SoulDrain,
+            TalentFlags.FrenziedHarvest, TalentFlags.RiftStrike,
         };
         int availCount = 0;
         for (int k = 0; k < all.Length; k++)
