@@ -52,7 +52,7 @@ public struct AchievementDef
 }
 
 public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral }
-public enum BossAbility    { None, Shield, Berserk, Drain, Regen }
+public enum BossAbility    { None, Shield, Berserk, Drain, Regen, Thorns }
 public enum QuestTrackType { Kills, Farms, Wave, Spells }
 
 public struct DailyQuestDef
@@ -459,12 +459,14 @@ public class GameManager : MonoBehaviour
     public const float BossShieldFraction  = 0.20f;
     public const float BossDrainPerSec     = 5f;
     public const float BossRegenPctPerSec  = 0.005f; // 0.5% of max HP per second
+    public const float BossThornsReflectPct = 0.25f;  // fraction of attacker damage reflected
     public string BossAbilityDisplay => CurrentBossAbility switch
     {
         BossAbility.Shield  => "🛡 Shielded",
         BossAbility.Berserk => "💀 Berserk",
         BossAbility.Drain   => "🩸 Drain",
         BossAbility.Regen   => "💚 Regenerating",
+        BossAbility.Thorns  => "🌵 Thorns",
         _                   => "",
     };
 
@@ -1148,7 +1150,10 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            EnemyHP = Mathf.Max(0f, EnemyHP - eff * dt);
+            float dmgThisTick = eff * dt;
+            EnemyHP = Mathf.Max(0f, EnemyHP - dmgThisTick);
+            if (CurrentBossAbility == BossAbility.Thorns && SoldierCount > 0 && EnemyHP > 0)
+                SoldierHP -= dmgThisTick * BossThornsReflectPct;
         }
 
         if (EnemyHP <= 0f)
@@ -1401,7 +1406,7 @@ public class GameManager : MonoBehaviour
             EnemyAttack      = (float)(3   * Math.Pow(1.3, wave - 1) * 2.0);
             BossTimeRemaining = BossTimeLimit + SSBossTimerLevel * 15f;
             CurrentEnemyModifier = EnemyModifier.None;
-            CurrentBossAbility   = (BossAbility)UnityEngine.Random.Range(0, 5);
+            CurrentBossAbility   = (BossAbility)UnityEngine.Random.Range(0, 6);
             BossShieldActive     = CurrentBossAbility == BossAbility.Shield;
             _bossShieldHP        = BossShieldActive ? EnemyMaxHP * BossShieldFraction : 0f;
         }
