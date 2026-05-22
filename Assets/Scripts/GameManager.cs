@@ -52,7 +52,7 @@ public struct AchievementDef
 }
 
 public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral }
-public enum BossAbility    { None, Shield, Berserk, Drain }
+public enum BossAbility    { None, Shield, Berserk, Drain, Regen }
 public enum QuestTrackType { Kills, Farms, Wave, Spells }
 
 public struct DailyQuestDef
@@ -431,13 +431,15 @@ public class GameManager : MonoBehaviour
     public BossAbility CurrentBossAbility { get; private set; }
     public bool        BossShieldActive   { get; private set; }
     float _bossShieldHP;
-    public const float BossShieldFraction = 0.20f;
-    public const float BossDrainPerSec    = 5f;
+    public const float BossShieldFraction  = 0.20f;
+    public const float BossDrainPerSec     = 5f;
+    public const float BossRegenPctPerSec  = 0.005f; // 0.5% of max HP per second
     public string BossAbilityDisplay => CurrentBossAbility switch
     {
-        BossAbility.Shield => "🛡 Shielded",
+        BossAbility.Shield  => "🛡 Shielded",
         BossAbility.Berserk => "💀 Berserk",
         BossAbility.Drain   => "🩸 Drain",
+        BossAbility.Regen   => "💚 Regenerating",
         _                   => "",
     };
 
@@ -1224,6 +1226,8 @@ public class GameManager : MonoBehaviour
         float totalIncoming = incomingAtk;
         if (isSpecialFoe && CurrentBossAbility == BossAbility.Drain && EnemyHP > 0)
             totalIncoming += BossDrainPerSec;
+        if (isSpecialFoe && CurrentBossAbility == BossAbility.Regen && EnemyHP > 0)
+            EnemyHP = Mathf.Min(EnemyHP + EnemyMaxHP * BossRegenPctPerSec * dt, EnemyMaxHP);
         float dmg = totalIncoming * dt;
         if (BloodShieldHP > 0f)
         {
@@ -1368,7 +1372,7 @@ public class GameManager : MonoBehaviour
             EnemyAttack      = (float)(3   * Math.Pow(1.3, wave - 1) * 2.0);
             BossTimeRemaining = BossTimeLimit + SSBossTimerLevel * 15f;
             CurrentEnemyModifier = EnemyModifier.None;
-            CurrentBossAbility   = (BossAbility)UnityEngine.Random.Range(0, 4);
+            CurrentBossAbility   = (BossAbility)UnityEngine.Random.Range(0, 5);
             BossShieldActive     = CurrentBossAbility == BossAbility.Shield;
             _bossShieldHP        = BossShieldActive ? EnemyMaxHP * BossShieldFraction : 0f;
         }
