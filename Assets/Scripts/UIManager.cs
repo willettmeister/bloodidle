@@ -1521,6 +1521,8 @@ public class UIManager : MonoBehaviour
         TalentFlags.SoulDrain         => "Soul Drain\nSoldier death deals 15% of enemy current HP",
         TalentFlags.FrenziedHarvest   => "Frenzied Harvest\n+0.5 blood/sec per ritual owned",
         TalentFlags.RiftStrike        => "Rift Strike\nEntropy cooldown reduced by 10 seconds",
+        TalentFlags.CrimsonTide       => "Crimson Tide\n+0.1 blood/click per boss killed",
+        TalentFlags.StormCaller       => "Storm Caller\nBlood Storm cooldown reduced by 15 seconds",
         _                             => "",
     };
 
@@ -1541,6 +1543,8 @@ public class UIManager : MonoBehaviour
         if ((talents & TalentFlags.SoulDrain)        != 0) names.Add("SoulDrain");
         if ((talents & TalentFlags.FrenziedHarvest)  != 0) names.Add("FrzHarvest");
         if ((talents & TalentFlags.RiftStrike)       != 0) names.Add("RiftStrike");
+        if ((talents & TalentFlags.CrimsonTide)      != 0) names.Add("CrimsonTide");
+        if ((talents & TalentFlags.StormCaller)      != 0) names.Add("StormCaller");
         return names.Count > 0 ? "Talents: " + string.Join(" | ", names) : "";
     }
 

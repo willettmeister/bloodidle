@@ -82,6 +82,8 @@ public enum TalentFlags
     SoulDrain        = 1 << 11, // soldier death instantly deals 15% of enemy current HP
     FrenziedHarvest  = 1 << 12, // +0.5 blood/sec per ritual owned
     RiftStrike       = 1 << 13, // Entropy cooldown reduced by 10 seconds
+    CrimsonTide      = 1 << 14, // +0.1 blood/click per boss killed
+    StormCaller      = 1 << 15, // Blood Storm cooldown reduced by 15 seconds
 }
 
 public class GameManager : MonoBehaviour
@@ -94,7 +96,8 @@ public class GameManager : MonoBehaviour
     public const double BloodPerClick = 1.0;
     public double EffectiveBloodPerClick => (BloodPerClick + PClickBonusLevel * 0.5 + ClickPowerLevel + AchievementClickBonus
                                              + (HasTalent(TalentFlags.Hemomancer) ? BloodRitualCount * TalentHemomancerClickBonus : 0)
-                                             + WarlordClickBonus)
+                                             + WarlordClickBonus
+                                             + (HasTalent(TalentFlags.CrimsonTide) ? TotalBossesKilled * TalentCrimsonTideClickBonus : 0))
                                             * PrestigeMultiplier;
     public const double ClickPowerBaseCost  = 15.0;
     public const double ClickPowerCostMult  = 2.0;
@@ -418,7 +421,8 @@ public class GameManager : MonoBehaviour
     public const float  BloodStormCooldownReduction = 5f;
     public int    BloodStormUpgradeLevel { get; private set; }
     public double BloodStormUpgradeCost  => Math.Floor(BloodStormUpgradeBaseCost * Math.Pow(2, BloodStormUpgradeLevel));
-    public float  BloodStormCooldownEffective => BloodStormCooldown - BloodStormUpgradeLevel * BloodStormCooldownReduction;
+    public float  BloodStormCooldownEffective => BloodStormCooldown - BloodStormUpgradeLevel * BloodStormCooldownReduction
+                                                  - (HasTalent(TalentFlags.StormCaller) ? TalentStormCallerCDReduction : 0f);
     float _bloodStormTimer;
     public bool  BloodStormReady       => _bloodStormTimer <= 0f;
     public float BloodStormCooldownLeft => _bloodStormTimer;
@@ -442,6 +446,8 @@ public class GameManager : MonoBehaviour
     public const float  TalentSoulDrainPct          = 0.15f; // fraction of enemy current HP on soldier death
     public const double TalentFrenziedHarvestBonus  = 0.5;   // extra blood/sec per ritual owned
     public const float  TalentRiftStrikeCDReduction = 10f;   // seconds off Entropy cooldown
+    public const double TalentCrimsonTideClickBonus = 0.1;   // blood/click per boss killed
+    public const float  TalentStormCallerCDReduction = 15f;  // seconds off Blood Storm cooldown
 
     // --- Soul Sacrifice ---
     public bool SoulSacrificeUnlocked  => PrestigeCount >= 1;
@@ -2344,6 +2350,7 @@ public class GameManager : MonoBehaviour
             TalentFlags.Hemomancer,  TalentFlags.WarDrum,
             TalentFlags.Warlord,     TalentFlags.SoulDrain,
             TalentFlags.FrenziedHarvest, TalentFlags.RiftStrike,
+            TalentFlags.CrimsonTide, TalentFlags.StormCaller,
         };
         int availCount = 0;
         for (int k = 0; k < all.Length; k++)
