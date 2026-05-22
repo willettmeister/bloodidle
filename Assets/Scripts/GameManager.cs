@@ -263,6 +263,7 @@ public class GameManager : MonoBehaviour
     public double BloodRitualCost  { get; private set; } = BloodRitualBaseCost;
     public double BloodPerSec      => (BloodRitualCount * (BloodRitualBloodPerSec + PRitualEffLevel * 0.5) * PrestigeMultiplier
                                     * (HasTalent(TalentFlags.Glutton) ? TalentGluttonMult : 1f)
+                                    * CrimsonPulseMult
                                     + BloodTithePerSec + BloodTapPerSec + KillIncomePerSec
                                     + ShrineCount * ShrineBloodPerSec
                                     + BloodEchoPerSec) * AchievementBloodIncomeMult * AdBoostMult * VoidConduitIncomeMult;
@@ -333,6 +334,9 @@ public class GameManager : MonoBehaviour
     // --- SS Tier-2 items (cost 2 shards/level, max 2 levels) ---
     public const int    SSTier2MaxLevel = 2;
     public const double SSTier2Cost     = 2.0;
+    public int    SSCrimsonPulseLevel   { get; private set; }
+    public const double SSCrimsonPulseBonus = 0.15;
+    public double CrimsonPulseMult      => 1.0 + SSCrimsonPulseLevel * SSCrimsonPulseBonus;
     public int    SSVoidConduitLevel    { get; private set; }
     public const double SSVoidConduitBonus = 0.15;
     public double VoidConduitIncomeMult => 1.0 + SSVoidConduitLevel * SSVoidConduitBonus;
@@ -2183,6 +2187,15 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuySSCrimsonPulse()
+    {
+        if (SoulShards < SSUpgradeCost || SSCrimsonPulseLevel >= SSMaxLevel) return false;
+        SoulShards -= SSUpgradeCost;
+        SSCrimsonPulseLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public bool BuySSVoidConduit()
     {
         if (SoulShards < SSTier2Cost || SSVoidConduitLevel >= SSTier2MaxLevel) return false;
@@ -2349,7 +2362,7 @@ public class GameManager : MonoBehaviour
         WeaponLevel = 0; ArmorLevel = 0; TalismanLevel = 0;
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
-        SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0; SSSoulHarvestLevel = 0;
+        SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0; SSSoulHarvestLevel = 0; SSCrimsonPulseLevel = 0;
         SSVoidConduitLevel = 0; SSBloodEchoLevel = 0; SSIronMarrowLevel = 0; SSWrathBloomLevel = 0;
         BloodBankDeposit = 0; BloodBankAccrued = 0; BankInterestLevel = 0; KillIncomeUpgradeLevel = 0; WaveStreak = 0;
         SurgeUpgradeLevel = 0; HealUpgradeLevel = 0; BloodStormUpgradeLevel = 0; WarCryUpgradeLevel = 0; HexCurseUpgradeLevel = 0; BloodOathUpgradeLevel = 0; DesecrateUpgradeLevel = 0;
@@ -2502,6 +2515,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("SSBloodTapLevel",     SSBloodTapLevel);
         PlayerPrefs.SetInt   ("SSShardHungerLevel",   SSShardHungerLevel);
         PlayerPrefs.SetInt   ("SSSoulHarvestLevel",   SSSoulHarvestLevel);
+        PlayerPrefs.SetInt   ("SSCrimsonPulseLevel",  SSCrimsonPulseLevel);
         PlayerPrefs.SetInt   ("SSVoidConduitLevel",   SSVoidConduitLevel);
         PlayerPrefs.SetInt   ("SSBloodEchoLevel",     SSBloodEchoLevel);
         PlayerPrefs.SetInt   ("SSIronMarrowLevel",    SSIronMarrowLevel);
@@ -2620,6 +2634,7 @@ public class GameManager : MonoBehaviour
         SSBloodTapLevel     = PlayerPrefs.GetInt   ("SSBloodTapLevel",     0);
         SSShardHungerLevel  = PlayerPrefs.GetInt("SSShardHungerLevel",  0);
         SSSoulHarvestLevel  = PlayerPrefs.GetInt("SSSoulHarvestLevel",  0);
+        SSCrimsonPulseLevel = PlayerPrefs.GetInt("SSCrimsonPulseLevel", 0);
         SSVoidConduitLevel  = PlayerPrefs.GetInt("SSVoidConduitLevel",  0);
         SSBloodEchoLevel    = PlayerPrefs.GetInt("SSBloodEchoLevel",    0);
         SSIronMarrowLevel   = PlayerPrefs.GetInt("SSIronMarrowLevel",   0);

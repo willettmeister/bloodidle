@@ -65,6 +65,7 @@ public class ClickManager : MonoBehaviour
     public void OnBuySSBloodTap()          => GameManager.Instance.BuySSBloodTap();
     public void OnBuySSShardHunger()       => GameManager.Instance.BuySSShardHunger();
     public void OnBuySSSoulHarvest()       => GameManager.Instance.BuySSSoulHarvest();
+    public void OnBuySSCrimsonPulse()      => GameManager.Instance.BuySSCrimsonPulse();
     public void OnBuySSVoidConduit()       => GameManager.Instance.BuySSVoidConduit();
     public void OnBuySSBloodEcho()         => GameManager.Instance.BuySSBloodEcho();
     public void OnBuySSIronMarrow()        => GameManager.Instance.BuySSIronMarrow();

@@ -857,9 +857,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var soulShardShopPanel = content.CreateChild("SoulShardShopPanel");
         soulShardShopPanel.AddImage(Color.clear);
-        PF(soulShardShopPanel, 758, 556);
+        PF(soulShardShopPanel, 758, 614);
 
-        Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 556, HC("0A1A30"), 24);
+        Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 614, HC("0A1A30"), 24);
 
         var ssShopTitleGO = Label(soulShardShopPanel, "SoulShardShopTitle",
             "Soul Shard Shop", 40, new Color(0.7f, 0.85f, 1f), TextAnchor.MiddleLeft);
@@ -911,33 +911,40 @@ public static class SceneBuilder
         var ssSoulHarvestBtnGO = Btn(soulShardShopPanel, "SSSoulHarvestButton", "Buy (1 ⬡)", 30, HC("BF360C"));
         PT(ssSoulHarvestBtnGO, 350, 54, +245, 260);
 
-        // Row 7 — Void Conduit (tier-2, costs 2 shards)
+        // Row 7 — Crimson Pulse (tier-1, costs 1 shard)
+        var ssCrimsonPulseInfoGO = Label(soulShardShopPanel, "SSCrimsonPulseInfoText",
+            "Crimson Pulse +15% ritual income  (Lv.0/3)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(ssCrimsonPulseInfoGO, 410, 48, -175, 500);
+        var ssCrimsonPulseBtnGO = Btn(soulShardShopPanel, "SSCrimsonPulseButton", "Buy (1 ⬡)", 30, HC("7B1FA2"));
+        PT(ssCrimsonPulseBtnGO, 408, 54, +245, 260);
+
+        // Row 8 — Void Conduit (tier-2, costs 2 shards)
         var ssVoidConduitInfoGO = Label(soulShardShopPanel, "SSVoidConduitInfoText",
             "Void Conduit +15% all income  (Lv.0/2)", 30, TextSec, TextAnchor.MiddleLeft);
-        PT(ssVoidConduitInfoGO, 410, 48, -175, 500);
+        PT(ssVoidConduitInfoGO, 468, 48, -175, 500);
         var ssVoidConduitBtnGO = Btn(soulShardShopPanel, "SSVoidConduitButton", "Buy (2 ⬡)", 30, HC("00695C"));
-        PT(ssVoidConduitBtnGO, 408, 54, +245, 260);
+        PT(ssVoidConduitBtnGO, 466, 54, +245, 260);
 
-        // Row 8 — Blood Echo (tier-2, costs 2 shards)
+        // Row 9 — Blood Echo (tier-2, costs 2 shards)
         var ssBloodEchoInfoGO = Label(soulShardShopPanel, "SSBloodEchoInfoText",
             "Blood Echo +0.5/s per boss killed  (Lv.0/2)", 30, TextSec, TextAnchor.MiddleLeft);
-        PT(ssBloodEchoInfoGO, 468, 48, -175, 500);
+        PT(ssBloodEchoInfoGO, 526, 48, -175, 500);
         var ssBloodEchoBtnGO = Btn(soulShardShopPanel, "SSBloodEchoButton", "Buy (2 ⬡)", 30, HC("880E4F"));
-        PT(ssBloodEchoBtnGO, 466, 54, +245, 260);
+        PT(ssBloodEchoBtnGO, 524, 54, +245, 260);
 
-        // Row 9 — Iron Marrow (tier-2, costs 2 shards)
+        // Row 10 — Iron Marrow (tier-2, costs 2 shards)
         var ssIronMarrowInfoGO = Label(soulShardShopPanel, "SSIronMarrowInfoText",
             "Iron Marrow +3 atk all soldiers  (Lv.0/2)", 30, TextSec, TextAnchor.MiddleLeft);
-        PT(ssIronMarrowInfoGO, 526, 48, -175, 500);
+        PT(ssIronMarrowInfoGO, 584, 48, -175, 500);
         var ssIronMarrowBtnGO = Btn(soulShardShopPanel, "SSIronMarrowButton", "Buy (2 ⬡)", 30, HC("4A148C"));
-        PT(ssIronMarrowBtnGO, 524, 54, +245, 260);
+        PT(ssIronMarrowBtnGO, 582, 54, +245, 260);
 
-        // Row 10 — Wrath Bloom (tier-2, costs 2 shards)
+        // Row 11 — Wrath Bloom (tier-2, costs 2 shards)
         var ssWrathBloomInfoGO = Label(soulShardShopPanel, "SSWrathBloomInfoText",
             "Wrath Bloom boss kill extends Surge +10s  (Lv.0/2)", 30, TextSec, TextAnchor.MiddleLeft);
-        PT(ssWrathBloomInfoGO, 584, 48, -175, 500);
+        PT(ssWrathBloomInfoGO, 642, 48, -175, 500);
         var ssWrathBloomBtnGO = Btn(soulShardShopPanel, "SSWrathBloomButton", "Buy (2 ⬡)", 30, HC("BF360C"));
-        PT(ssWrathBloomBtnGO, 582, 54, +245, 260);
+        PT(ssWrathBloomBtnGO, 640, 54, +245, 260);
 
         soulShardShopPanel.SetActive(false);
 
@@ -1549,6 +1556,8 @@ public static class SceneBuilder
         uim.ssShardHungerButton     = ssShardHungerBtnGO.GetComponent<Button>();
         uim.ssSoulHarvestInfoText   = ssSoulHarvestInfoGO.GetComponent<Text>();
         uim.ssSoulHarvestButton     = ssSoulHarvestBtnGO.GetComponent<Button>();
+        uim.ssCrimsonPulseInfoText  = ssCrimsonPulseInfoGO.GetComponent<Text>();
+        uim.ssCrimsonPulseButton    = ssCrimsonPulseBtnGO.GetComponent<Button>();
         uim.ssVoidConduitInfoText   = ssVoidConduitInfoGO.GetComponent<Text>();
         uim.ssVoidConduitButton     = ssVoidConduitBtnGO.GetComponent<Button>();
         uim.ssBloodEchoInfoText     = ssBloodEchoInfoGO.GetComponent<Text>();
@@ -1691,6 +1700,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(ssBloodTapBtnGO.GetComponent<Button>().onClick,        clk.OnBuySSBloodTap);
         UnityEventTools.AddPersistentListener(ssShardHungerBtnGO.GetComponent<Button>().onClick,    clk.OnBuySSShardHunger);
         UnityEventTools.AddPersistentListener(ssSoulHarvestBtnGO.GetComponent<Button>().onClick,    clk.OnBuySSSoulHarvest);
+        UnityEventTools.AddPersistentListener(ssCrimsonPulseBtnGO.GetComponent<Button>().onClick,  clk.OnBuySSCrimsonPulse);
         UnityEventTools.AddPersistentListener(ssVoidConduitBtnGO.GetComponent<Button>().onClick,   clk.OnBuySSVoidConduit);
         UnityEventTools.AddPersistentListener(ssBloodEchoBtnGO.GetComponent<Button>().onClick,     clk.OnBuySSBloodEcho);
         UnityEventTools.AddPersistentListener(ssIronMarrowBtnGO.GetComponent<Button>().onClick,    clk.OnBuySSIronMarrow);
