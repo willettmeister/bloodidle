@@ -486,7 +486,21 @@ public class GameManager : MonoBehaviour
     public int    HexCurseUpgradeLevel  { get; private set; }
     public int    BloodOathUpgradeLevel  { get; private set; }
     public int    DesecrateUpgradeLevel  { get; private set; }
+    public int    EntropyUpgradeLevel    { get; private set; }
     public const int    MaxSpellUpgradeLevel      = 3;
+    public const double EntropyBaseCost           = 300.0;
+    public const float  EntropyCooldown           = 45f;
+    public const int    EntropyUnlockWave         = 20;
+    public const float  EntropyDamagePct          = 0.20f;
+    public const float  EntropyUpgradeDamagePct   = 0.05f;
+    public const double EntropyUpgradeBaseCost    = 200.0;
+    public float  EntropyEffectivePct   => EntropyDamagePct + EntropyUpgradeLevel * EntropyUpgradeDamagePct;
+    public double EntropyUpgradeCost    => Math.Floor(EntropyUpgradeBaseCost * Math.Pow(2, EntropyUpgradeLevel));
+    float _entropyTimer;
+    public bool   EntropyUnlocked   => Wave >= EntropyUnlockWave;
+    public bool   EntropyReady      => _entropyTimer <= 0f;
+    public float  EntropyCooldownLeft => _entropyTimer;
+    public bool   EntropyCanCast    => EntropyUnlocked && EntropyReady && Blood >= EntropyBaseCost && EnemyHP > 0;
     public const double SurgeUpgradeBaseCost      = 60.0;
     public const double HealUpgradeBaseCost       = 40.0;
     public const double WarCryUpgradeBaseCost     = 50.0;
@@ -1136,6 +1150,7 @@ public class GameManager : MonoBehaviour
         if (_bloodStormTimer  > 0f) { _bloodStormTimer  -= dt; if (_bloodStormTimer  < 0f) _bloodStormTimer  = 0f; }
         if (_desecrateTimer   > 0f) { _desecrateTimer   -= dt; if (_desecrateTimer   < 0f) _desecrateTimer   = 0f; }
         if (_bloodOathTimer   > 0f) { _bloodOathTimer   -= dt; if (_bloodOathTimer   < 0f) _bloodOathTimer   = 0f; }
+        if (_entropyTimer    > 0f) { _entropyTimer    -= dt; if (_entropyTimer    < 0f) _entropyTimer    = 0f; }
         if (BloodOathActive)
         {
             BloodOathTimeRemaining -= dt;
@@ -2173,6 +2188,26 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool UseEntropy()
+    {
+        if (!EntropyCanCast) return false;
+        Blood -= EntropyBaseCost;
+        EnemyHP = Mathf.Max(float.Epsilon, EnemyHP - EnemyHP * EntropyEffectivePct);
+        _entropyTimer = EntropyCooldown;
+        TotalSpellsCast++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
+    public bool UpgradeEntropy()
+    {
+        if (!EntropyUnlocked || EntropyUpgradeLevel >= MaxSpellUpgradeLevel || Blood < EntropyUpgradeCost) return false;
+        Blood -= EntropyUpgradeCost;
+        EntropyUpgradeLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public bool BuySSBloodTap()
     {
         if (SoulShards < SSUpgradeCost || SSBloodTapLevel >= SSMaxLevel) return false;
@@ -2378,7 +2413,7 @@ public class GameManager : MonoBehaviour
         SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0; SSSoulHarvestLevel = 0; SSCrimsonPulseLevel = 0;
         SSVoidConduitLevel = 0; SSBloodEchoLevel = 0; SSIronMarrowLevel = 0; SSWrathBloomLevel = 0;
         BloodBankDeposit = 0; BloodBankAccrued = 0; BankInterestLevel = 0; KillIncomeUpgradeLevel = 0; WaveStreak = 0;
-        SurgeUpgradeLevel = 0; HealUpgradeLevel = 0; BloodStormUpgradeLevel = 0; WarCryUpgradeLevel = 0; HexCurseUpgradeLevel = 0; BloodOathUpgradeLevel = 0; DesecrateUpgradeLevel = 0;
+        SurgeUpgradeLevel = 0; HealUpgradeLevel = 0; BloodStormUpgradeLevel = 0; WarCryUpgradeLevel = 0; HexCurseUpgradeLevel = 0; BloodOathUpgradeLevel = 0; DesecrateUpgradeLevel = 0; EntropyUpgradeLevel = 0;
         TotalEnemiesKilled = 0; TotalSpellsCast = 0; TotalBossesKilled = 0; VeteranAttackBonus = 0f; TimePlayed = 0; Achievements = AchievementFlags.None;
         AutoBuySoldiers = false; AutoSurge = false; AutoHeal = false; AutoStorm = false;
         AutoDesecrate = false; AutoBuyRituals = false; AutoBankDeposit = false;
@@ -2542,6 +2577,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("HexCurseUpgradeLevel",    HexCurseUpgradeLevel);
         PlayerPrefs.SetInt   ("BloodOathUpgradeLevel",   BloodOathUpgradeLevel);
         PlayerPrefs.SetInt   ("DesecrateUpgradeLevel",   DesecrateUpgradeLevel);
+        PlayerPrefs.SetInt   ("EntropyUpgradeLevel",     EntropyUpgradeLevel);
         PlayerPrefs.SetInt   ("SoundEnabled",        SoundEnabled        ? 1 : 0);
         PlayerPrefs.SetInt   ("NotificationsEnabled",NotificationsEnabled ? 1 : 0);
         PlayerPrefs.SetString("BloodBankDeposit",    BloodBankDeposit.ToString("R", ic));
@@ -2662,6 +2698,7 @@ public class GameManager : MonoBehaviour
         HexCurseUpgradeLevel     = PlayerPrefs.GetInt   ("HexCurseUpgradeLevel",    0);
         BloodOathUpgradeLevel    = PlayerPrefs.GetInt   ("BloodOathUpgradeLevel",   0);
         DesecrateUpgradeLevel    = PlayerPrefs.GetInt   ("DesecrateUpgradeLevel",   0);
+        EntropyUpgradeLevel      = PlayerPrefs.GetInt   ("EntropyUpgradeLevel",     0);
         SoundEnabled             = PlayerPrefs.GetInt   ("SoundEnabled",             1) == 1;
         NotificationsEnabled = PlayerPrefs.GetInt  ("NotificationsEnabled",1) == 1;
         BloodBankDeposit    = double.Parse(PlayerPrefs.GetString("BloodBankDeposit", "0"), ic);

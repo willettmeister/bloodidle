@@ -368,9 +368,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var bloodSurgePanel = content.CreateChild("BloodSurgePanel");
         bloodSurgePanel.AddImage(Color.clear);
-        PF(bloodSurgePanel, 1175, 1210);
+        PF(bloodSurgePanel, 1175, 1384);
 
-        Panel(bloodSurgePanel, "BloodSurgeCardBg", 0, 1210, Surface1, 24);
+        Panel(bloodSurgePanel, "BloodSurgeCardBg", 0, 1384, Surface1, 24);
         { var a = bloodSurgePanel.CreateChild("SurgeAccent"); a.AddImage(Crimson); PF(a, 0, 4, 24); }
 
         var bloodSurgeInfoGO = Label(bloodSurgePanel, "BloodSurgeInfoText",
@@ -508,6 +508,23 @@ public static class SceneBuilder
             "Upgrade Desecrate\n(80 blood)", 28, HC("2A004A"));
         PT(upgradeDesecrateBtnGO, 1152, 52, 0, 680);
         upgradeDesecrateBtnGO.SetActive(false);
+
+        var entropyDivGO = bloodSurgePanel.CreateChild("EntropyDiv");
+        entropyDivGO.AddImage(HC("2D2D4A")); PT(entropyDivGO, 1216, 2, 0, 640);
+
+        var entropyInfoGO = Label(bloodSurgePanel, "EntropyInfoText",
+            $"Entropy  —  Unlocks at wave {GameManager.EntropyUnlockWave}",
+            30, new Color(0.6f, 0.9f, 1f), TextAnchor.MiddleLeft);
+        PT(entropyInfoGO, 1224, 44, -140, 620);
+
+        var entropyBtnGO = Btn(bloodSurgePanel, "EntropyButton",
+            "Entropy! (300 blood)", 30, HC("004A5A"));
+        PT(entropyBtnGO, 1274, 42, 0, 680);
+
+        var upgradeEntropyBtnGO = Btn(bloodSurgePanel, "UpgradeEntropyButton",
+            "Upgrade Entropy\n(200 blood)", 28, HC("002A3A"));
+        PT(upgradeEntropyBtnGO, 1322, 52, 0, 680);
+        upgradeEntropyBtnGO.SetActive(false);
 
         bloodSurgePanel.SetActive(false);
 
@@ -1626,6 +1643,10 @@ public static class SceneBuilder
         uim.autoDesecrateButtonText   = autoDesecrateBtnGO.GetComponentInChildren<Text>();
         uim.upgradeDesecrateButton    = upgradeDesecrateBtnGO.GetComponent<Button>();
         uim.desecrateUpgradeCostText  = upgradeDesecrateBtnGO.GetComponentInChildren<Text>();
+        uim.entropyInfoText           = entropyInfoGO.GetComponent<Text>();
+        uim.entropyButton             = entropyBtnGO.GetComponent<Button>();
+        uim.upgradeEntropyButton      = upgradeEntropyBtnGO.GetComponent<Button>();
+        uim.entropyUpgradeCostText    = upgradeEntropyBtnGO.GetComponentInChildren<Text>();
         uim.soulSacrificeButton     = soulSacBtnGO.GetComponent<Button>();
         uim.soulSacrificeInfoText   = soulSacInfoGO.GetComponent<Text>();
         uim.soldierSacrificeButton  = soldierSacBtnGO.GetComponent<Button>();
@@ -1765,6 +1786,8 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(desecrateBtnGO.GetComponent<Button>().onClick,          clk.OnUseDesecrate);
         UnityEventTools.AddPersistentListener(autoDesecrateBtnGO.GetComponent<Button>().onClick,     clk.OnToggleAutoDesecrate);
         UnityEventTools.AddPersistentListener(upgradeDesecrateBtnGO.GetComponent<Button>().onClick,  clk.OnUpgradeDesecrate);
+        UnityEventTools.AddPersistentListener(entropyBtnGO.GetComponent<Button>().onClick,           clk.OnUseEntropy);
+        UnityEventTools.AddPersistentListener(upgradeEntropyBtnGO.GetComponent<Button>().onClick,    clk.OnUpgradeEntropy);
         UnityEventTools.AddPersistentListener(soulSacBtnGO.GetComponent<Button>().onClick,            clk.OnUseSoulSacrifice);
         UnityEventTools.AddPersistentListener(tutDismissGO.GetComponent<Button>().onClick,            uim.DismissTutorial);
         UnityEventTools.AddPersistentListener(tabBattleBtnGO.GetComponent<Button>().onClick,          clk.OnSelectBattleTab);

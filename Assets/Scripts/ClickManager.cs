@@ -83,6 +83,8 @@ public class ClickManager : MonoBehaviour
     public void OnUpgradeHexCurse()        => GameManager.Instance.UpgradeHexCurse();
     public void OnUpgradeBloodOath()       => GameManager.Instance.UpgradeBloodOath();
     public void OnUpgradeDesecrate()       => GameManager.Instance.UpgradeDesecrate();
+    public void OnUseEntropy()             => GameManager.Instance.UseEntropy();
+    public void OnUpgradeEntropy()         => GameManager.Instance.UpgradeEntropy();
     public void OnSelectBattleTab()        => uiManager.ShowBattleTab();
     public void OnSelectBuildTab()         => uiManager.ShowBuildTab();
     public void OnSelectProgressTab()      => uiManager.ShowProgressTab();

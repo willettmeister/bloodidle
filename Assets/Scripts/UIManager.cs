@@ -279,6 +279,12 @@ public class UIManager : MonoBehaviour
     public Button upgradeDesecrateButton;
     public Text   desecrateUpgradeCostText;
 
+    [Header("Entropy")]
+    public Text   entropyInfoText;
+    public Button entropyButton;
+    public Button upgradeEntropyButton;
+    public Text   entropyUpgradeCostText;
+
     [Header("Soul Sacrifice")]
     public Button soulSacrificeButton;
     public Text   soulSacrificeInfoText;
@@ -1186,6 +1192,40 @@ public class UIManager : MonoBehaviour
                     }
                     else
                         desecrateUpgradeCostText.text = "Desecrate MAX";
+                }
+            }
+        }
+
+        if (entropyInfoText != null)
+        {
+            if (gm.EntropyUnlocked)
+            {
+                string cdStr = !gm.EntropyReady ? $"  ({Mathf.CeilToInt(gm.EntropyCooldownLeft)}s)" : "";
+                entropyInfoText.text = $"Entropy  —  Deal {gm.EntropyEffectivePct * 100:F0}% of enemy HP{cdStr}  (300 blood)";
+                if (entropyButton != null) entropyButton.interactable = gm.EntropyCanCast;
+            }
+            else
+            {
+                entropyInfoText.text = $"Entropy  —  Unlocks at wave {GameManager.EntropyUnlockWave}";
+                if (entropyButton != null) entropyButton.interactable = false;
+            }
+        }
+        if (upgradeEntropyButton != null)
+        {
+            upgradeEntropyButton.gameObject.SetActive(gm.EntropyUnlocked);
+            if (gm.EntropyUnlocked)
+            {
+                upgradeEntropyButton.interactable = gm.EntropyUpgradeLevel < GameManager.MaxSpellUpgradeLevel
+                    && gm.Blood >= gm.EntropyUpgradeCost;
+                if (entropyUpgradeCostText != null)
+                {
+                    if (gm.EntropyUpgradeLevel < GameManager.MaxSpellUpgradeLevel)
+                    {
+                        float nextPct = (GameManager.EntropyDamagePct + (gm.EntropyUpgradeLevel + 1) * GameManager.EntropyUpgradeDamagePct) * 100f;
+                        entropyUpgradeCostText.text = $"Upgrade Entropy\nLv.{gm.EntropyUpgradeLevel}→{gm.EntropyUpgradeLevel + 1}  {gm.EntropyEffectivePct * 100:F0}%→{nextPct:F0}%\n({GameManager.FormatNumber(gm.EntropyUpgradeCost)} blood)";
+                    }
+                    else
+                        entropyUpgradeCostText.text = "Entropy MAX";
                 }
             }
         }
