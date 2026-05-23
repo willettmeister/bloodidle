@@ -1922,7 +1922,7 @@ public class UIManager : MonoBehaviour
         string token = GetToken();
         if (string.IsNullOrEmpty(token))
         {
-            featureStatusText.text           = "Submissions not configured.";
+            featureStatusText.text           = "Submissions unavailable — copy bloodidle_secrets.txt.sample → bloodidle_secrets.txt and add your GitHub PAT.";
             featureSubmitButton.interactable = true;
             yield break;
         }
@@ -1973,8 +1973,8 @@ public class UIManager : MonoBehaviour
             else
             {
                 long code = req.responseCode;
-                featureStatusText.text = code == 422
-                    ? "Label 'feature request' missing — ask the dev to create it on GitHub."
+                featureStatusText.text = code == 401 || code == 403
+                    ? "Submission failed — PAT missing or expired. See setup instructions."
                     : $"Failed ({(code > 0 ? code.ToString() : req.error)}) — check your connection.";
             }
         }
@@ -2088,7 +2088,7 @@ public class UIManager : MonoBehaviour
     {
         if (_voteIssues == null || _voteIssues.Length == 0)
         {
-            if (voteIssueText  != null) voteIssueText.text  = _voteFetching ? "Loading..." : "No open feature requests.";
+            if (voteIssueText  != null) voteIssueText.text  = _voteFetching ? "Loading..." : "No feature requests yet — submit one using the Suggest button!";
             if (voteStatusText != null) voteStatusText.text = "";
             if (voteButton     != null) voteButton.interactable     = false;
             if (votePrevButton != null) votePrevButton.interactable = false;
