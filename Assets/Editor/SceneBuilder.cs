@@ -935,9 +935,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var soulShardShopPanel = content.CreateChild("SoulShardShopPanel");
         soulShardShopPanel.AddImage(Color.clear);
-        PF(soulShardShopPanel, 758, 1310);
+        PF(soulShardShopPanel, 758, 1368);
 
-        Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 1310, HC("0A1A30"), 24);
+        Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 1368, HC("0A1A30"), 24);
 
         var ssShopTitleGO = Label(soulShardShopPanel, "SoulShardShopTitle",
             "Soul Shard Shop", 40, new Color(0.7f, 0.85f, 1f), TextAnchor.MiddleLeft);
@@ -1094,12 +1094,19 @@ public static class SceneBuilder
         var ssWarCrestBtnGO = Btn(soulShardShopPanel, "SSWarCrestButton", "Buy (1 ⬡)", 30, HC("BF360C"));
         PT(ssWarCrestBtnGO, 1220, 54, +245, 260);
 
-        // Row 22 — Crimson Storm (tier-2, costs 2 shards)
+        // Row 22 — Vital Surge (tier-1, costs 1 shard)
+        var ssVitalSurgeInfoGO = Label(soulShardShopPanel, "SSVitalSurgeInfoText",
+            "Vital Surge Heal Self restores +5 extra HP  (Lv.0/3)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(ssVitalSurgeInfoGO, 1280, 48, -175, 500);
+        var ssVitalSurgeBtnGO = Btn(soulShardShopPanel, "SSVitalSurgeButton", "Buy (1 ⬡)", 30, HC("00838F"));
+        PT(ssVitalSurgeBtnGO, 1278, 54, +245, 260);
+
+        // Row 23 — Crimson Storm (tier-2, costs 2 shards)
         var ssCrimsonStormInfoGO = Label(soulShardShopPanel, "SSCrimsonStormInfoText",
             "Crimson Storm Blood Storm fires 2× per cast  (Lv.0/2)", 30, TextSec, TextAnchor.MiddleLeft);
-        PT(ssCrimsonStormInfoGO, 1280, 48, -175, 500);
+        PT(ssCrimsonStormInfoGO, 1338, 48, -175, 500);
         var ssCrimsonStormBtnGO = Btn(soulShardShopPanel, "SSCrimsonStormButton", "Buy (2 ⬡)", 30, HC("B71C1C"));
-        PT(ssCrimsonStormBtnGO, 1278, 54, +245, 260);
+        PT(ssCrimsonStormBtnGO, 1336, 54, +245, 260);
 
         soulShardShopPanel.SetActive(false);
 
@@ -1746,6 +1753,8 @@ public static class SceneBuilder
         uim.ssBoneWardButton        = ssBoneWardBtnGO.GetComponent<Button>();
         uim.ssWarCrestInfoText      = ssWarCrestInfoGO.GetComponent<Text>();
         uim.ssWarCrestButton        = ssWarCrestBtnGO.GetComponent<Button>();
+        uim.ssVitalSurgeInfoText    = ssVitalSurgeInfoGO.GetComponent<Text>();
+        uim.ssVitalSurgeButton      = ssVitalSurgeBtnGO.GetComponent<Button>();
         uim.ssCrimsonStormInfoText  = ssCrimsonStormInfoGO.GetComponent<Text>();
         uim.ssCrimsonStormButton    = ssCrimsonStormBtnGO.GetComponent<Button>();
         uim.ssVoidConduitInfoText   = ssVoidConduitInfoGO.GetComponent<Text>();
@@ -1916,7 +1925,8 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(ssDeathsBountyBtnGO.GetComponent<Button>().onClick,  clk.OnBuySSDeathsBounty);
         UnityEventTools.AddPersistentListener(ssRuneSealBtnGO.GetComponent<Button>().onClick,      clk.OnBuySSRuneSeal);
         UnityEventTools.AddPersistentListener(ssBoneWardBtnGO.GetComponent<Button>().onClick,     clk.OnBuySSBoneWard);
-        UnityEventTools.AddPersistentListener(ssWarCrestBtnGO.GetComponent<Button>().onClick,    clk.OnBuySSWarCrest);
+        UnityEventTools.AddPersistentListener(ssWarCrestBtnGO.GetComponent<Button>().onClick,     clk.OnBuySSWarCrest);
+        UnityEventTools.AddPersistentListener(ssVitalSurgeBtnGO.GetComponent<Button>().onClick,   clk.OnBuySSVitalSurge);
         UnityEventTools.AddPersistentListener(ssCrimsonStormBtnGO.GetComponent<Button>().onClick, clk.OnBuySSCrimsonStorm);
         UnityEventTools.AddPersistentListener(ssVoidConduitBtnGO.GetComponent<Button>().onClick,   clk.OnBuySSVoidConduit);
         UnityEventTools.AddPersistentListener(ssBloodEchoBtnGO.GetComponent<Button>().onClick,     clk.OnBuySSBloodEcho);
