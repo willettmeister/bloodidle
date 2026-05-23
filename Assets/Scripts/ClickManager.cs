@@ -61,6 +61,7 @@ public class ClickManager : MonoBehaviour
     public void OnBuyPBloodRitualStart()      => GameManager.Instance.BuyPBloodRitualStart();
     public void OnBuyPBloodMastery()          => GameManager.Instance.BuyPBloodMastery();
     public void OnBuyPSacredGround()          => GameManager.Instance.BuyPSacredGround();
+    public void OnBuyPEternalFlame()          => GameManager.Instance.BuyPEternalFlame();
     public void OnBuySSBossTimer()         => GameManager.Instance.BuySSBossTimer();
     public void OnBuySSDoubleChest()       => GameManager.Instance.BuySSDoubleChest();
     public void OnBuySSRollback()          => GameManager.Instance.BuySSRollback();

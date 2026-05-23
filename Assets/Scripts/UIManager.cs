@@ -166,6 +166,8 @@ public class UIManager : MonoBehaviour
     public Button pBloodMasteryButton;
     public Text pSacredGroundInfoText;
     public Button pSacredGroundButton;
+    public Text pEternalFlameInfoText;
+    public Button pEternalFlameButton;
 
     [Header("Soul Shard Shop")]
     public GameObject soulShardShopPanel;
@@ -1013,6 +1015,9 @@ public class UIManager : MonoBehaviour
             if (pSacredGroundInfoText != null)
                 pSacredGroundInfoText.text = $"Sacred Ground +{GameManager.PSacredGroundBonus * 100:F0}% shrine income  (Lv.{gm.PSacredGroundLevel}/3)";
             if (pSacredGroundButton != null) pSacredGroundButton.interactable = canSpend && gm.PSacredGroundLevel < 3;
+            if (pEternalFlameInfoText != null)
+                pEternalFlameInfoText.text = $"Eternal Flame +{GameManager.PEternalFlameBonus * 100:F0}% Blood Well yield  (Lv.{gm.PEternalFlameLevel}/3)";
+            if (pEternalFlameButton != null) pEternalFlameButton.interactable = canSpend && gm.PEternalFlameLevel < 3;
         }
 
         // Soul Shard Shop

@@ -330,6 +330,9 @@ public class GameManager : MonoBehaviour
     public int PSacredGroundLevel        { get; private set; }
     public const double PSacredGroundBonus = 0.25;
     public double SacredGroundMult       => 1.0 + PSacredGroundLevel * PSacredGroundBonus;
+    public int PEternalFlameLevel        { get; private set; }
+    public const double PEternalFlameBonus = 0.25;
+    public double EternalFlameMult       => 1.0 + PEternalFlameLevel * PEternalFlameBonus;
     public double EffectiveBountyMult => BountyRewardMult + PBountyBonusLevel;
     public const int   PrestigeShopCost      = 1;
     public const float IronWallDmgReduction  = 0.10f;
@@ -1037,7 +1040,7 @@ public class GameManager : MonoBehaviour
         {
             double consumed = Math.Min(BloodWellCount * BloodWellWoodPerSec * dt, Wood);
             Wood    -= consumed;
-            AddBlood(consumed * BloodWellBloodRatio);
+            AddBlood(consumed * BloodWellBloodRatio * EternalFlameMult);
             changed  = true;
         }
 
@@ -2136,6 +2139,14 @@ public class GameManager : MonoBehaviour
         OnStateChanged?.Invoke();
         return true;
     }
+    public bool BuyPEternalFlame()
+    {
+        if (PrestigePoints < PrestigeShopCost || PEternalFlameLevel >= 3) return false;
+        PrestigePoints -= PrestigeShopCost;
+        PEternalFlameLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
 
     public bool BuySSBossTimer()
     {
@@ -2475,7 +2486,7 @@ public class GameManager : MonoBehaviour
         BloodShieldUnlocked = false; BloodShieldHP = 0f;
         PrestigeCount = 0; PrestigePoints = 0;
         PSoldierCapLevel = 0; PClickBonusLevel = 0; PRitualEffLevel = 0;
-        PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0; PBountyBonusLevel = 0; PBloodRitualStartLevel = 0; PBloodMasteryLevel = 0; PSacredGroundLevel = 0;
+        PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0; PBountyBonusLevel = 0; PBloodRitualStartLevel = 0; PBloodMasteryLevel = 0; PSacredGroundLevel = 0; PEternalFlameLevel = 0;
         WeaponLevel = 0; ArmorLevel = 0; TalismanLevel = 0; BannerLevel = 0;
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
@@ -2615,6 +2626,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("PBloodRitualStartLevel",  PBloodRitualStartLevel);
         PlayerPrefs.SetInt   ("PBloodMasteryLevel",      PBloodMasteryLevel);
         PlayerPrefs.SetInt   ("PSacredGroundLevel",      PSacredGroundLevel);
+        PlayerPrefs.SetInt   ("PEternalFlameLevel",      PEternalFlameLevel);
         PlayerPrefs.SetInt   ("WeaponLevel",         WeaponLevel);
         PlayerPrefs.SetInt   ("ArmorLevel",          ArmorLevel);
         PlayerPrefs.SetInt   ("TalismanLevel",       TalismanLevel);
@@ -2739,6 +2751,7 @@ public class GameManager : MonoBehaviour
         PBloodRitualStartLevel     = PlayerPrefs.GetInt("PBloodRitualStartLevel", 0);
         PBloodMasteryLevel         = PlayerPrefs.GetInt("PBloodMasteryLevel",     0);
         PSacredGroundLevel         = PlayerPrefs.GetInt("PSacredGroundLevel",     0);
+        PEternalFlameLevel         = PlayerPrefs.GetInt("PEternalFlameLevel",     0);
         WeaponLevel         = PlayerPrefs.GetInt   ("WeaponLevel",         0);
         ArmorLevel          = PlayerPrefs.GetInt   ("ArmorLevel",          0);
         TalismanLevel       = PlayerPrefs.GetInt   ("TalismanLevel",       0);
