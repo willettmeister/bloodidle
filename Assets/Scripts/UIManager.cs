@@ -198,6 +198,8 @@ public class UIManager : MonoBehaviour
     public Button ssWarSpoilsButton;
     public Text ssGhostStrikeInfoText;
     public Button ssGhostStrikeButton;
+    public Text ssDeathsBountyInfoText;
+    public Button ssDeathsBountyButton;
     public Text ssVoidConduitInfoText;
     public Button ssVoidConduitButton;
     public Text ssBloodEchoInfoText;
@@ -1095,6 +1097,10 @@ public class UIManager : MonoBehaviour
                 ssGhostStrikeInfoText.text = $"Ghost Strike +{GameManager.SSGhostStrikeBonus * 100:F0}% Blood Storm damage  (Lv.{gm.SSGhostStrikeLevel}/{GameManager.SSMaxLevel})";
             if (ssGhostStrikeButton != null)
                 ssGhostStrikeButton.interactable = canBuySS && gm.SSGhostStrikeLevel < GameManager.SSMaxLevel;
+            if (ssDeathsBountyInfoText != null)
+                ssDeathsBountyInfoText.text = $"Death's Bounty +{GameManager.SSDeathsBountyBonus * 100:F0}% Soul Sacrifice blood  (Lv.{gm.SSDeathsBountyLevel}/{GameManager.SSMaxLevel})";
+            if (ssDeathsBountyButton != null)
+                ssDeathsBountyButton.interactable = canBuySS && gm.SSDeathsBountyLevel < GameManager.SSMaxLevel;
             bool canBuyT2 = gm.SoulShards >= GameManager.SSTier2Cost;
             if (ssVoidConduitInfoText != null)
                 ssVoidConduitInfoText.text = $"Void Conduit +{GameManager.SSVoidConduitBonus * 100:F0}% all income  (Lv.{gm.SSVoidConduitLevel}/{GameManager.SSTier2MaxLevel})";
