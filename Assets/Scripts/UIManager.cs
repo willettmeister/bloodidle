@@ -1623,6 +1623,7 @@ public class UIManager : MonoBehaviour
         TalentFlags.CrimsonVeil       => "Crimson Veil\nBelow 30% HP: damage halved for 5s (60s cooldown)",
         TalentFlags.Hemorrhage        => "Hemorrhage\nEach kill stacks a bleed: 1% enemy max HP/s for 3s (max 5 stacks)",
         TalentFlags.SoulBind          => "Soul Bind\nSoldier death doubles the next wave's blood reward",
+        TalentFlags.SiegeBreaker      => "Siege Breaker\n+20% soldier damage vs bosses and daily challenges",
         _                             => "",
     };
 
@@ -1656,6 +1657,7 @@ public class UIManager : MonoBehaviour
         if ((talents & TalentFlags.CrimsonVeil)      != 0) names.Add("CrimsonVeil");
         if ((talents & TalentFlags.Hemorrhage)       != 0) names.Add("Hemorrhage");
         if ((talents & TalentFlags.SoulBind)         != 0) names.Add("SoulBind");
+        if ((talents & TalentFlags.SiegeBreaker)     != 0) names.Add("SiegeBrkr");
         return names.Count > 0 ? "Talents: " + string.Join(" | ", names) : "";
     }
 

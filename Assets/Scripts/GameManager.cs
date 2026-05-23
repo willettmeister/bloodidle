@@ -95,6 +95,7 @@ public enum TalentFlags
     CrimsonVeil      = 1 << 24, // below 30% HP: incoming damage halved for 5s (60s cooldown)
     Hemorrhage       = 1 << 25, // each kill stacks a bleed: 1% enemy max HP/s for 3s
     SoulBind         = 1 << 26, // soldier death doubles the next wave's blood reward
+    SiegeBreaker     = 1 << 27, // +20% soldier damage against bosses and daily challenges
 }
 
 public class GameManager : MonoBehaviour
@@ -531,8 +532,9 @@ public class GameManager : MonoBehaviour
     public const int    TalentHemorrhageMaxStacks = 5;
     public int   HemorrhageStacks     { get; private set; }
     float _hemorrhageTimer;
-    public const double TalentSoulBindRewardMult = 2.0;   // next wave reward multiplier on soldier death
+    public const double TalentSoulBindRewardMult  = 2.0;  // next wave reward multiplier on soldier death
     public bool  SoulBindTriggered    { get; private set; }
+    public const float  TalentSiegeBreakrBonus   = 0.20f; // +20% damage vs bosses/challenges
 
     // --- Soul Sacrifice ---
     public bool SoulSacrificeUnlocked  => PrestigeCount >= 1;
@@ -1319,6 +1321,7 @@ public class GameManager : MonoBehaviour
             eff *= EnemyFortifiedDmgMult;
         if (CurrentEnemyModifier == EnemyModifier.Cursed && PaladinCount > 0) eff *= PaladinHolyBonus;
         if (IsBossWave && SSCrimsonBrandLevel > 0) eff *= CrimsonBrandBossMult;
+        if ((IsBossWave || DailyChallengeActive) && HasTalent(TalentFlags.SiegeBreaker)) eff *= (1f + TalentSiegeBreakrBonus);
         if (BerserkerRageActive) eff *= BerserkerRageMult;
         if (LastStandActive)     eff *= LastStandMult;
         if (DeathsDoorActive)    eff *= DeathsDoorMult;
@@ -2692,7 +2695,7 @@ public class GameManager : MonoBehaviour
             TalentFlags.TitansWill,  TalentFlags.SurgeMastery,
             TalentFlags.Vanguard,    TalentFlags.Bloodbound,
             TalentFlags.CrimsonVeil, TalentFlags.Hemorrhage,
-            TalentFlags.SoulBind,
+            TalentFlags.SoulBind,    TalentFlags.SiegeBreaker,
         };
         int availCount = 0;
         for (int k = 0; k < all.Length; k++)
