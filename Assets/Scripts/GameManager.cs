@@ -51,7 +51,7 @@ public struct AchievementDef
     public float   AttackBonus;  // additive bonus to attack per soldier
 }
 
-public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral, Leech, Volatile, Fortified, Giant, Blessed }
+public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral, Leech, Volatile, Fortified, Giant, Blessed, Frenzied }
 public enum BossAbility    { None, Shield, Berserk, Drain, Regen, Thorns, Haste, Wrath, Miasma, LeechStrike }
 public enum QuestTrackType { Kills, Farms, Wave, Spells }
 
@@ -152,7 +152,8 @@ public class GameManager : MonoBehaviour
             if (CurrentEnemyModifier == EnemyModifier.Spectral) r = Math.Floor(r * EnemySpectralRewardMult);
             if (CurrentEnemyModifier == EnemyModifier.Leech)    r = Math.Floor(r * EnemyLeechRewardMult);
             if (CurrentEnemyModifier == EnemyModifier.Giant)    r = Math.Floor(r * EnemyGiantRewardMult);
-            if (CurrentEnemyModifier == EnemyModifier.Blessed)  r = Math.Floor(r * EnemyBlessedRewardMult);
+            if (CurrentEnemyModifier == EnemyModifier.Blessed)   r = Math.Floor(r * EnemyBlessedRewardMult);
+            if (CurrentEnemyModifier == EnemyModifier.Frenzied)  r = Math.Floor(r * EnemyFrenziedRewardMult);
             if (IsBloodyWave)  r = Math.Floor(r * BloodMoonMult);
             if (_isBountyEnemy) r = Math.Floor(r * EffectiveBountyMult);
             if (_isEliteEnemy)  r = Math.Floor(r * EliteRewardMult);
@@ -748,6 +749,7 @@ public class GameManager : MonoBehaviour
         EnemyModifier.Fortified  => "🔩 Fortified",
         EnemyModifier.Giant      => "🗿 Giant",
         EnemyModifier.Blessed    => "✨ Blessed",
+        EnemyModifier.Frenzied   => "⚡ Frenzied",
         _                     => "",
     };
     public const float EnemyArmoredDmgMult    = 0.5f;
@@ -768,6 +770,9 @@ public class GameManager : MonoBehaviour
     public const float EnemyFortifiedRewardMult = 1.40f;
     public const float EnemyGiantHPMult         = 2.0f;  // 2× max HP
     public const double EnemyGiantRewardMult     = 2.0;   // 2× kill reward
+    public const float  EnemyFrenziedAtkMult     = 1.50f; // attacks 50% faster
+    public const float  EnemyFrenziedHPMult      = 0.70f; // 30% less HP
+    public const double EnemyFrenziedRewardMult  = 1.35;  // +35% kill reward
     public const float  EnemyBlessedRegenPct     = 0.01f; // 1% max HP/s while above 50% HP
     public const float  EnemyBlessedRegenThresh  = 0.50f; // only heals above this HP fraction
     public const double EnemyBlessedRewardMult   = 1.40;  // +40% kill reward
@@ -1351,6 +1356,8 @@ public class GameManager : MonoBehaviour
                 reward = Math.Floor(reward * EnemyGiantRewardMult);
             if (CurrentEnemyModifier == EnemyModifier.Blessed)
                 reward = Math.Floor(reward * EnemyBlessedRewardMult);
+            if (CurrentEnemyModifier == EnemyModifier.Frenzied)
+                reward = Math.Floor(reward * EnemyFrenziedRewardMult);
             if (IsBloodyWave) reward = Math.Floor(reward * BloodMoonMult);
             if (_isBountyEnemy) reward = Math.Floor(reward * EffectiveBountyMult);
             if (_isEliteEnemy)  reward = Math.Floor(reward * EliteRewardMult);
@@ -1664,7 +1671,7 @@ public class GameManager : MonoBehaviour
             SoulBindTriggered  = false;
             if (UnityEngine.Random.value < 0.25f)
             {
-                CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 11);
+                CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 12);
                 if (CurrentEnemyModifier == EnemyModifier.Enraged)
                     EnemyAttack *= EnemyEnragedAtkMult;
                 else if (CurrentEnemyModifier == EnemyModifier.Spectral)
@@ -1677,6 +1684,12 @@ public class GameManager : MonoBehaviour
                 {
                     EnemyMaxHP *= EnemyGiantHPMult;
                     EnemyHP     = EnemyMaxHP;
+                }
+                else if (CurrentEnemyModifier == EnemyModifier.Frenzied)
+                {
+                    EnemyMaxHP  *= EnemyFrenziedHPMult;
+                    EnemyHP      = EnemyMaxHP;
+                    EnemyAttack *= EnemyFrenziedAtkMult;
                 }
             }
             else
