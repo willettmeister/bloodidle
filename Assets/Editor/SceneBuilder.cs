@@ -914,9 +914,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var soulShardShopPanel = content.CreateChild("SoulShardShopPanel");
         soulShardShopPanel.AddImage(Color.clear);
-        PF(soulShardShopPanel, 758, 1020);
+        PF(soulShardShopPanel, 758, 1078);
 
-        Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 1020, HC("0A1A30"), 24);
+        Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 1078, HC("0A1A30"), 24);
 
         var ssShopTitleGO = Label(soulShardShopPanel, "SoulShardShopTitle",
             "Soul Shard Shop", 40, new Color(0.7f, 0.85f, 1f), TextAnchor.MiddleLeft);
@@ -1051,6 +1051,13 @@ public static class SceneBuilder
         PT(ssEntropyAmpInfoGO, 1048, 48, -175, 500);
         var ssEntropyAmpBtnGO = Btn(soulShardShopPanel, "SSEntropyAmpButton", "Buy (2 ⬡)", 30, HC("006064"));
         PT(ssEntropyAmpBtnGO, 1046, 54, +245, 260);
+
+        // Row 19 — Rune Seal (tier-1, costs 1 shard)
+        var ssRuneSealInfoGO = Label(soulShardShopPanel, "SSRuneSealInfoText",
+            "Rune Seal +2 max combo stacks  (Lv.0/3)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(ssRuneSealInfoGO, 1106, 48, -175, 500);
+        var ssRuneSealBtnGO = Btn(soulShardShopPanel, "SSRuneSealButton", "Buy (1 ⬡)", 30, HC("4A148C"));
+        PT(ssRuneSealBtnGO, 1104, 54, +245, 260);
 
         soulShardShopPanel.SetActive(false);
 
@@ -1685,6 +1692,8 @@ public static class SceneBuilder
         uim.ssGhostStrikeButton     = ssGhostStrikeBtnGO.GetComponent<Button>();
         uim.ssDeathsBountyInfoText  = ssDeathsBountyInfoGO.GetComponent<Text>();
         uim.ssDeathsBountyButton    = ssDeathsBountyBtnGO.GetComponent<Button>();
+        uim.ssRuneSealInfoText      = ssRuneSealInfoGO.GetComponent<Text>();
+        uim.ssRuneSealButton        = ssRuneSealBtnGO.GetComponent<Button>();
         uim.ssVoidConduitInfoText   = ssVoidConduitInfoGO.GetComponent<Text>();
         uim.ssVoidConduitButton     = ssVoidConduitBtnGO.GetComponent<Button>();
         uim.ssBloodEchoInfoText     = ssBloodEchoInfoGO.GetComponent<Text>();
@@ -1848,6 +1857,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(ssWarSpoilsBtnGO.GetComponent<Button>().onClick,     clk.OnBuySSWarSpoils);
         UnityEventTools.AddPersistentListener(ssGhostStrikeBtnGO.GetComponent<Button>().onClick,   clk.OnBuySSGhostStrike);
         UnityEventTools.AddPersistentListener(ssDeathsBountyBtnGO.GetComponent<Button>().onClick,  clk.OnBuySSDeathsBounty);
+        UnityEventTools.AddPersistentListener(ssRuneSealBtnGO.GetComponent<Button>().onClick,      clk.OnBuySSRuneSeal);
         UnityEventTools.AddPersistentListener(ssVoidConduitBtnGO.GetComponent<Button>().onClick,   clk.OnBuySSVoidConduit);
         UnityEventTools.AddPersistentListener(ssBloodEchoBtnGO.GetComponent<Button>().onClick,     clk.OnBuySSBloodEcho);
         UnityEventTools.AddPersistentListener(ssIronMarrowBtnGO.GetComponent<Button>().onClick,    clk.OnBuySSIronMarrow);

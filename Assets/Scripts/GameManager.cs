@@ -121,6 +121,7 @@ public class GameManager : MonoBehaviour
     public const int    ComboMaxStacks     = 10;
     float _comboTimer;
     public int   ComboStacks { get; private set; }
+    public int   EffectiveComboMaxStacks => ComboMaxStacks + SSRuneSealLevel * SSRuneSealStackBonus;
     public float ComboMult   => 1f + ComboStacks * ComboBonusPerStack;
 
     public const int    EchoTapInterval  = 5;
@@ -388,6 +389,8 @@ public class GameManager : MonoBehaviour
     public int    SSDeathsBountyLevel   { get; private set; }
     public const double SSDeathsBountyBonus = 0.20;
     public double DeathsBountyMult      => 1.0 + SSDeathsBountyLevel * SSDeathsBountyBonus;
+    public int    SSRuneSealLevel       { get; private set; }
+    public const int SSRuneSealStackBonus = 2; // +2 max combo stacks per level
     public int    SSVoidConduitLevel    { get; private set; }
     public const double SSVoidConduitBonus = 0.15;
     public double VoidConduitIncomeMult => 1.0 + SSVoidConduitLevel * SSVoidConduitBonus;
@@ -1666,7 +1669,7 @@ public class GameManager : MonoBehaviour
         _idleTimer = 0f;
         if (SoldierCount > 0 && EnemyHP > 0) _crimsonPactCharged = true;
         double amount = EffectiveBloodPerClick * ComboMult * (_tapCount % EchoTapInterval == 0 ? 2.0 : 1.0);
-        if (ComboStacks < ComboMaxStacks) ComboStacks++;
+        if (ComboStacks < EffectiveComboMaxStacks) ComboStacks++;
         _comboTimer = ComboWindowSecs;
         if (DailyBonusAvailable)
         {
@@ -2478,6 +2481,15 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuySSRuneSeal()
+    {
+        if (SoulShards < SSUpgradeCost || SSRuneSealLevel >= SSMaxLevel) return false;
+        SoulShards -= SSUpgradeCost;
+        SSRuneSealLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public bool BuySSVoidConduit()
     {
         if (SoulShards < SSTier2Cost || SSVoidConduitLevel >= SSTier2MaxLevel) return false;
@@ -2676,7 +2688,7 @@ public class GameManager : MonoBehaviour
         WeaponLevel = 0; ArmorLevel = 0; TalismanLevel = 0; BannerLevel = 0;
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
-        SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0; SSSoulHarvestLevel = 0; SSCrimsonPulseLevel = 0; SSCrimsonBrandLevel = 0; SSWarSpoilsLevel = 0; SSGhostStrikeLevel = 0; SSDeathsBountyLevel = 0;
+        SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0; SSSoulHarvestLevel = 0; SSCrimsonPulseLevel = 0; SSCrimsonBrandLevel = 0; SSWarSpoilsLevel = 0; SSGhostStrikeLevel = 0; SSDeathsBountyLevel = 0; SSRuneSealLevel = 0;
         SSVoidConduitLevel = 0; SSBloodEchoLevel = 0; SSIronMarrowLevel = 0; SSWrathBloomLevel = 0; SSBloodNovaLevel = 0; SSEchoSurgeLevel = 0; SSEntropyAmpLevel = 0;
         BloodBankDeposit = 0; BloodBankAccrued = 0; BankInterestLevel = 0; KillIncomeUpgradeLevel = 0; WaveStreak = 0;
         SurgeUpgradeLevel = 0; HealUpgradeLevel = 0; BloodStormUpgradeLevel = 0; WarCryUpgradeLevel = 0; HexCurseUpgradeLevel = 0; BloodOathUpgradeLevel = 0; DesecrateUpgradeLevel = 0; EntropyUpgradeLevel = 0;
@@ -2841,6 +2853,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("SSWarSpoilsLevel",     SSWarSpoilsLevel);
         PlayerPrefs.SetInt   ("SSGhostStrikeLevel",   SSGhostStrikeLevel);
         PlayerPrefs.SetInt   ("SSDeathsBountyLevel",  SSDeathsBountyLevel);
+        PlayerPrefs.SetInt   ("SSRuneSealLevel",       SSRuneSealLevel);
         PlayerPrefs.SetInt   ("SSVoidConduitLevel",   SSVoidConduitLevel);
         PlayerPrefs.SetInt   ("SSBloodEchoLevel",     SSBloodEchoLevel);
         PlayerPrefs.SetInt   ("SSIronMarrowLevel",    SSIronMarrowLevel);
@@ -2981,6 +2994,7 @@ public class GameManager : MonoBehaviour
         SSEntropyAmpLevel   = PlayerPrefs.GetInt("SSEntropyAmpLevel",   0);
         SSGhostStrikeLevel  = PlayerPrefs.GetInt("SSGhostStrikeLevel",  0);
         SSDeathsBountyLevel = PlayerPrefs.GetInt("SSDeathsBountyLevel", 0);
+        SSRuneSealLevel     = PlayerPrefs.GetInt("SSRuneSealLevel",     0);
         SurgeUpgradeLevel        = PlayerPrefs.GetInt   ("SurgeUpgradeLevel",        0);
         HealUpgradeLevel         = PlayerPrefs.GetInt   ("HealUpgradeLevel",         0);
         BloodStormUpgradeLevel   = PlayerPrefs.GetInt   ("BloodStormUpgradeLevel",   0);

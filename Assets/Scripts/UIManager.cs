@@ -200,6 +200,8 @@ public class UIManager : MonoBehaviour
     public Button ssGhostStrikeButton;
     public Text ssDeathsBountyInfoText;
     public Button ssDeathsBountyButton;
+    public Text ssRuneSealInfoText;
+    public Button ssRuneSealButton;
     public Text ssVoidConduitInfoText;
     public Button ssVoidConduitButton;
     public Text ssBloodEchoInfoText;
@@ -1101,6 +1103,10 @@ public class UIManager : MonoBehaviour
                 ssDeathsBountyInfoText.text = $"Death's Bounty +{GameManager.SSDeathsBountyBonus * 100:F0}% Soul Sacrifice blood  (Lv.{gm.SSDeathsBountyLevel}/{GameManager.SSMaxLevel})";
             if (ssDeathsBountyButton != null)
                 ssDeathsBountyButton.interactable = canBuySS && gm.SSDeathsBountyLevel < GameManager.SSMaxLevel;
+            if (ssRuneSealInfoText != null)
+                ssRuneSealInfoText.text = $"Rune Seal +{GameManager.SSRuneSealStackBonus} max combo stacks  (Lv.{gm.SSRuneSealLevel}/{GameManager.SSMaxLevel})";
+            if (ssRuneSealButton != null)
+                ssRuneSealButton.interactable = canBuySS && gm.SSRuneSealLevel < GameManager.SSMaxLevel;
             bool canBuyT2 = gm.SoulShards >= GameManager.SSTier2Cost;
             if (ssVoidConduitInfoText != null)
                 ssVoidConduitInfoText.text = $"Void Conduit +{GameManager.SSVoidConduitBonus * 100:F0}% all income  (Lv.{gm.SSVoidConduitLevel}/{GameManager.SSTier2MaxLevel})";
