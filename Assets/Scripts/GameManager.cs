@@ -52,7 +52,7 @@ public struct AchievementDef
 }
 
 public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral, Leech, Volatile, Fortified, Giant, Blessed }
-public enum BossAbility    { None, Shield, Berserk, Drain, Regen, Thorns, Haste, Wrath, Miasma }
+public enum BossAbility    { None, Shield, Berserk, Drain, Regen, Thorns, Haste, Wrath, Miasma, LeechStrike }
 public enum QuestTrackType { Kills, Farms, Wave, Spells }
 
 public struct DailyQuestDef
@@ -568,8 +568,10 @@ public class GameManager : MonoBehaviour
     public const float BossHasteRewardMult   = 1.40f;  // +40% kill reward
     public const float BossWrathHPThreshold  = 0.50f;  // Wrath activates below 50% HP
     public const float BossWrathAtkMult      = 1.50f;  // +50% boss attack when Wrath active
-    public const float BossMiasmaDotPerSec   = 3f;     // flat HP/s poison damage to frontline
-    public const double BossMiasmaRewardMult = 1.30;   // +30% kill reward
+    public const float BossMiasmaDotPerSec     = 3f;    // flat HP/s poison damage to frontline
+    public const double BossMiasmaRewardMult   = 1.30;  // +30% kill reward
+    public const float BossLeechStrikeHealPct  = 0.20f; // heals 20% of damage dealt
+    public const double BossLeechStrikeRewardMult = 1.50; // +50% kill reward
     public const double BossWrathRewardMult  = 2.0;    // 2× kill reward for Wrath boss
     public string BossAbilityDisplay => CurrentBossAbility switch
     {
@@ -580,7 +582,8 @@ public class GameManager : MonoBehaviour
         BossAbility.Thorns  => "🌵 Thorns",
         BossAbility.Haste   => "⚡ Haste",
         BossAbility.Wrath   => "🔥 Wrath",
-        BossAbility.Miasma  => "☠ Miasma",
+        BossAbility.Miasma       => "☠ Miasma",
+        BossAbility.LeechStrike  => "🩸 Leech Strike",
         _                   => "",
     };
 
@@ -1353,7 +1356,8 @@ public class GameManager : MonoBehaviour
                 reward *= 3;
                 if (CurrentBossAbility == BossAbility.Haste)   reward = Math.Floor(reward * BossHasteRewardMult);
                 if (CurrentBossAbility == BossAbility.Wrath)   reward = Math.Floor(reward * BossWrathRewardMult);
-                if (CurrentBossAbility == BossAbility.Miasma)  reward = Math.Floor(reward * BossMiasmaRewardMult);
+                if (CurrentBossAbility == BossAbility.Miasma)       reward = Math.Floor(reward * BossMiasmaRewardMult);
+                if (CurrentBossAbility == BossAbility.LeechStrike)  reward = Math.Floor(reward * BossLeechStrikeRewardMult);
                 if (SSShardHungerLevel > 0) reward = Math.Floor(reward * (1.0 + SSShardHungerLevel * SSShardHungerBonus));
                 if (VeteranAttackBonus < VeteranAttackCap) VeteranAttackBonus++;
                 SoulShards += HasTalent(TalentFlags.ShardHunter) ? 2 : 1;
@@ -1475,6 +1479,8 @@ public class GameManager : MonoBehaviour
         SoldierHP -= dmg;
         if (CurrentEnemyModifier == EnemyModifier.Leech && dmg > 0 && EnemyHP > 0)
             EnemyHP = Mathf.Min(EnemyHP + dmg * EnemyLeechHealPct, EnemyMaxHP);
+        if (isSpecialFoe && CurrentBossAbility == BossAbility.LeechStrike && dmg > 0 && EnemyHP > 0)
+            EnemyHP = Mathf.Min(EnemyHP + dmg * BossLeechStrikeHealPct, EnemyMaxHP);
 
         if (SoldierHP <= 0f)
         {
@@ -1616,7 +1622,7 @@ public class GameManager : MonoBehaviour
             EnemyAttack      = (float)(3   * Math.Pow(1.3, wave - 1) * 2.0);
             BossTimeRemaining = BossTimeLimit + SSBossTimerLevel * 15f;
             CurrentEnemyModifier = EnemyModifier.None;
-            CurrentBossAbility   = (BossAbility)UnityEngine.Random.Range(0, 9);
+            CurrentBossAbility   = (BossAbility)UnityEngine.Random.Range(0, 10);
             BossShieldActive     = CurrentBossAbility == BossAbility.Shield;
             _bossShieldHP        = BossShieldActive ? EnemyMaxHP * BossShieldFraction : 0f;
         }
