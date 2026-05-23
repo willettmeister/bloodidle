@@ -206,6 +206,8 @@ public class UIManager : MonoBehaviour
     public Button ssDeathsBountyButton;
     public Text ssRuneSealInfoText;
     public Button ssRuneSealButton;
+    public Text ssWarCrestInfoText;
+    public Button ssWarCrestButton;
     public Text ssVoidConduitInfoText;
     public Button ssVoidConduitButton;
     public Text ssBloodEchoInfoText;
@@ -1119,6 +1121,10 @@ public class UIManager : MonoBehaviour
                 ssRuneSealInfoText.text = $"Rune Seal +{GameManager.SSRuneSealStackBonus} max combo stacks  (Lv.{gm.SSRuneSealLevel}/{GameManager.SSMaxLevel})";
             if (ssRuneSealButton != null)
                 ssRuneSealButton.interactable = canBuySS && gm.SSRuneSealLevel < GameManager.SSMaxLevel;
+            if (ssWarCrestInfoText != null)
+                ssWarCrestInfoText.text = $"War Crest +{GameManager.SSWarCrestBonus:F1} streak multiplier cap  (Lv.{gm.SSWarCrestLevel}/{GameManager.SSMaxLevel})";
+            if (ssWarCrestButton != null)
+                ssWarCrestButton.interactable = canBuySS && gm.SSWarCrestLevel < GameManager.SSMaxLevel;
             bool canBuyT2 = gm.SoulShards >= GameManager.SSTier2Cost;
             if (ssVoidConduitInfoText != null)
                 ssVoidConduitInfoText.text = $"Void Conduit +{GameManager.SSVoidConduitBonus * 100:F0}% all income  (Lv.{gm.SSVoidConduitLevel}/{GameManager.SSTier2MaxLevel})";
