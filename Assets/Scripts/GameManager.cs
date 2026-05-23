@@ -94,6 +94,7 @@ public enum TalentFlags
     Bloodbound       = 1 << 23, // +25% kill blood reward while Berserker Rage is active
     CrimsonVeil      = 1 << 24, // below 30% HP: incoming damage halved for 5s (60s cooldown)
     Hemorrhage       = 1 << 25, // each kill stacks a bleed: 1% enemy max HP/s for 3s
+    SoulBind         = 1 << 26, // soldier death doubles the next wave's blood reward
 }
 
 public class GameManager : MonoBehaviour
@@ -526,6 +527,8 @@ public class GameManager : MonoBehaviour
     public const int    TalentHemorrhageMaxStacks = 5;
     public int   HemorrhageStacks     { get; private set; }
     float _hemorrhageTimer;
+    public const double TalentSoulBindRewardMult = 2.0;   // next wave reward multiplier on soldier death
+    public bool  SoulBindTriggered    { get; private set; }
 
     // --- Soul Sacrifice ---
     public bool SoulSacrificeUnlocked  => PrestigeCount >= 1;
@@ -1380,7 +1383,8 @@ public class GameManager : MonoBehaviour
             if (HasTalent(TalentFlags.Bloodbound) && BerserkerRageActive)
                 reward = Math.Floor(reward * (1.0 + TalentBloodboundRewardBonus));
             bool isFlawless = _flawlessTimer > 0f && _flawlessTimer <= FlawlessThreshold;
-            reward = Math.Floor(reward * StreakMultiplier * KillStreakBonusMult * (isFlawless ? 2.0 : 1.0) * WarSpoilsRewardMult);
+            reward = Math.Floor(reward * StreakMultiplier * KillStreakBonusMult * (isFlawless ? 2.0 : 1.0) * WarSpoilsRewardMult * (SoulBindTriggered ? TalentSoulBindRewardMult : 1.0));
+            SoulBindTriggered = false;
             TotalEnemiesKilled++;
             _dailyKillCount++;
             CheckQuestProgress(QuestTrackType.Kills);
@@ -1497,6 +1501,7 @@ public class GameManager : MonoBehaviour
                 TotalSoldiersLost++;
                 if (HasTalent(TalentFlags.SoulDrain) && EnemyHP > 0)
                     EnemyHP = Mathf.Max(float.Epsilon, EnemyHP - EnemyHP * TalentSoulDrainPct);
+                if (HasTalent(TalentFlags.SoulBind)) SoulBindTriggered = true;
                 if (HasTalent(TalentFlags.PhoenixRise)) _phoenixRiseReady = true;
                 if (SoldierCount > 0 && _adrenalineStacks < AdrenalineMaxStack) { _adrenalineStacks++; _adrenalineTimer = AdrenalineDuration; }
                 if (SoldierCount > 0 && _phoenixRiseReady)
@@ -1656,6 +1661,7 @@ public class GameManager : MonoBehaviour
             _bossShieldHP      = 0f;
             HemorrhageStacks   = 0;
             _hemorrhageTimer   = 0f;
+            SoulBindTriggered  = false;
             if (UnityEngine.Random.value < 0.25f)
             {
                 CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 11);
@@ -2652,6 +2658,7 @@ public class GameManager : MonoBehaviour
             TalentFlags.TitansWill,  TalentFlags.SurgeMastery,
             TalentFlags.Vanguard,    TalentFlags.Bloodbound,
             TalentFlags.CrimsonVeil, TalentFlags.Hemorrhage,
+            TalentFlags.SoulBind,
         };
         int availCount = 0;
         for (int k = 0; k < all.Length; k++)
