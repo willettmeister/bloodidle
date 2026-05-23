@@ -895,9 +895,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var soulShardShopPanel = content.CreateChild("SoulShardShopPanel");
         soulShardShopPanel.AddImage(Color.clear);
-        PF(soulShardShopPanel, 758, 788);
+        PF(soulShardShopPanel, 758, 846);
 
-        Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 788, HC("0A1A30"), 24);
+        Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 846, HC("0A1A30"), 24);
 
         var ssShopTitleGO = Label(soulShardShopPanel, "SoulShardShopTitle",
             "Soul Shard Shop", 40, new Color(0.7f, 0.85f, 1f), TextAnchor.MiddleLeft);
@@ -1004,6 +1004,13 @@ public static class SceneBuilder
         PT(ssBloodNovaInfoGO, 816, 48, -175, 500);
         var ssBloodNovaBtnGO = Btn(soulShardShopPanel, "SSBloodNovaButton", "Buy (2 ⬡)", 30, HC("D32F2F"));
         PT(ssBloodNovaBtnGO, 814, 54, +245, 260);
+
+        // Row 15 — Echo Surge (tier-2, costs 2 shards)
+        var ssEchoSurgeInfoGO = Label(soulShardShopPanel, "SSEchoSurgeInfoText",
+            "Echo Surge +5s Surge duration  (Lv.0/2)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(ssEchoSurgeInfoGO, 874, 48, -175, 500);
+        var ssEchoSurgeBtnGO = Btn(soulShardShopPanel, "SSEchoSurgeButton", "Buy (2 ⬡)", 30, HC("1565C0"));
+        PT(ssEchoSurgeBtnGO, 872, 54, +245, 260);
 
         soulShardShopPanel.SetActive(false);
 
@@ -1638,6 +1645,8 @@ public static class SceneBuilder
         uim.ssWrathBloomButton      = ssWrathBloomBtnGO.GetComponent<Button>();
         uim.ssBloodNovaInfoText     = ssBloodNovaInfoGO.GetComponent<Text>();
         uim.ssBloodNovaButton       = ssBloodNovaBtnGO.GetComponent<Button>();
+        uim.ssEchoSurgeInfoText     = ssEchoSurgeInfoGO.GetComponent<Text>();
+        uim.ssEchoSurgeButton       = ssEchoSurgeBtnGO.GetComponent<Button>();
         uim.settingsPanel           = settingsOverlay;
         uim.soundToggleText         = soundToggleGO.GetComponentInChildren<Text>();
         uim.notifToggleText         = notifToggleGO.GetComponentInChildren<Text>();
@@ -1787,6 +1796,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(ssIronMarrowBtnGO.GetComponent<Button>().onClick,    clk.OnBuySSIronMarrow);
         UnityEventTools.AddPersistentListener(ssWrathBloomBtnGO.GetComponent<Button>().onClick,    clk.OnBuySSWrathBloom);
         UnityEventTools.AddPersistentListener(ssBloodNovaBtnGO.GetComponent<Button>().onClick,     clk.OnBuySSBloodNova);
+        UnityEventTools.AddPersistentListener(ssEchoSurgeBtnGO.GetComponent<Button>().onClick,     clk.OnBuySSEchoSurge);
         UnityEventTools.AddPersistentListener(upgradeSurgeBtnGO.GetComponent<Button>().onClick,      clk.OnUpgradeSurge);
         UnityEventTools.AddPersistentListener(autoSurgeBtnGO.GetComponent<Button>().onClick,         clk.OnToggleAutoSurge);
         UnityEventTools.AddPersistentListener(upgradeHealBtnGO.GetComponent<Button>().onClick,       clk.OnUpgradeHealSelf);

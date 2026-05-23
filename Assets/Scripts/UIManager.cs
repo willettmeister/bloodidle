@@ -200,6 +200,8 @@ public class UIManager : MonoBehaviour
     public Button ssWrathBloomButton;
     public Text ssBloodNovaInfoText;
     public Button ssBloodNovaButton;
+    public Text ssEchoSurgeInfoText;
+    public Button ssEchoSurgeButton;
 
     [Header("Settings")]
     public GameObject settingsPanel;
@@ -1091,6 +1093,10 @@ public class UIManager : MonoBehaviour
                 ssBloodNovaInfoText.text = $"Blood Nova Storm hits +{GameManager.SSBloodNovaPct * 100:F0}% enemy max HP  (Lv.{gm.SSBloodNovaLevel}/{GameManager.SSTier2MaxLevel})";
             if (ssBloodNovaButton != null)
                 ssBloodNovaButton.interactable = canBuyT2 && gm.SSBloodNovaLevel < GameManager.SSTier2MaxLevel;
+            if (ssEchoSurgeInfoText != null)
+                ssEchoSurgeInfoText.text = $"Echo Surge +{GameManager.SSEchoSurgeSecs:F0}s Surge duration  (Lv.{gm.SSEchoSurgeLevel}/{GameManager.SSTier2MaxLevel})";
+            if (ssEchoSurgeButton != null)
+                ssEchoSurgeButton.interactable = canBuyT2 && gm.SSEchoSurgeLevel < GameManager.SSTier2MaxLevel;
         }
 
         // Blood Bank
