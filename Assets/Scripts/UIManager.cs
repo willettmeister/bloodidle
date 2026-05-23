@@ -218,6 +218,8 @@ public class UIManager : MonoBehaviour
     public Button ssEchoSurgeButton;
     public Text ssEntropyAmpInfoText;
     public Button ssEntropyAmpButton;
+    public Text ssBoneWardInfoText;
+    public Button ssBoneWardButton;
 
     [Header("Settings")]
     public GameObject settingsPanel;
@@ -1141,6 +1143,10 @@ public class UIManager : MonoBehaviour
                 ssEntropyAmpInfoText.text = $"Entropy Amp +{GameManager.SSEntropyAmpBonus * 100:F0}% Entropy damage  (Lv.{gm.SSEntropyAmpLevel}/{GameManager.SSTier2MaxLevel})";
             if (ssEntropyAmpButton != null)
                 ssEntropyAmpButton.interactable = canBuyT2 && gm.SSEntropyAmpLevel < GameManager.SSTier2MaxLevel;
+            if (ssBoneWardInfoText != null)
+                ssBoneWardInfoText.text = $"Bone Ward +{GameManager.SSBoneWardBonus * 100:F0}% Blood Shield capacity  (Lv.{gm.SSBoneWardLevel}/{GameManager.SSTier2MaxLevel})";
+            if (ssBoneWardButton != null)
+                ssBoneWardButton.interactable = canBuyT2 && gm.SSBoneWardLevel < GameManager.SSTier2MaxLevel;
         }
 
         // Blood Bank
