@@ -93,6 +93,7 @@ public enum TalentFlags
     Vanguard         = 1 << 22, // all-tank army takes 20% less incoming damage
     Bloodbound       = 1 << 23, // +25% kill blood reward while Berserker Rage is active
     CrimsonVeil      = 1 << 24, // below 30% HP: incoming damage halved for 5s (60s cooldown)
+    Hemorrhage       = 1 << 25, // each kill stacks a bleed: 1% enemy max HP/s for 3s
 }
 
 public class GameManager : MonoBehaviour
@@ -515,6 +516,11 @@ public class GameManager : MonoBehaviour
     float _crimsonVeilCooldown;
     public float CrimsonVeilCooldownLeft => _crimsonVeilCooldown;
     public bool  CrimsonVeilReady        => _crimsonVeilCooldown <= 0f;
+    public const float  TalentHemorrhagePct      = 0.01f; // 1% enemy max HP/s per bleed stack
+    public const float  TalentHemorrhageDuration = 3f;    // seconds per stack
+    public const int    TalentHemorrhageMaxStacks = 5;
+    public int   HemorrhageStacks     { get; private set; }
+    float _hemorrhageTimer;
 
     // --- Soul Sacrifice ---
     public bool SoulSacrificeUnlocked  => PrestigeCount >= 1;
@@ -1264,6 +1270,12 @@ public class GameManager : MonoBehaviour
         if (_bloodOathTimer   > 0f) { _bloodOathTimer   -= dt; if (_bloodOathTimer   < 0f) _bloodOathTimer   = 0f; }
         if (_entropyTimer    > 0f) { _entropyTimer    -= dt; if (_entropyTimer    < 0f) _entropyTimer    = 0f; }
         if (_crimsonVeilCooldown > 0f) { _crimsonVeilCooldown -= dt; if (_crimsonVeilCooldown < 0f) _crimsonVeilCooldown = 0f; }
+        if (HasTalent(TalentFlags.Hemorrhage) && HemorrhageStacks > 0 && EnemyHP > 0)
+        {
+            EnemyHP = Mathf.Max(0f, EnemyHP - EnemyMaxHP * TalentHemorrhagePct * HemorrhageStacks * dt);
+            _hemorrhageTimer -= dt;
+            if (_hemorrhageTimer <= 0f) HemorrhageStacks = 0;
+        }
         if (CrimsonVeilActive)
         {
             CrimsonVeilTimeRemaining -= dt;
@@ -1363,6 +1375,11 @@ public class GameManager : MonoBehaviour
             TotalEnemiesKilled++;
             _dailyKillCount++;
             CheckQuestProgress(QuestTrackType.Kills);
+            if (HasTalent(TalentFlags.Hemorrhage))
+            {
+                HemorrhageStacks = Mathf.Min(HemorrhageStacks + 1, TalentHemorrhageMaxStacks);
+                _hemorrhageTimer  = TalentHemorrhageDuration;
+            }
             if (wasBoss) TotalBossesKilled++;
             WaveStreak++;
             if (WaveStreak >= 10) TryUnlock(AchievementFlags.StreakMaster);
@@ -1626,6 +1643,8 @@ public class GameManager : MonoBehaviour
             CurrentBossAbility = BossAbility.None;
             BossShieldActive   = false;
             _bossShieldHP      = 0f;
+            HemorrhageStacks   = 0;
+            _hemorrhageTimer   = 0f;
             if (UnityEngine.Random.value < 0.25f)
             {
                 CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 11);
@@ -2603,7 +2622,7 @@ public class GameManager : MonoBehaviour
             TalentFlags.Bloodlord,   TalentFlags.PhoenixRise,
             TalentFlags.TitansWill,  TalentFlags.SurgeMastery,
             TalentFlags.Vanguard,    TalentFlags.Bloodbound,
-            TalentFlags.CrimsonVeil,
+            TalentFlags.CrimsonVeil, TalentFlags.Hemorrhage,
         };
         int availCount = 0;
         for (int k = 0; k < all.Length; k++)

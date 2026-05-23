@@ -1599,6 +1599,7 @@ public class UIManager : MonoBehaviour
         TalentFlags.Vanguard          => "Vanguard\nAll-tank army takes 20% less incoming damage",
         TalentFlags.Bloodbound        => "Bloodbound\n+25% kill blood reward while Berserker Rage is active",
         TalentFlags.CrimsonVeil       => "Crimson Veil\nBelow 30% HP: damage halved for 5s (60s cooldown)",
+        TalentFlags.Hemorrhage        => "Hemorrhage\nEach kill stacks a bleed: 1% enemy max HP/s for 3s (max 5 stacks)",
         _                             => "",
     };
 
@@ -1630,6 +1631,7 @@ public class UIManager : MonoBehaviour
         if ((talents & TalentFlags.Vanguard)         != 0) names.Add("Vanguard");
         if ((talents & TalentFlags.Bloodbound)       != 0) names.Add("Bloodbound");
         if ((talents & TalentFlags.CrimsonVeil)      != 0) names.Add("CrimsonVeil");
+        if ((talents & TalentFlags.Hemorrhage)       != 0) names.Add("Hemorrhage");
         return names.Count > 0 ? "Talents: " + string.Join(" | ", names) : "";
     }
 
