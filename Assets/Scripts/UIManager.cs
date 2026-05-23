@@ -208,6 +208,8 @@ public class UIManager : MonoBehaviour
     public Button ssBloodNovaButton;
     public Text ssEchoSurgeInfoText;
     public Button ssEchoSurgeButton;
+    public Text ssEntropyAmpInfoText;
+    public Button ssEntropyAmpButton;
 
     [Header("Settings")]
     public GameObject settingsPanel;
@@ -1113,6 +1115,10 @@ public class UIManager : MonoBehaviour
                 ssEchoSurgeInfoText.text = $"Echo Surge +{GameManager.SSEchoSurgeSecs:F0}s Surge duration  (Lv.{gm.SSEchoSurgeLevel}/{GameManager.SSTier2MaxLevel})";
             if (ssEchoSurgeButton != null)
                 ssEchoSurgeButton.interactable = canBuyT2 && gm.SSEchoSurgeLevel < GameManager.SSTier2MaxLevel;
+            if (ssEntropyAmpInfoText != null)
+                ssEntropyAmpInfoText.text = $"Entropy Amp +{GameManager.SSEntropyAmpBonus * 100:F0}% Entropy damage  (Lv.{gm.SSEntropyAmpLevel}/{GameManager.SSTier2MaxLevel})";
+            if (ssEntropyAmpButton != null)
+                ssEntropyAmpButton.interactable = canBuyT2 && gm.SSEntropyAmpLevel < GameManager.SSTier2MaxLevel;
         }
 
         // Blood Bank
