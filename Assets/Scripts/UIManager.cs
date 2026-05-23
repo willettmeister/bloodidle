@@ -176,6 +176,8 @@ public class UIManager : MonoBehaviour
     public Button pBloodlineButton;
     public Text pIronBastionInfoText;
     public Button pIronBastionButton;
+    public Text pBloodPriceInfoText;
+    public Button pBloodPriceButton;
 
     [Header("Soul Shard Shop")]
     public GameObject soulShardShopPanel;
@@ -1052,6 +1054,9 @@ public class UIManager : MonoBehaviour
             if (pIronBastionInfoText != null)
                 pIronBastionInfoText.text = $"Iron Bastion +{GameManager.PIronBastionHPBonus:F0} max HP to all soldier types  (Lv.{gm.PIronBastionLevel}/3)";
             if (pIronBastionButton != null) pIronBastionButton.interactable = canSpend && gm.PIronBastionLevel < 3;
+            if (pBloodPriceInfoText != null)
+                pBloodPriceInfoText.text = $"Blood Price +{GameManager.PBloodPriceBonus * 100:F0}% kill income rate  (Lv.{gm.PBloodPriceLevel}/3)";
+            if (pBloodPriceButton != null) pBloodPriceButton.interactable = canSpend && gm.PBloodPriceLevel < 3;
         }
 
         // Soul Shard Shop

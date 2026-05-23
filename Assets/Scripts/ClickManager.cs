@@ -66,6 +66,7 @@ public class ClickManager : MonoBehaviour
     public void OnBuyPCrimsonLegacy()         => GameManager.Instance.BuyPCrimsonLegacy();
     public void OnBuyPBloodline()             => GameManager.Instance.BuyPBloodline();
     public void OnBuyPIronBastion()           => GameManager.Instance.BuyPIronBastion();
+    public void OnBuyPBloodPrice()            => GameManager.Instance.BuyPBloodPrice();
     public void OnBuySSBossTimer()         => GameManager.Instance.BuySSBossTimer();
     public void OnBuySSDoubleChest()       => GameManager.Instance.BuySSDoubleChest();
     public void OnBuySSRollback()          => GameManager.Instance.BuySSRollback();

@@ -138,7 +138,7 @@ public class GameManager : MonoBehaviour
     public const int    KillIncomeMaxLevel     = 3;
     public int    KillIncomeUpgradeLevel { get; private set; }
     public double KillIncomeUpgradeCost  => Math.Floor(200.0 * Math.Pow(3, KillIncomeUpgradeLevel));
-    public double EffectiveKillIncomeRate => KillIncomeRate + KillIncomeUpgradeLevel * KillIncomeRatePerLevel;
+    public double EffectiveKillIncomeRate => KillIncomeRate + KillIncomeUpgradeLevel * KillIncomeRatePerLevel + PBloodPriceLevel * PBloodPriceBonus;
     public double KillIncomePerSec        => TotalEnemiesKilled * EffectiveKillIncomeRate;
     public bool   IsBloodyWave          => Wave > 0 && Wave % 10 == 0 && !IsBossWave;
     public const double BloodMoonMult   = 2.0;
@@ -356,6 +356,8 @@ public class GameManager : MonoBehaviour
     public const double PBloodlineStartBonus = 100.0;
     public int PIronBastionLevel         { get; private set; }
     public const float PIronBastionHPBonus = 5f; // flat HP added to all frontline types per level
+    public int PBloodPriceLevel          { get; private set; }
+    public const double PBloodPriceBonus = 0.01; // +1% kill income rate per level
 
     public double EffectiveBountyMult => BountyRewardMult + PBountyBonusLevel;
     public const int   PrestigeShopCost      = 1;
@@ -2324,6 +2326,15 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuyPBloodPrice()
+    {
+        if (PrestigePoints < PrestigeShopCost || PBloodPriceLevel >= 3) return false;
+        PrestigePoints -= PrestigeShopCost;
+        PBloodPriceLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public bool BuySSBossTimer()
     {
         if (SoulShards < SSUpgradeCost || SSBossTimerLevel >= SSMaxLevel) return false;
@@ -2727,7 +2738,7 @@ public class GameManager : MonoBehaviour
         BloodShieldUnlocked = false; BloodShieldHP = 0f;
         PrestigeCount = 0; PrestigePoints = 0;
         PSoldierCapLevel = 0; PClickBonusLevel = 0; PRitualEffLevel = 0;
-        PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0; PBountyBonusLevel = 0; PBloodRitualStartLevel = 0; PBloodMasteryLevel = 0; PSacredGroundLevel = 0; PEternalFlameLevel = 0; PWarMachineLevel = 0; PCrimsonLegacyLevel = 0; PBloodlineLevel = 0; PIronBastionLevel = 0;
+        PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0; PBountyBonusLevel = 0; PBloodRitualStartLevel = 0; PBloodMasteryLevel = 0; PSacredGroundLevel = 0; PEternalFlameLevel = 0; PWarMachineLevel = 0; PCrimsonLegacyLevel = 0; PBloodlineLevel = 0; PIronBastionLevel = 0; PBloodPriceLevel = 0;
         WeaponLevel = 0; ArmorLevel = 0; TalismanLevel = 0; BannerLevel = 0;
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
@@ -2872,6 +2883,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("PCrimsonLegacyLevel",     PCrimsonLegacyLevel);
         PlayerPrefs.SetInt   ("PBloodlineLevel",          PBloodlineLevel);
         PlayerPrefs.SetInt   ("PIronBastionLevel",        PIronBastionLevel);
+        PlayerPrefs.SetInt   ("PBloodPriceLevel",         PBloodPriceLevel);
         PlayerPrefs.SetInt   ("WeaponLevel",         WeaponLevel);
         PlayerPrefs.SetInt   ("ArmorLevel",          ArmorLevel);
         PlayerPrefs.SetInt   ("TalismanLevel",       TalismanLevel);
@@ -3008,6 +3020,7 @@ public class GameManager : MonoBehaviour
         PCrimsonLegacyLevel        = PlayerPrefs.GetInt("PCrimsonLegacyLevel",    0);
         PBloodlineLevel            = PlayerPrefs.GetInt("PBloodlineLevel",         0);
         PIronBastionLevel          = PlayerPrefs.GetInt("PIronBastionLevel",       0);
+        PBloodPriceLevel           = PlayerPrefs.GetInt("PBloodPriceLevel",        0);
         WeaponLevel         = PlayerPrefs.GetInt   ("WeaponLevel",         0);
         ArmorLevel          = PlayerPrefs.GetInt   ("ArmorLevel",          0);
         TalismanLevel       = PlayerPrefs.GetInt   ("TalismanLevel",       0);
