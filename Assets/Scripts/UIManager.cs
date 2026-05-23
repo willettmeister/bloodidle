@@ -1542,6 +1542,8 @@ public class UIManager : MonoBehaviour
         TalentFlags.StormCaller       => "Storm Caller\nBlood Storm cooldown reduced by 15 seconds",
         TalentFlags.BloodPact         => "Blood Pact\nWorkers produce +0.2 blood/sec each",
         TalentFlags.IronPhalanx       => "Iron Phalanx\n+10 max HP to all frontline soldier types",
+        TalentFlags.Bloodlord         => "Bloodlord\nBerserker Rage activates at 40% HP instead of 30%",
+        TalentFlags.PhoenixRise       => "Phoenix Rise\nNext soldier after a death enters at 150% max HP",
         _                             => "",
     };
 
@@ -1566,6 +1568,8 @@ public class UIManager : MonoBehaviour
         if ((talents & TalentFlags.StormCaller)      != 0) names.Add("StormCaller");
         if ((talents & TalentFlags.BloodPact)        != 0) names.Add("BloodPact");
         if ((talents & TalentFlags.IronPhalanx)      != 0) names.Add("IronPhalanx");
+        if ((talents & TalentFlags.Bloodlord)        != 0) names.Add("Bloodlord");
+        if ((talents & TalentFlags.PhoenixRise)      != 0) names.Add("PhoenixRise");
         return names.Count > 0 ? "Talents: " + string.Join(" | ", names) : "";
     }
 

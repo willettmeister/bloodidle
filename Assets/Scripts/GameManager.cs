@@ -86,6 +86,8 @@ public enum TalentFlags
     StormCaller      = 1 << 15, // Blood Storm cooldown reduced by 15 seconds
     BloodPact        = 1 << 16, // workers produce 0.2 blood/sec each
     IronPhalanx      = 1 << 17, // +10 max HP to all frontline soldier types
+    Bloodlord        = 1 << 18, // Berserker Rage activates at 40% HP instead of 30%
+    PhoenixRise      = 1 << 19, // next soldier after a death enters at 150% max HP
 }
 
 public class GameManager : MonoBehaviour
@@ -235,7 +237,8 @@ public class GameManager : MonoBehaviour
     public const float  BerserkerCritMult    = 2f;
     public const float  BerserkerRageMult    = 1.5f;
     public const float  BerserkerRageThresh  = 0.3f;
-    public bool         BerserkerRageActive  => FrontlineIsBerserker && SoldierHP < FrontlineMaxHP * BerserkerRageThresh;
+    public float        EffectiveBerserkerRageThresh => HasTalent(TalentFlags.Bloodlord) ? TalentBloodlordRageThresh : BerserkerRageThresh;
+    public bool         BerserkerRageActive  => FrontlineIsBerserker && SoldierHP < FrontlineMaxHP * EffectiveBerserkerRageThresh;
     public const float  MixedArmyDmgReduction  = 0.15f;
     public const float  TankShieldWallReduction = 0.10f;
 
@@ -463,6 +466,9 @@ public class GameManager : MonoBehaviour
     public const float  TalentStormCallerCDReduction = 15f;  // seconds off Blood Storm cooldown
     public const double TalentBloodPactWorkerBonus   = 0.2;  // blood/sec per worker
     public const float  TalentIronPhalanxHP          = 10f;  // flat HP bonus to all frontline types
+    public const float  TalentBloodlordRageThresh    = 0.40f; // Berserker Rage HP threshold
+    public const float  TalentPhoenixRiseHPMult      = 1.50f; // HP multiplier for first soldier after death
+    bool _phoenixRiseReady;
 
     // --- Soul Sacrifice ---
     public bool SoulSacrificeUnlocked  => PrestigeCount >= 1;
@@ -1366,8 +1372,15 @@ public class GameManager : MonoBehaviour
                 TotalSoldiersLost++;
                 if (HasTalent(TalentFlags.SoulDrain) && EnemyHP > 0)
                     EnemyHP = Mathf.Max(float.Epsilon, EnemyHP - EnemyHP * TalentSoulDrainPct);
+                if (HasTalent(TalentFlags.PhoenixRise)) _phoenixRiseReady = true;
                 if (SoldierCount > 0 && _adrenalineStacks < AdrenalineMaxStack) { _adrenalineStacks++; _adrenalineTimer = AdrenalineDuration; }
-                SoldierHP  = SoldierCount > 0 ? FrontlineMaxHP : 0f;
+                if (SoldierCount > 0 && _phoenixRiseReady)
+                {
+                    SoldierHP         = FrontlineMaxHP * TalentPhoenixRiseHPMult;
+                    _phoenixRiseReady = false;
+                }
+                else
+                    SoldierHP = SoldierCount > 0 ? FrontlineMaxHP : 0f;
                 if (WaveStreak > BestStreak) BestStreak = WaveStreak;
                 WaveStreak = 0;
             }
@@ -2405,6 +2418,7 @@ public class GameManager : MonoBehaviour
             TalentFlags.FrenziedHarvest, TalentFlags.RiftStrike,
             TalentFlags.CrimsonTide, TalentFlags.StormCaller,
             TalentFlags.BloodPact,   TalentFlags.IronPhalanx,
+            TalentFlags.Bloodlord,   TalentFlags.PhoenixRise,
         };
         int availCount = 0;
         for (int k = 0; k < all.Length; k++)
