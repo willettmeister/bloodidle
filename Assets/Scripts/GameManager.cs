@@ -424,6 +424,7 @@ public class GameManager : MonoBehaviour
     public int    SSBoneWardLevel       { get; private set; }
     public const float SSBoneWardBonus  = 0.50f; // +50% Blood Shield capacity per level
     public float  BoneWardShieldMult    => 1f + SSBoneWardLevel * SSBoneWardBonus;
+    public int    SSCrimsonStormLevel   { get; private set; } // Blood Storm fires SSCrimsonStormLevel+1 times
 
     // --- Blood Bank ---
     public double BloodBankDeposit { get; private set; }
@@ -1849,6 +1850,7 @@ public class GameManager : MonoBehaviour
         float dmg = BloodStormBaseDmg + (Wave - 1) * BloodStormDmgPerWave;
         if (SSGhostStrikeLevel > 0) dmg *= GhostStrikeDmgMult;
         if (SSBloodNovaLevel > 0) dmg += EnemyMaxHP * SSBloodNovaPct * SSBloodNovaLevel;
+        if (SSCrimsonStormLevel > 0) dmg *= (SSCrimsonStormLevel + 1);
         EnemyHP = Mathf.Max(float.Epsilon, EnemyHP - dmg);
         _bloodStormTimer = BloodStormCooldownEffective;
         _dailySpellCount++;
@@ -2654,6 +2656,15 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuySSCrimsonStorm()
+    {
+        if (SoulShards < SSTier2Cost || SSCrimsonStormLevel >= SSTier2MaxLevel) return false;
+        SoulShards -= SSTier2Cost;
+        SSCrimsonStormLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public void RequestPrestige()
     {
         if (Wave < PrestigeWaveRequirement || PendingPrestige) return;
@@ -2793,7 +2804,7 @@ public class GameManager : MonoBehaviour
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
         SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0; SSSoulHarvestLevel = 0; SSCrimsonPulseLevel = 0; SSCrimsonBrandLevel = 0; SSWarSpoilsLevel = 0; SSGhostStrikeLevel = 0; SSDeathsBountyLevel = 0; SSRuneSealLevel = 0; SSWarCrestLevel = 0;
-        SSVoidConduitLevel = 0; SSBloodEchoLevel = 0; SSIronMarrowLevel = 0; SSWrathBloomLevel = 0; SSBloodNovaLevel = 0; SSEchoSurgeLevel = 0; SSEntropyAmpLevel = 0; SSBoneWardLevel = 0;
+        SSVoidConduitLevel = 0; SSBloodEchoLevel = 0; SSIronMarrowLevel = 0; SSWrathBloomLevel = 0; SSBloodNovaLevel = 0; SSEchoSurgeLevel = 0; SSEntropyAmpLevel = 0; SSBoneWardLevel = 0; SSCrimsonStormLevel = 0;
         BloodBankDeposit = 0; BloodBankAccrued = 0; BankInterestLevel = 0; KillIncomeUpgradeLevel = 0; WaveStreak = 0;
         SurgeUpgradeLevel = 0; HealUpgradeLevel = 0; BloodStormUpgradeLevel = 0; WarCryUpgradeLevel = 0; HexCurseUpgradeLevel = 0; BloodOathUpgradeLevel = 0; DesecrateUpgradeLevel = 0; EntropyUpgradeLevel = 0;
         TotalEnemiesKilled = 0; TotalSpellsCast = 0; TotalBossesKilled = 0; VeteranAttackBonus = 0f; TimePlayed = 0; Achievements = AchievementFlags.None;
@@ -2970,6 +2981,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("SSEchoSurgeLevel",     SSEchoSurgeLevel);
         PlayerPrefs.SetInt   ("SSEntropyAmpLevel",    SSEntropyAmpLevel);
         PlayerPrefs.SetInt   ("SSBoneWardLevel",      SSBoneWardLevel);
+        PlayerPrefs.SetInt   ("SSCrimsonStormLevel",  SSCrimsonStormLevel);
         PlayerPrefs.SetInt   ("SurgeUpgradeLevel",        SurgeUpgradeLevel);
         PlayerPrefs.SetInt   ("HealUpgradeLevel",         HealUpgradeLevel);
         PlayerPrefs.SetInt   ("BloodStormUpgradeLevel",   BloodStormUpgradeLevel);
@@ -3105,6 +3117,7 @@ public class GameManager : MonoBehaviour
         SSEchoSurgeLevel    = PlayerPrefs.GetInt("SSEchoSurgeLevel",    0);
         SSEntropyAmpLevel   = PlayerPrefs.GetInt("SSEntropyAmpLevel",   0);
         SSBoneWardLevel     = PlayerPrefs.GetInt("SSBoneWardLevel",     0);
+        SSCrimsonStormLevel = PlayerPrefs.GetInt("SSCrimsonStormLevel", 0);
         SSGhostStrikeLevel  = PlayerPrefs.GetInt("SSGhostStrikeLevel",  0);
         SSDeathsBountyLevel = PlayerPrefs.GetInt("SSDeathsBountyLevel", 0);
         SSRuneSealLevel     = PlayerPrefs.GetInt("SSRuneSealLevel",     0);

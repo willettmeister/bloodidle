@@ -226,6 +226,8 @@ public class UIManager : MonoBehaviour
     public Button ssEntropyAmpButton;
     public Text ssBoneWardInfoText;
     public Button ssBoneWardButton;
+    public Text ssCrimsonStormInfoText;
+    public Button ssCrimsonStormButton;
 
     [Header("Settings")]
     public GameObject settingsPanel;
@@ -1163,6 +1165,10 @@ public class UIManager : MonoBehaviour
                 ssBoneWardInfoText.text = $"Bone Ward +{GameManager.SSBoneWardBonus * 100:F0}% Blood Shield capacity  (Lv.{gm.SSBoneWardLevel}/{GameManager.SSTier2MaxLevel})";
             if (ssBoneWardButton != null)
                 ssBoneWardButton.interactable = canBuyT2 && gm.SSBoneWardLevel < GameManager.SSTier2MaxLevel;
+            if (ssCrimsonStormInfoText != null)
+                ssCrimsonStormInfoText.text = $"Crimson Storm Blood Storm fires {(gm.SSCrimsonStormLevel > 0 ? gm.SSCrimsonStormLevel + 1 : 2)}× per cast  (Lv.{gm.SSCrimsonStormLevel}/{GameManager.SSTier2MaxLevel})";
+            if (ssCrimsonStormButton != null)
+                ssCrimsonStormButton.interactable = canBuyT2 && gm.SSCrimsonStormLevel < GameManager.SSTier2MaxLevel;
         }
 
         // Blood Bank
