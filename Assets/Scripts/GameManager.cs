@@ -360,6 +360,7 @@ public class GameManager : MonoBehaviour
     public const float PIronBastionHPBonus = 5f; // flat HP added to all frontline types per level
     public int PBloodPriceLevel          { get; private set; }
     public const double PBloodPriceBonus = 0.01; // +1% kill income rate per level
+    public int PVoidPactLevel            { get; private set; } // +1 shard per boss kill per level
 
     public double EffectiveBountyMult => BountyRewardMult + PBountyBonusLevel;
     public const int   PrestigeShopCost      = 1;
@@ -1372,7 +1373,7 @@ public class GameManager : MonoBehaviour
                 if (CurrentBossAbility == BossAbility.LeechStrike)  reward = Math.Floor(reward * BossLeechStrikeRewardMult);
                 if (SSShardHungerLevel > 0) reward = Math.Floor(reward * (1.0 + SSShardHungerLevel * SSShardHungerBonus));
                 if (VeteranAttackBonus < VeteranAttackCap) VeteranAttackBonus++;
-                SoulShards += HasTalent(TalentFlags.ShardHunter) ? 2 : 1;
+                SoulShards += (HasTalent(TalentFlags.ShardHunter) ? 2 : 1) + PVoidPactLevel;
                 SoulShardShopUnlocked = true;
                 BossTimeRemaining = 0f;
                 if (SoldierCount > 0)
@@ -2362,6 +2363,15 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuyPVoidPact()
+    {
+        if (PrestigePoints < PrestigeShopCost || PVoidPactLevel >= 3) return false;
+        PrestigePoints -= PrestigeShopCost;
+        PVoidPactLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public bool BuySSBossTimer()
     {
         if (SoulShards < SSUpgradeCost || SSBossTimerLevel >= SSMaxLevel) return false;
@@ -2775,7 +2785,7 @@ public class GameManager : MonoBehaviour
         BloodShieldUnlocked = false; BloodShieldHP = 0f;
         PrestigeCount = 0; PrestigePoints = 0;
         PSoldierCapLevel = 0; PClickBonusLevel = 0; PRitualEffLevel = 0;
-        PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0; PBountyBonusLevel = 0; PBloodRitualStartLevel = 0; PBloodMasteryLevel = 0; PSacredGroundLevel = 0; PEternalFlameLevel = 0; PWarMachineLevel = 0; PCrimsonLegacyLevel = 0; PBloodlineLevel = 0; PIronBastionLevel = 0; PBloodPriceLevel = 0;
+        PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0; PBountyBonusLevel = 0; PBloodRitualStartLevel = 0; PBloodMasteryLevel = 0; PSacredGroundLevel = 0; PEternalFlameLevel = 0; PWarMachineLevel = 0; PCrimsonLegacyLevel = 0; PBloodlineLevel = 0; PIronBastionLevel = 0; PBloodPriceLevel = 0; PVoidPactLevel = 0;
         WeaponLevel = 0; ArmorLevel = 0; TalismanLevel = 0; BannerLevel = 0;
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
@@ -2921,6 +2931,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("PBloodlineLevel",          PBloodlineLevel);
         PlayerPrefs.SetInt   ("PIronBastionLevel",        PIronBastionLevel);
         PlayerPrefs.SetInt   ("PBloodPriceLevel",         PBloodPriceLevel);
+        PlayerPrefs.SetInt   ("PVoidPactLevel",           PVoidPactLevel);
         PlayerPrefs.SetInt   ("WeaponLevel",         WeaponLevel);
         PlayerPrefs.SetInt   ("ArmorLevel",          ArmorLevel);
         PlayerPrefs.SetInt   ("TalismanLevel",       TalismanLevel);
@@ -3059,6 +3070,7 @@ public class GameManager : MonoBehaviour
         PBloodlineLevel            = PlayerPrefs.GetInt("PBloodlineLevel",         0);
         PIronBastionLevel          = PlayerPrefs.GetInt("PIronBastionLevel",       0);
         PBloodPriceLevel           = PlayerPrefs.GetInt("PBloodPriceLevel",        0);
+        PVoidPactLevel             = PlayerPrefs.GetInt("PVoidPactLevel",          0);
         WeaponLevel         = PlayerPrefs.GetInt   ("WeaponLevel",         0);
         ArmorLevel          = PlayerPrefs.GetInt   ("ArmorLevel",          0);
         TalismanLevel       = PlayerPrefs.GetInt   ("TalismanLevel",       0);

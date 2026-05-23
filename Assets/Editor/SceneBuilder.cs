@@ -799,9 +799,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var prestigeShopPanel = content.CreateChild("PrestigeShopPanel");
         prestigeShopPanel.AddImage(Color.clear);
-        PF(prestigeShopPanel, 205, 1007);
+        PF(prestigeShopPanel, 205, 1065);
 
-        Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 1007, HC("150A30"), 24);
+        Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 1065, HC("150A30"), 24);
 
         var shopTitleGO = Label(prestigeShopPanel, "PrestigeShopTitle",
             "Prestige Shop", 40, Gold, TextAnchor.MiddleLeft);
@@ -920,6 +920,13 @@ public static class SceneBuilder
         PT(pBloodPriceInfoGO, 930, 48, -175, 500);
         var pBloodPriceBtnGO = Btn(prestigeShopPanel, "PBloodPriceButton", "Buy (1 PP)", 30, HC("880E4F"));
         PT(pBloodPriceBtnGO, 928, 54, +245, 260);
+
+        // Row 17 — Void Pact
+        var pVoidPactInfoGO = Label(prestigeShopPanel, "PVoidPactInfoText",
+            "Void Pact +1 shard per boss kill  (Lv.0/3)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(pVoidPactInfoGO, 988, 48, -175, 500);
+        var pVoidPactBtnGO = Btn(prestigeShopPanel, "PVoidPactButton", "Buy (1 PP)", 30, HC("4A0072"));
+        PT(pVoidPactBtnGO, 986, 54, +245, 260);
 
         prestigeShopPanel.SetActive(false);
 
@@ -1685,6 +1692,8 @@ public static class SceneBuilder
         uim.pIronBastionButton           = pIronBastionBtnGO.GetComponent<Button>();
         uim.pBloodPriceInfoText          = pBloodPriceInfoGO.GetComponent<Text>();
         uim.pBloodPriceButton            = pBloodPriceBtnGO.GetComponent<Button>();
+        uim.pVoidPactInfoText            = pVoidPactInfoGO.GetComponent<Text>();
+        uim.pVoidPactButton              = pVoidPactBtnGO.GetComponent<Button>();
         uim.bloodBankPanel          = bloodBankPanel;
         uim.bloodBankInfoText       = bankInfoGO.GetComponent<Text>();
         uim.bloodBankAccruedText    = bankAccruedGO.GetComponent<Text>();
@@ -1884,6 +1893,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(pBloodlineBtnGO.GetComponent<Button>().onClick,          clk.OnBuyPBloodline);
         UnityEventTools.AddPersistentListener(pIronBastionBtnGO.GetComponent<Button>().onClick,       clk.OnBuyPIronBastion);
         UnityEventTools.AddPersistentListener(pBloodPriceBtnGO.GetComponent<Button>().onClick,        clk.OnBuyPBloodPrice);
+        UnityEventTools.AddPersistentListener(pVoidPactBtnGO.GetComponent<Button>().onClick,          clk.OnBuyPVoidPact);
         UnityEventTools.AddPersistentListener(ssBossTimerBtnGO.GetComponent<Button>().onClick,        clk.OnBuySSBossTimer);
         UnityEventTools.AddPersistentListener(ssDoubleChestBtnGO.GetComponent<Button>().onClick,      clk.OnBuySSDoubleChest);
         UnityEventTools.AddPersistentListener(ssRollbackBtnGO.GetComponent<Button>().onClick,         clk.OnBuySSRollback);

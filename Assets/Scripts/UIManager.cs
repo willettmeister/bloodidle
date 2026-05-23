@@ -178,6 +178,8 @@ public class UIManager : MonoBehaviour
     public Button pIronBastionButton;
     public Text pBloodPriceInfoText;
     public Button pBloodPriceButton;
+    public Text pVoidPactInfoText;
+    public Button pVoidPactButton;
 
     [Header("Soul Shard Shop")]
     public GameObject soulShardShopPanel;
@@ -1059,6 +1061,9 @@ public class UIManager : MonoBehaviour
             if (pBloodPriceInfoText != null)
                 pBloodPriceInfoText.text = $"Blood Price +{GameManager.PBloodPriceBonus * 100:F0}% kill income rate  (Lv.{gm.PBloodPriceLevel}/3)";
             if (pBloodPriceButton != null) pBloodPriceButton.interactable = canSpend && gm.PBloodPriceLevel < 3;
+            if (pVoidPactInfoText != null)
+                pVoidPactInfoText.text = $"Void Pact +1 shard per boss kill  (Lv.{gm.PVoidPactLevel}/3)";
+            if (pVoidPactButton != null) pVoidPactButton.interactable = canSpend && gm.PVoidPactLevel < 3;
         }
 
         // Soul Shard Shop
