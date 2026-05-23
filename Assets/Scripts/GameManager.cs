@@ -90,6 +90,8 @@ public enum TalentFlags
     PhoenixRise      = 1 << 19, // next soldier after a death enters at 150% max HP
     TitansWill       = 1 << 20, // Tank HP regen rate doubled in all-tank army
     SurgeMastery     = 1 << 21, // Blood Surge multiplier +0.5x
+    Vanguard         = 1 << 22, // all-tank army takes 20% less incoming damage
+    Bloodbound       = 1 << 23, // +25% kill blood reward while Berserker Rage is active
 }
 
 public class GameManager : MonoBehaviour
@@ -485,6 +487,8 @@ public class GameManager : MonoBehaviour
     bool _phoenixRiseReady;
     public const float  TalentTitansWillRegenMult    = 2.0f;  // tank regen rate multiplier
     public const float  TalentSurgeMasteryBonus      = 0.5f;  // added to SurgeMultiplier
+    public const float  TalentVanguardDmgReduction   = 0.20f; // flat damage reduction for all-tank army
+    public const double TalentBloodboundRewardBonus  = 0.25;  // kill reward bonus while Berserker Rage active
 
     // --- Soul Sacrifice ---
     public bool SoulSacrificeUnlocked  => PrestigeCount >= 1;
@@ -1308,6 +1312,8 @@ public class GameManager : MonoBehaviour
             }
             if (HasTalent(TalentFlags.BloodFrenzy))
                 reward = Math.Floor(reward * (1.0 + TalentBloodFrenzyBonus));
+            if (HasTalent(TalentFlags.Bloodbound) && BerserkerRageActive)
+                reward = Math.Floor(reward * (1.0 + TalentBloodboundRewardBonus));
             bool isFlawless = _flawlessTimer > 0f && _flawlessTimer <= FlawlessThreshold;
             reward = Math.Floor(reward * StreakMultiplier * KillStreakBonusMult * (isFlawless ? 2.0 : 1.0) * WarSpoilsRewardMult);
             TotalEnemiesKilled++;
@@ -1373,6 +1379,7 @@ public class GameManager : MonoBehaviour
             incomingAtk *= BossWrathAtkMult;
         if (IsMixedArmy)        incomingAtk *= (1f - MixedArmyDmgReduction);
         if (IsAllTank)          incomingAtk *= (1f - TankShieldWallReduction);
+        if (IsAllTank && HasTalent(TalentFlags.Vanguard)) incomingAtk *= (1f - TalentVanguardDmgReduction);
         if (PIronWallLevel > 0) incomingAtk *= (1f - PIronWallLevel * IronWallDmgReduction);
         float totalIncoming = incomingAtk;
         if (isSpecialFoe && CurrentBossAbility == BossAbility.Drain && EnemyHP > 0)
@@ -2497,6 +2504,7 @@ public class GameManager : MonoBehaviour
             TalentFlags.BloodPact,   TalentFlags.IronPhalanx,
             TalentFlags.Bloodlord,   TalentFlags.PhoenixRise,
             TalentFlags.TitansWill,  TalentFlags.SurgeMastery,
+            TalentFlags.Vanguard,    TalentFlags.Bloodbound,
         };
         int availCount = 0;
         for (int k = 0; k < all.Length; k++)

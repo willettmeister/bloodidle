@@ -1568,6 +1568,8 @@ public class UIManager : MonoBehaviour
         TalentFlags.PhoenixRise       => "Phoenix Rise\nNext soldier after a death enters at 150% max HP",
         TalentFlags.TitansWill        => "Titan's Will\nTank HP regen rate doubled in all-tank army",
         TalentFlags.SurgeMastery      => "Surge Mastery\nBlood Surge multiplier +0.5×",
+        TalentFlags.Vanguard          => "Vanguard\nAll-tank army takes 20% less incoming damage",
+        TalentFlags.Bloodbound        => "Bloodbound\n+25% kill blood reward while Berserker Rage is active",
         _                             => "",
     };
 
@@ -1596,6 +1598,8 @@ public class UIManager : MonoBehaviour
         if ((talents & TalentFlags.PhoenixRise)      != 0) names.Add("PhoenixRise");
         if ((talents & TalentFlags.TitansWill)       != 0) names.Add("TitansWill");
         if ((talents & TalentFlags.SurgeMastery)     != 0) names.Add("SurgeMastery");
+        if ((talents & TalentFlags.Vanguard)         != 0) names.Add("Vanguard");
+        if ((talents & TalentFlags.Bloodbound)       != 0) names.Add("Bloodbound");
         return names.Count > 0 ? "Talents: " + string.Join(" | ", names) : "";
     }
 
