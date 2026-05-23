@@ -1555,6 +1555,8 @@ public class UIManager : MonoBehaviour
         TalentFlags.IronPhalanx       => "Iron Phalanx\n+10 max HP to all frontline soldier types",
         TalentFlags.Bloodlord         => "Bloodlord\nBerserker Rage activates at 40% HP instead of 30%",
         TalentFlags.PhoenixRise       => "Phoenix Rise\nNext soldier after a death enters at 150% max HP",
+        TalentFlags.TitansWill        => "Titan's Will\nTank HP regen rate doubled in all-tank army",
+        TalentFlags.SurgeMastery      => "Surge Mastery\nBlood Surge multiplier +0.5×",
         _                             => "",
     };
 
@@ -1581,6 +1583,8 @@ public class UIManager : MonoBehaviour
         if ((talents & TalentFlags.IronPhalanx)      != 0) names.Add("IronPhalanx");
         if ((talents & TalentFlags.Bloodlord)        != 0) names.Add("Bloodlord");
         if ((talents & TalentFlags.PhoenixRise)      != 0) names.Add("PhoenixRise");
+        if ((talents & TalentFlags.TitansWill)       != 0) names.Add("TitansWill");
+        if ((talents & TalentFlags.SurgeMastery)     != 0) names.Add("SurgeMastery");
         return names.Count > 0 ? "Talents: " + string.Join(" | ", names) : "";
     }
 

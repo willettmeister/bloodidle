@@ -88,6 +88,8 @@ public enum TalentFlags
     IronPhalanx      = 1 << 17, // +10 max HP to all frontline soldier types
     Bloodlord        = 1 << 18, // Berserker Rage activates at 40% HP instead of 30%
     PhoenixRise      = 1 << 19, // next soldier after a death enters at 150% max HP
+    TitansWill       = 1 << 20, // Tank HP regen rate doubled in all-tank army
+    SurgeMastery     = 1 << 21, // Blood Surge multiplier +0.5x
 }
 
 public class GameManager : MonoBehaviour
@@ -474,6 +476,8 @@ public class GameManager : MonoBehaviour
     public const float  TalentBloodlordRageThresh    = 0.40f; // Berserker Rage HP threshold
     public const float  TalentPhoenixRiseHPMult      = 1.50f; // HP multiplier for first soldier after death
     bool _phoenixRiseReady;
+    public const float  TalentTitansWillRegenMult    = 2.0f;  // tank regen rate multiplier
+    public const float  TalentSurgeMasteryBonus      = 0.5f;  // added to SurgeMultiplier
 
     // --- Soul Sacrifice ---
     public bool SoulSacrificeUnlocked  => PrestigeCount >= 1;
@@ -575,6 +579,7 @@ public class GameManager : MonoBehaviour
     public const double SurgeCost            = 50.0;
     public const float  SurgeDuration        = 10f;
     public const float  SurgeMultiplier      = 2f;
+    public float  EffectiveSurgeMultiplier => SurgeMultiplier + (HasTalent(TalentFlags.SurgeMastery) ? TalentSurgeMasteryBonus : 0f);
     public const double SurgeUnlockThreshold = 500.0;
 
     // --- Blood Oath spell ---
@@ -1013,7 +1018,8 @@ public class GameManager : MonoBehaviour
 
         if (IsAllTank && SoldierCount > 0 && SoldierHP < FrontlineMaxHP)
         {
-            SoldierHP = Mathf.Min(SoldierHP + TankRegenRate * dt, FrontlineMaxHP);
+            float regenRate = TankRegenRate * (HasTalent(TalentFlags.TitansWill) ? TalentTitansWillRegenMult : 1f);
+            SoldierHP = Mathf.Min(SoldierHP + regenRate * dt, FrontlineMaxHP);
             changed = true;
         }
 
@@ -1214,7 +1220,7 @@ public class GameManager : MonoBehaviour
             _comboTimer -= dt;
             if (_comboTimer <= 0f) { _comboTimer = 0f; ComboStacks = 0; }
         }
-        float eff = TotalAttack * (SurgeActive ? SurgeMultiplier : 1f) * (WarCryActive ? WarCryMult : 1f) * AdrenalineMult * IdleFuryMult * (IsBloodyWave ? BloodMoonAtkMult : 1f) * (BloodEchoCount > 0 ? (1f + BloodEchoAtkBonus) : 1f) * (DesperationActive ? DesperationMult : 1f);
+        float eff = TotalAttack * (SurgeActive ? EffectiveSurgeMultiplier : 1f) * (WarCryActive ? WarCryMult : 1f) * AdrenalineMult * IdleFuryMult * (IsBloodyWave ? BloodMoonAtkMult : 1f) * (BloodEchoCount > 0 ? (1f + BloodEchoAtkBonus) : 1f) * (DesperationActive ? DesperationMult : 1f);
         if (PackTacticsActive)   eff *= PackTacticsMult;
         if (BloodOathActive)     eff *= BloodOathAtkMult;
         if (CurrentEnemyModifier == EnemyModifier.Armored && !IsAllBerserker)
@@ -2447,6 +2453,7 @@ public class GameManager : MonoBehaviour
             TalentFlags.CrimsonTide, TalentFlags.StormCaller,
             TalentFlags.BloodPact,   TalentFlags.IronPhalanx,
             TalentFlags.Bloodlord,   TalentFlags.PhoenixRise,
+            TalentFlags.TitansWill,  TalentFlags.SurgeMastery,
         };
         int availCount = 0;
         for (int k = 0; k < all.Length; k++)
