@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# commit-msg hook: enforce conventional prefix format.
+# Installed via: bash scripts/install-hooks.sh
+set -euo pipefail
+
+msg=$(cat "$1")
+pattern='^(feat|fix|balance|refactor|docs|test|chore|build)(\(.+\))?: .+'
+
+if ! echo "$msg" | grep -qE "$pattern"; then
+  echo "[commit-msg] Bad message format. Use one of:"
+  echo "  feat|fix|balance|refactor|docs|test|chore|build: <description>"
+  echo "  e.g.  balance(soldiers): increase attack from 5 to 7"
+  echo ""
+  echo "  Your message: $msg"
+  exit 1
+fi

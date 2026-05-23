@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(heroku logs *)",
+      "Bash(heroku domains *)",
+      "Bash(heroku releases *)",
+      "Bash(heroku config:get *)",
+      "Bash(gh secret list *)"
+    ]
+  }
+}
