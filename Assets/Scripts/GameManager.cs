@@ -92,6 +92,7 @@ public enum TalentFlags
     SurgeMastery     = 1 << 21, // Blood Surge multiplier +0.5x
     Vanguard         = 1 << 22, // all-tank army takes 20% less incoming damage
     Bloodbound       = 1 << 23, // +25% kill blood reward while Berserker Rage is active
+    CrimsonVeil      = 1 << 24, // below 30% HP: incoming damage halved for 5s (60s cooldown)
 }
 
 public class GameManager : MonoBehaviour
@@ -498,6 +499,15 @@ public class GameManager : MonoBehaviour
     public const float  TalentSurgeMasteryBonus      = 0.5f;  // added to SurgeMultiplier
     public const float  TalentVanguardDmgReduction   = 0.20f; // flat damage reduction for all-tank army
     public const double TalentBloodboundRewardBonus  = 0.25;  // kill reward bonus while Berserker Rage active
+    public const float  TalentCrimsonVeilHPThreshold = 0.30f; // HP pct that triggers veil
+    public const float  TalentCrimsonVeilDmgReduction= 0.50f; // damage reduction while active
+    public const float  TalentCrimsonVeilDuration    = 5f;    // seconds active
+    public const float  TalentCrimsonVeilCooldown    = 60f;   // seconds between activations
+    public bool  CrimsonVeilActive        { get; private set; }
+    public float CrimsonVeilTimeRemaining { get; private set; }
+    float _crimsonVeilCooldown;
+    public float CrimsonVeilCooldownLeft => _crimsonVeilCooldown;
+    public bool  CrimsonVeilReady        => _crimsonVeilCooldown <= 0f;
 
     // --- Soul Sacrifice ---
     public bool SoulSacrificeUnlocked  => PrestigeCount >= 1;
@@ -1237,6 +1247,12 @@ public class GameManager : MonoBehaviour
         if (_desecrateTimer   > 0f) { _desecrateTimer   -= dt; if (_desecrateTimer   < 0f) _desecrateTimer   = 0f; }
         if (_bloodOathTimer   > 0f) { _bloodOathTimer   -= dt; if (_bloodOathTimer   < 0f) _bloodOathTimer   = 0f; }
         if (_entropyTimer    > 0f) { _entropyTimer    -= dt; if (_entropyTimer    < 0f) _entropyTimer    = 0f; }
+        if (_crimsonVeilCooldown > 0f) { _crimsonVeilCooldown -= dt; if (_crimsonVeilCooldown < 0f) _crimsonVeilCooldown = 0f; }
+        if (CrimsonVeilActive)
+        {
+            CrimsonVeilTimeRemaining -= dt;
+            if (CrimsonVeilTimeRemaining <= 0f) { CrimsonVeilActive = false; CrimsonVeilTimeRemaining = 0f; }
+        }
         if (BloodOathActive)
         {
             BloodOathTimeRemaining -= dt;
@@ -1390,6 +1406,13 @@ public class GameManager : MonoBehaviour
         if (IsAllTank)          incomingAtk *= (1f - TankShieldWallReduction);
         if (IsAllTank && HasTalent(TalentFlags.Vanguard)) incomingAtk *= (1f - TalentVanguardDmgReduction);
         if (PIronWallLevel > 0) incomingAtk *= (1f - PIronWallLevel * IronWallDmgReduction);
+        if (HasTalent(TalentFlags.CrimsonVeil) && SoldierHP < FrontlineMaxHP * TalentCrimsonVeilHPThreshold && CrimsonVeilReady && !CrimsonVeilActive)
+        {
+            CrimsonVeilActive = true;
+            CrimsonVeilTimeRemaining = TalentCrimsonVeilDuration;
+            _crimsonVeilCooldown = TalentCrimsonVeilCooldown;
+        }
+        if (CrimsonVeilActive) incomingAtk *= (1f - TalentCrimsonVeilDmgReduction);
         float totalIncoming = incomingAtk;
         if (isSpecialFoe && CurrentBossAbility == BossAbility.Drain && EnemyHP > 0)
             totalIncoming += BossDrainPerSec;
@@ -2541,6 +2564,7 @@ public class GameManager : MonoBehaviour
             TalentFlags.Bloodlord,   TalentFlags.PhoenixRise,
             TalentFlags.TitansWill,  TalentFlags.SurgeMastery,
             TalentFlags.Vanguard,    TalentFlags.Bloodbound,
+            TalentFlags.CrimsonVeil,
         };
         int availCount = 0;
         for (int k = 0; k < all.Length; k++)

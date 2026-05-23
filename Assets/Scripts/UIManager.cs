@@ -1587,6 +1587,7 @@ public class UIManager : MonoBehaviour
         TalentFlags.SurgeMastery      => "Surge Mastery\nBlood Surge multiplier +0.5×",
         TalentFlags.Vanguard          => "Vanguard\nAll-tank army takes 20% less incoming damage",
         TalentFlags.Bloodbound        => "Bloodbound\n+25% kill blood reward while Berserker Rage is active",
+        TalentFlags.CrimsonVeil       => "Crimson Veil\nBelow 30% HP: damage halved for 5s (60s cooldown)",
         _                             => "",
     };
 
@@ -1617,6 +1618,7 @@ public class UIManager : MonoBehaviour
         if ((talents & TalentFlags.SurgeMastery)     != 0) names.Add("SurgeMastery");
         if ((talents & TalentFlags.Vanguard)         != 0) names.Add("Vanguard");
         if ((talents & TalentFlags.Bloodbound)       != 0) names.Add("Bloodbound");
+        if ((talents & TalentFlags.CrimsonVeil)      != 0) names.Add("CrimsonVeil");
         return names.Count > 0 ? "Talents: " + string.Join(" | ", names) : "";
     }
 
