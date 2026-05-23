@@ -51,7 +51,7 @@ public struct AchievementDef
     public float   AttackBonus;  // additive bonus to attack per soldier
 }
 
-public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral, Leech, Volatile }
+public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral, Leech, Volatile, Fortified }
 public enum BossAbility    { None, Shield, Berserk, Drain, Regen, Thorns, Haste }
 public enum QuestTrackType { Kills, Farms, Wave, Spells }
 
@@ -673,7 +673,8 @@ public class GameManager : MonoBehaviour
         EnemyModifier.Cursed   => "☠ Cursed",
         EnemyModifier.Spectral => "👻 Spectral",
         EnemyModifier.Leech    => "🩸 Leeching",
-        EnemyModifier.Volatile => "💥 Volatile",
+        EnemyModifier.Volatile   => "💥 Volatile",
+        EnemyModifier.Fortified  => "🔩 Fortified",
         _                     => "",
     };
     public const float EnemyArmoredDmgMult    = 0.5f;
@@ -688,8 +689,10 @@ public class GameManager : MonoBehaviour
     public const float EnemySpectralRewardMult = 1.25f;
     public const float EnemyLeechHealPct      = 0.30f;
     public const float EnemyLeechRewardMult   = 1.35f;
-    public const float EnemyVolatileSplashPct = 0.20f;
-    public const float EnemyVolatileRewardMult = 1.30f;
+    public const float EnemyVolatileSplashPct   = 0.20f;
+    public const float EnemyVolatileRewardMult  = 1.30f;
+    public const float EnemyFortifiedDmgMult    = 0.70f; // takes 30% less damage
+    public const float EnemyFortifiedRewardMult = 1.40f;
 
     // --- Wave preview ---
     public bool WavePreviewActive { get; private set; }
@@ -1211,6 +1214,8 @@ public class GameManager : MonoBehaviour
         if (BloodOathActive)     eff *= BloodOathAtkMult;
         if (CurrentEnemyModifier == EnemyModifier.Armored && !IsAllBerserker)
             eff *= IsAllTank ? EnemyArmoredDmgMult + 0.25f : EnemyArmoredDmgMult;
+        if (CurrentEnemyModifier == EnemyModifier.Fortified)
+            eff *= EnemyFortifiedDmgMult;
         if (CurrentEnemyModifier == EnemyModifier.Cursed && PaladinCount > 0) eff *= PaladinHolyBonus;
         if (IsBossWave && SSCrimsonBrandLevel > 0) eff *= CrimsonBrandBossMult;
         if (BerserkerRageActive) eff *= BerserkerRageMult;
@@ -1247,6 +1252,8 @@ public class GameManager : MonoBehaviour
                 reward = Math.Floor(reward * EnemyLeechRewardMult);
             if (CurrentEnemyModifier == EnemyModifier.Volatile)
                 reward = Math.Floor(reward * EnemyVolatileRewardMult);
+            if (CurrentEnemyModifier == EnemyModifier.Fortified)
+                reward = Math.Floor(reward * EnemyFortifiedRewardMult);
             if (IsBloodyWave) reward = Math.Floor(reward * BloodMoonMult);
             if (_isBountyEnemy) reward = Math.Floor(reward * EffectiveBountyMult);
             if (_isEliteEnemy)  reward = Math.Floor(reward * EliteRewardMult);
@@ -1531,7 +1538,7 @@ public class GameManager : MonoBehaviour
             _bossShieldHP      = 0f;
             if (UnityEngine.Random.value < 0.25f)
             {
-                CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 8);
+                CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 9);
                 if (CurrentEnemyModifier == EnemyModifier.Enraged)
                     EnemyAttack *= EnemyEnragedAtkMult;
                 else if (CurrentEnemyModifier == EnemyModifier.Spectral)
