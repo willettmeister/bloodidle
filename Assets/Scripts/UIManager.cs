@@ -168,6 +168,8 @@ public class UIManager : MonoBehaviour
     public Button pSacredGroundButton;
     public Text pEternalFlameInfoText;
     public Button pEternalFlameButton;
+    public Text pWarMachineInfoText;
+    public Button pWarMachineButton;
 
     [Header("Soul Shard Shop")]
     public GameObject soulShardShopPanel;
@@ -1022,6 +1024,9 @@ public class UIManager : MonoBehaviour
             if (pEternalFlameInfoText != null)
                 pEternalFlameInfoText.text = $"Eternal Flame +{GameManager.PEternalFlameBonus * 100:F0}% Blood Well yield  (Lv.{gm.PEternalFlameLevel}/3)";
             if (pEternalFlameButton != null) pEternalFlameButton.interactable = canSpend && gm.PEternalFlameLevel < 3;
+            if (pWarMachineInfoText != null)
+                pWarMachineInfoText.text = $"War Machine +{GameManager.PWarMachineBonus * 100:F0}% soldier attack  (Lv.{gm.PWarMachineLevel}/3)";
+            if (pWarMachineButton != null) pWarMachineButton.interactable = canSpend && gm.PWarMachineLevel < 3;
         }
 
         // Soul Shard Shop

@@ -193,7 +193,7 @@ public class GameManager : MonoBehaviour
     public float TotalAttack         => (TankCount     * (SoldierAttack   + EquipAttackBonus + VeteranAttackBonus + AchievementAttackBonus + WarDrumAttackBonus + IronMarrowAttackBonus)
                                        + BerserkerCount * (BerserkerAttack + EquipAttackBonus + VeteranAttackBonus + AchievementAttackBonus + WarDrumAttackBonus + IronMarrowAttackBonus)
                                        + PaladinCount   * (PaladinAttack   + EquipAttackBonus + VeteranAttackBonus + AchievementAttackBonus + WarDrumAttackBonus + IronMarrowAttackBonus))
-                                       * (1f + PrestigeMilestoneDmgBonus) * MoraleBonusMult;
+                                       * (1f + PrestigeMilestoneDmgBonus) * MoraleBonusMult * WarMachineMult;
     public float EffectiveAttack     => TotalAttack
                                        * (SurgeActive        ? SurgeMultiplier   : 1f)
                                        * (WarCryActive       ? WarCryMult        : 1f)
@@ -336,6 +336,9 @@ public class GameManager : MonoBehaviour
     public int PEternalFlameLevel        { get; private set; }
     public const double PEternalFlameBonus = 0.25;
     public double EternalFlameMult       => 1.0 + PEternalFlameLevel * PEternalFlameBonus;
+    public int PWarMachineLevel          { get; private set; }
+    public const float PWarMachineBonus  = 0.05f;
+    public float WarMachineMult          => 1f + PWarMachineLevel * PWarMachineBonus;
     public double EffectiveBountyMult => BountyRewardMult + PBountyBonusLevel;
     public const int   PrestigeShopCost      = 1;
     public const float IronWallDmgReduction  = 0.10f;
@@ -2172,6 +2175,14 @@ public class GameManager : MonoBehaviour
         OnStateChanged?.Invoke();
         return true;
     }
+    public bool BuyPWarMachine()
+    {
+        if (PrestigePoints < PrestigeShopCost || PWarMachineLevel >= 3) return false;
+        PrestigePoints -= PrestigeShopCost;
+        PWarMachineLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
 
     public bool BuySSBossTimer()
     {
@@ -2528,7 +2539,7 @@ public class GameManager : MonoBehaviour
         BloodShieldUnlocked = false; BloodShieldHP = 0f;
         PrestigeCount = 0; PrestigePoints = 0;
         PSoldierCapLevel = 0; PClickBonusLevel = 0; PRitualEffLevel = 0;
-        PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0; PBountyBonusLevel = 0; PBloodRitualStartLevel = 0; PBloodMasteryLevel = 0; PSacredGroundLevel = 0; PEternalFlameLevel = 0;
+        PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0; PBountyBonusLevel = 0; PBloodRitualStartLevel = 0; PBloodMasteryLevel = 0; PSacredGroundLevel = 0; PEternalFlameLevel = 0; PWarMachineLevel = 0;
         WeaponLevel = 0; ArmorLevel = 0; TalismanLevel = 0; BannerLevel = 0;
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
@@ -2669,6 +2680,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("PBloodMasteryLevel",      PBloodMasteryLevel);
         PlayerPrefs.SetInt   ("PSacredGroundLevel",      PSacredGroundLevel);
         PlayerPrefs.SetInt   ("PEternalFlameLevel",      PEternalFlameLevel);
+        PlayerPrefs.SetInt   ("PWarMachineLevel",        PWarMachineLevel);
         PlayerPrefs.SetInt   ("WeaponLevel",         WeaponLevel);
         PlayerPrefs.SetInt   ("ArmorLevel",          ArmorLevel);
         PlayerPrefs.SetInt   ("TalismanLevel",       TalismanLevel);
@@ -2796,6 +2808,7 @@ public class GameManager : MonoBehaviour
         PBloodMasteryLevel         = PlayerPrefs.GetInt("PBloodMasteryLevel",     0);
         PSacredGroundLevel         = PlayerPrefs.GetInt("PSacredGroundLevel",     0);
         PEternalFlameLevel         = PlayerPrefs.GetInt("PEternalFlameLevel",     0);
+        PWarMachineLevel           = PlayerPrefs.GetInt("PWarMachineLevel",       0);
         WeaponLevel         = PlayerPrefs.GetInt   ("WeaponLevel",         0);
         ArmorLevel          = PlayerPrefs.GetInt   ("ArmorLevel",          0);
         TalismanLevel       = PlayerPrefs.GetInt   ("TalismanLevel",       0);
