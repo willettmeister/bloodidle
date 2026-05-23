@@ -286,7 +286,7 @@ public class GameManager : MonoBehaviour
                                     + ShrineCount * ShrineBloodPerSec * SacredGroundMult
                                     + BloodEchoPerSec
                                     + (HasTalent(TalentFlags.BloodPact) ? WorkerCount * TalentBloodPactWorkerBonus : 0.0))
-                                    * AchievementBloodIncomeMult * AdBoostMult * VoidConduitIncomeMult;
+                                    * AchievementBloodIncomeMult * AdBoostMult * VoidConduitIncomeMult * CrimsonLegacyMult;
     public const double ShrineWoodCost   = 20.0;
     public const double ShrineBloodPerSec = 0.5;
     public const int    ShrineMaxCount   = 3;
@@ -342,6 +342,9 @@ public class GameManager : MonoBehaviour
     public int PWarMachineLevel          { get; private set; }
     public const float PWarMachineBonus  = 0.05f;
     public float WarMachineMult          => 1f + PWarMachineLevel * PWarMachineBonus;
+    public int PCrimsonLegacyLevel       { get; private set; }
+    public const double PCrimsonLegacyBonus = 0.01;
+    public double CrimsonLegacyMult      => 1.0 + PCrimsonLegacyLevel * PCrimsonLegacyBonus * PrestigeCount;
     public double EffectiveBountyMult => BountyRewardMult + PBountyBonusLevel;
     public const int   PrestigeShopCost      = 1;
     public const float IronWallDmgReduction  = 0.10f;
@@ -2212,6 +2215,15 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuyPCrimsonLegacy()
+    {
+        if (PrestigePoints < PrestigeShopCost || PCrimsonLegacyLevel >= 3) return false;
+        PrestigePoints -= PrestigeShopCost;
+        PCrimsonLegacyLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public bool BuySSBossTimer()
     {
         if (SoulShards < SSUpgradeCost || SSBossTimerLevel >= SSMaxLevel) return false;
@@ -2577,7 +2589,7 @@ public class GameManager : MonoBehaviour
         BloodShieldUnlocked = false; BloodShieldHP = 0f;
         PrestigeCount = 0; PrestigePoints = 0;
         PSoldierCapLevel = 0; PClickBonusLevel = 0; PRitualEffLevel = 0;
-        PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0; PBountyBonusLevel = 0; PBloodRitualStartLevel = 0; PBloodMasteryLevel = 0; PSacredGroundLevel = 0; PEternalFlameLevel = 0; PWarMachineLevel = 0;
+        PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0; PBountyBonusLevel = 0; PBloodRitualStartLevel = 0; PBloodMasteryLevel = 0; PSacredGroundLevel = 0; PEternalFlameLevel = 0; PWarMachineLevel = 0; PCrimsonLegacyLevel = 0;
         WeaponLevel = 0; ArmorLevel = 0; TalismanLevel = 0; BannerLevel = 0;
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
@@ -2719,6 +2731,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("PSacredGroundLevel",      PSacredGroundLevel);
         PlayerPrefs.SetInt   ("PEternalFlameLevel",      PEternalFlameLevel);
         PlayerPrefs.SetInt   ("PWarMachineLevel",        PWarMachineLevel);
+        PlayerPrefs.SetInt   ("PCrimsonLegacyLevel",     PCrimsonLegacyLevel);
         PlayerPrefs.SetInt   ("WeaponLevel",         WeaponLevel);
         PlayerPrefs.SetInt   ("ArmorLevel",          ArmorLevel);
         PlayerPrefs.SetInt   ("TalismanLevel",       TalismanLevel);
@@ -2848,6 +2861,7 @@ public class GameManager : MonoBehaviour
         PSacredGroundLevel         = PlayerPrefs.GetInt("PSacredGroundLevel",     0);
         PEternalFlameLevel         = PlayerPrefs.GetInt("PEternalFlameLevel",     0);
         PWarMachineLevel           = PlayerPrefs.GetInt("PWarMachineLevel",       0);
+        PCrimsonLegacyLevel        = PlayerPrefs.GetInt("PCrimsonLegacyLevel",    0);
         WeaponLevel         = PlayerPrefs.GetInt   ("WeaponLevel",         0);
         ArmorLevel          = PlayerPrefs.GetInt   ("ArmorLevel",          0);
         TalismanLevel       = PlayerPrefs.GetInt   ("TalismanLevel",       0);

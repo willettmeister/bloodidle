@@ -170,6 +170,8 @@ public class UIManager : MonoBehaviour
     public Button pEternalFlameButton;
     public Text pWarMachineInfoText;
     public Button pWarMachineButton;
+    public Text pCrimsonLegacyInfoText;
+    public Button pCrimsonLegacyButton;
 
     [Header("Soul Shard Shop")]
     public GameObject soulShardShopPanel;
@@ -1029,6 +1031,9 @@ public class UIManager : MonoBehaviour
             if (pWarMachineInfoText != null)
                 pWarMachineInfoText.text = $"War Machine +{GameManager.PWarMachineBonus * 100:F0}% soldier attack  (Lv.{gm.PWarMachineLevel}/3)";
             if (pWarMachineButton != null) pWarMachineButton.interactable = canSpend && gm.PWarMachineLevel < 3;
+            if (pCrimsonLegacyInfoText != null)
+                pCrimsonLegacyInfoText.text = $"Crimson Legacy +{GameManager.PCrimsonLegacyBonus * 100:F0}% blood income per prestige  (Lv.{gm.PCrimsonLegacyLevel}/3)";
+            if (pCrimsonLegacyButton != null) pCrimsonLegacyButton.interactable = canSpend && gm.PCrimsonLegacyLevel < 3;
         }
 
         // Soul Shard Shop

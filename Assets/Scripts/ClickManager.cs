@@ -63,6 +63,7 @@ public class ClickManager : MonoBehaviour
     public void OnBuyPSacredGround()          => GameManager.Instance.BuyPSacredGround();
     public void OnBuyPEternalFlame()          => GameManager.Instance.BuyPEternalFlame();
     public void OnBuyPWarMachine()            => GameManager.Instance.BuyPWarMachine();
+    public void OnBuyPCrimsonLegacy()         => GameManager.Instance.BuyPCrimsonLegacy();
     public void OnBuySSBossTimer()         => GameManager.Instance.BuySSBossTimer();
     public void OnBuySSDoubleChest()       => GameManager.Instance.BuySSDoubleChest();
     public void OnBuySSRollback()          => GameManager.Instance.BuySSRollback();
