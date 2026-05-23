@@ -94,9 +94,9 @@ public class NewFeaturesTests4
     [Test]
     public void DepositToBank_CappedAtBankMax()
     {
-        _gm.AwardBloodForTest(GameManager.BankMaxDeposit + 1000.0);
-        _gm.DepositToBank(GameManager.BankMaxDeposit + 1000.0);
-        Assert.AreEqual(GameManager.BankMaxDeposit, _gm.BloodBankDeposit, 0.001);
+        _gm.AwardBloodForTest(_gm.BankMaxDeposit + 1000.0);
+        _gm.DepositToBank(_gm.BankMaxDeposit + 1000.0);
+        Assert.AreEqual(_gm.BankMaxDeposit, _gm.BloodBankDeposit, 0.001);
     }
 
     [Test]
