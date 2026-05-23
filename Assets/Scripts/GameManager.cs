@@ -347,6 +347,9 @@ public class GameManager : MonoBehaviour
     public int PCrimsonLegacyLevel       { get; private set; }
     public const double PCrimsonLegacyBonus = 0.01;
     public double CrimsonLegacyMult      => 1.0 + PCrimsonLegacyLevel * PCrimsonLegacyBonus * PrestigeCount;
+    public int PBloodlineLevel           { get; private set; }
+    public const double PBloodlineStartBonus = 100.0;
+
     public double EffectiveBountyMult => BountyRewardMult + PBountyBonusLevel;
     public const int   PrestigeShopCost      = 1;
     public const float IronWallDmgReduction  = 0.10f;
@@ -2234,6 +2237,15 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuyPBloodline()
+    {
+        if (PrestigePoints < PrestigeShopCost || PBloodlineLevel >= 3) return false;
+        PrestigePoints -= PrestigeShopCost;
+        PBloodlineLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public bool BuySSBossTimer()
     {
         if (SoulShards < SSUpgradeCost || SSBossTimerLevel >= SSMaxLevel) return false;
@@ -2609,7 +2621,7 @@ public class GameManager : MonoBehaviour
         BloodShieldUnlocked = false; BloodShieldHP = 0f;
         PrestigeCount = 0; PrestigePoints = 0;
         PSoldierCapLevel = 0; PClickBonusLevel = 0; PRitualEffLevel = 0;
-        PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0; PBountyBonusLevel = 0; PBloodRitualStartLevel = 0; PBloodMasteryLevel = 0; PSacredGroundLevel = 0; PEternalFlameLevel = 0; PWarMachineLevel = 0; PCrimsonLegacyLevel = 0;
+        PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0; PBountyBonusLevel = 0; PBloodRitualStartLevel = 0; PBloodMasteryLevel = 0; PSacredGroundLevel = 0; PEternalFlameLevel = 0; PWarMachineLevel = 0; PCrimsonLegacyLevel = 0; PBloodlineLevel = 0;
         WeaponLevel = 0; ArmorLevel = 0; TalismanLevel = 0; BannerLevel = 0;
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
@@ -2656,7 +2668,7 @@ public class GameManager : MonoBehaviour
         if (PrestigeCount >= 20) TryUnlock(AchievementFlags.Prestige20);
         if (PrestigeMilestonesReached > milestonesBefore)
             OnMilestoneChest?.Invoke($"⭐ Prestige Milestone! +{PrestigeMilestoneDmgBonus * 100:F0}% attack!");
-        Blood               = 0;
+        Blood               = PBloodlineLevel * PBloodlineStartBonus;
         Wood                = 0;
         TankCount           = 0;
         BerserkerCount      = 0;
@@ -2752,6 +2764,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("PEternalFlameLevel",      PEternalFlameLevel);
         PlayerPrefs.SetInt   ("PWarMachineLevel",        PWarMachineLevel);
         PlayerPrefs.SetInt   ("PCrimsonLegacyLevel",     PCrimsonLegacyLevel);
+        PlayerPrefs.SetInt   ("PBloodlineLevel",          PBloodlineLevel);
         PlayerPrefs.SetInt   ("WeaponLevel",         WeaponLevel);
         PlayerPrefs.SetInt   ("ArmorLevel",          ArmorLevel);
         PlayerPrefs.SetInt   ("TalismanLevel",       TalismanLevel);
@@ -2883,6 +2896,7 @@ public class GameManager : MonoBehaviour
         PEternalFlameLevel         = PlayerPrefs.GetInt("PEternalFlameLevel",     0);
         PWarMachineLevel           = PlayerPrefs.GetInt("PWarMachineLevel",       0);
         PCrimsonLegacyLevel        = PlayerPrefs.GetInt("PCrimsonLegacyLevel",    0);
+        PBloodlineLevel            = PlayerPrefs.GetInt("PBloodlineLevel",         0);
         WeaponLevel         = PlayerPrefs.GetInt   ("WeaponLevel",         0);
         ArmorLevel          = PlayerPrefs.GetInt   ("ArmorLevel",          0);
         TalismanLevel       = PlayerPrefs.GetInt   ("TalismanLevel",       0);
