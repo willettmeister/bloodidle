@@ -188,6 +188,8 @@ public class UIManager : MonoBehaviour
     public Button ssCrimsonPulseButton;
     public Text ssCrimsonBrandInfoText;
     public Button ssCrimsonBrandButton;
+    public Text ssWarSpoilsInfoText;
+    public Button ssWarSpoilsButton;
     public Text ssVoidConduitInfoText;
     public Button ssVoidConduitButton;
     public Text ssBloodEchoInfoText;
@@ -1064,6 +1066,10 @@ public class UIManager : MonoBehaviour
                 ssCrimsonBrandInfoText.text = $"Crimson Brand +{GameManager.SSCrimsonBrandBonus * 100:F0}% boss dmg  (Lv.{gm.SSCrimsonBrandLevel}/{GameManager.SSMaxLevel})";
             if (ssCrimsonBrandButton != null)
                 ssCrimsonBrandButton.interactable = canBuySS && gm.SSCrimsonBrandLevel < GameManager.SSMaxLevel;
+            if (ssWarSpoilsInfoText != null)
+                ssWarSpoilsInfoText.text = $"War Spoils +{GameManager.SSWarSpoilsBonus * 100:F0}% all wave rewards  (Lv.{gm.SSWarSpoilsLevel}/{GameManager.SSMaxLevel})";
+            if (ssWarSpoilsButton != null)
+                ssWarSpoilsButton.interactable = canBuySS && gm.SSWarSpoilsLevel < GameManager.SSMaxLevel;
             bool canBuyT2 = gm.SoulShards >= GameManager.SSTier2Cost;
             if (ssVoidConduitInfoText != null)
                 ssVoidConduitInfoText.text = $"Void Conduit +{GameManager.SSVoidConduitBonus * 100:F0}% all income  (Lv.{gm.SSVoidConduitLevel}/{GameManager.SSTier2MaxLevel})";

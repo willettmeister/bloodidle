@@ -360,6 +360,9 @@ public class GameManager : MonoBehaviour
     public int    SSCrimsonBrandLevel   { get; private set; }
     public const double SSCrimsonBrandBonus = 0.20;
     public float  CrimsonBrandBossMult  => 1f + SSCrimsonBrandLevel * (float)SSCrimsonBrandBonus;
+    public int    SSWarSpoilsLevel      { get; private set; }
+    public const double SSWarSpoilsBonus = 0.15;
+    public double WarSpoilsRewardMult   => 1.0 + SSWarSpoilsLevel * SSWarSpoilsBonus;
     public int    SSVoidConduitLevel    { get; private set; }
     public const double SSVoidConduitBonus = 0.15;
     public double VoidConduitIncomeMult => 1.0 + SSVoidConduitLevel * SSVoidConduitBonus;
@@ -1265,7 +1268,7 @@ public class GameManager : MonoBehaviour
             if (HasTalent(TalentFlags.BloodFrenzy))
                 reward = Math.Floor(reward * (1.0 + TalentBloodFrenzyBonus));
             bool isFlawless = _flawlessTimer > 0f && _flawlessTimer <= FlawlessThreshold;
-            reward = Math.Floor(reward * StreakMultiplier * KillStreakBonusMult * (isFlawless ? 2.0 : 1.0));
+            reward = Math.Floor(reward * StreakMultiplier * KillStreakBonusMult * (isFlawless ? 2.0 : 1.0) * WarSpoilsRewardMult);
             TotalEnemiesKilled++;
             _dailyKillCount++;
             CheckQuestProgress(QuestTrackType.Kills);
@@ -2312,6 +2315,14 @@ public class GameManager : MonoBehaviour
         OnStateChanged?.Invoke();
         return true;
     }
+    public bool BuySSWarSpoils()
+    {
+        if (SoulShards < SSUpgradeCost || SSWarSpoilsLevel >= SSMaxLevel) return false;
+        SoulShards -= SSUpgradeCost;
+        SSWarSpoilsLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
 
     public bool BuySSVoidConduit()
     {
@@ -2490,7 +2501,7 @@ public class GameManager : MonoBehaviour
         WeaponLevel = 0; ArmorLevel = 0; TalismanLevel = 0; BannerLevel = 0;
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
-        SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0; SSSoulHarvestLevel = 0; SSCrimsonPulseLevel = 0; SSCrimsonBrandLevel = 0;
+        SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0; SSSoulHarvestLevel = 0; SSCrimsonPulseLevel = 0; SSCrimsonBrandLevel = 0; SSWarSpoilsLevel = 0;
         SSVoidConduitLevel = 0; SSBloodEchoLevel = 0; SSIronMarrowLevel = 0; SSWrathBloomLevel = 0; SSBloodNovaLevel = 0;
         BloodBankDeposit = 0; BloodBankAccrued = 0; BankInterestLevel = 0; KillIncomeUpgradeLevel = 0; WaveStreak = 0;
         SurgeUpgradeLevel = 0; HealUpgradeLevel = 0; BloodStormUpgradeLevel = 0; WarCryUpgradeLevel = 0; HexCurseUpgradeLevel = 0; BloodOathUpgradeLevel = 0; DesecrateUpgradeLevel = 0; EntropyUpgradeLevel = 0;
@@ -2649,6 +2660,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("SSSoulHarvestLevel",   SSSoulHarvestLevel);
         PlayerPrefs.SetInt   ("SSCrimsonPulseLevel",  SSCrimsonPulseLevel);
         PlayerPrefs.SetInt   ("SSCrimsonBrandLevel",  SSCrimsonBrandLevel);
+        PlayerPrefs.SetInt   ("SSWarSpoilsLevel",     SSWarSpoilsLevel);
         PlayerPrefs.SetInt   ("SSVoidConduitLevel",   SSVoidConduitLevel);
         PlayerPrefs.SetInt   ("SSBloodEchoLevel",     SSBloodEchoLevel);
         PlayerPrefs.SetInt   ("SSIronMarrowLevel",    SSIronMarrowLevel);
@@ -2774,6 +2786,7 @@ public class GameManager : MonoBehaviour
         SSSoulHarvestLevel  = PlayerPrefs.GetInt("SSSoulHarvestLevel",  0);
         SSCrimsonPulseLevel = PlayerPrefs.GetInt("SSCrimsonPulseLevel", 0);
         SSCrimsonBrandLevel = PlayerPrefs.GetInt("SSCrimsonBrandLevel", 0);
+        SSWarSpoilsLevel    = PlayerPrefs.GetInt("SSWarSpoilsLevel",    0);
         SSVoidConduitLevel  = PlayerPrefs.GetInt("SSVoidConduitLevel",  0);
         SSBloodEchoLevel    = PlayerPrefs.GetInt("SSBloodEchoLevel",    0);
         SSIronMarrowLevel   = PlayerPrefs.GetInt("SSIronMarrowLevel",   0);

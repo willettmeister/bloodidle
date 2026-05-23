@@ -70,6 +70,7 @@ public class ClickManager : MonoBehaviour
     public void OnBuySSSoulHarvest()       => GameManager.Instance.BuySSSoulHarvest();
     public void OnBuySSCrimsonPulse()      => GameManager.Instance.BuySSCrimsonPulse();
     public void OnBuySSCrimsonBrand()      => GameManager.Instance.BuySSCrimsonBrand();
+    public void OnBuySSWarSpoils()         => GameManager.Instance.BuySSWarSpoils();
     public void OnBuySSVoidConduit()       => GameManager.Instance.BuySSVoidConduit();
     public void OnBuySSBloodEcho()         => GameManager.Instance.BuySSBloodEcho();
     public void OnBuySSIronMarrow()        => GameManager.Instance.BuySSIronMarrow();
