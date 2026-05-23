@@ -1529,6 +1529,8 @@ public class UIManager : MonoBehaviour
         TalentFlags.RiftStrike        => "Rift Strike\nEntropy cooldown reduced by 10 seconds",
         TalentFlags.CrimsonTide       => "Crimson Tide\n+0.1 blood/click per boss killed",
         TalentFlags.StormCaller       => "Storm Caller\nBlood Storm cooldown reduced by 15 seconds",
+        TalentFlags.BloodPact         => "Blood Pact\nWorkers produce +0.2 blood/sec each",
+        TalentFlags.IronPhalanx       => "Iron Phalanx\n+10 max HP to all frontline soldier types",
         _                             => "",
     };
 
@@ -1551,6 +1553,8 @@ public class UIManager : MonoBehaviour
         if ((talents & TalentFlags.RiftStrike)       != 0) names.Add("RiftStrike");
         if ((talents & TalentFlags.CrimsonTide)      != 0) names.Add("CrimsonTide");
         if ((talents & TalentFlags.StormCaller)      != 0) names.Add("StormCaller");
+        if ((talents & TalentFlags.BloodPact)        != 0) names.Add("BloodPact");
+        if ((talents & TalentFlags.IronPhalanx)      != 0) names.Add("IronPhalanx");
         return names.Count > 0 ? "Talents: " + string.Join(" | ", names) : "";
     }
 

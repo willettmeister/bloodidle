@@ -84,6 +84,8 @@ public enum TalentFlags
     RiftStrike       = 1 << 13, // Entropy cooldown reduced by 10 seconds
     CrimsonTide      = 1 << 14, // +0.1 blood/click per boss killed
     StormCaller      = 1 << 15, // Blood Storm cooldown reduced by 15 seconds
+    BloodPact        = 1 << 16, // workers produce 0.2 blood/sec each
+    IronPhalanx      = 1 << 17, // +10 max HP to all frontline soldier types
 }
 
 public class GameManager : MonoBehaviour
@@ -184,6 +186,7 @@ public class GameManager : MonoBehaviour
             (FrontlineIsTank ? SoldierMaxHP : FrontlineIsBerserker ? BerserkerMaxHP : PaladinMaxHP)
             + EquipArmorBonus
             + (HasTalent(TalentFlags.IronSkin) ? TalentIronSkinHP : 0f)
+            + (HasTalent(TalentFlags.IronPhalanx) ? TalentIronPhalanxHP : 0f)
             - CorruptionLevel * CorruptionHPPenalty);
     public float TotalAttack         => (TankCount     * (SoldierAttack   + EquipAttackBonus + VeteranAttackBonus + AchievementAttackBonus + WarDrumAttackBonus + IronMarrowAttackBonus)
                                        + BerserkerCount * (BerserkerAttack + EquipAttackBonus + VeteranAttackBonus + AchievementAttackBonus + WarDrumAttackBonus + IronMarrowAttackBonus)
@@ -275,7 +278,9 @@ public class GameManager : MonoBehaviour
                                     * CrimsonPulseMult
                                     + BloodTithePerSec + BloodTapPerSec + KillIncomePerSec
                                     + ShrineCount * ShrineBloodPerSec * SacredGroundMult
-                                    + BloodEchoPerSec) * AchievementBloodIncomeMult * AdBoostMult * VoidConduitIncomeMult;
+                                    + BloodEchoPerSec
+                                    + (HasTalent(TalentFlags.BloodPact) ? WorkerCount * TalentBloodPactWorkerBonus : 0.0))
+                                    * AchievementBloodIncomeMult * AdBoostMult * VoidConduitIncomeMult;
     public const double ShrineWoodCost   = 20.0;
     public const double ShrineBloodPerSec = 0.5;
     public const int    ShrineMaxCount   = 3;
@@ -448,8 +453,10 @@ public class GameManager : MonoBehaviour
     public const float  TalentSoulDrainPct          = 0.15f; // fraction of enemy current HP on soldier death
     public const double TalentFrenziedHarvestBonus  = 0.5;   // extra blood/sec per ritual owned
     public const float  TalentRiftStrikeCDReduction = 10f;   // seconds off Entropy cooldown
-    public const double TalentCrimsonTideClickBonus = 0.1;   // blood/click per boss killed
+    public const double TalentCrimsonTideClickBonus  = 0.1;   // blood/click per boss killed
     public const float  TalentStormCallerCDReduction = 15f;  // seconds off Blood Storm cooldown
+    public const double TalentBloodPactWorkerBonus   = 0.2;  // blood/sec per worker
+    public const float  TalentIronPhalanxHP          = 10f;  // flat HP bonus to all frontline types
 
     // --- Soul Sacrifice ---
     public bool SoulSacrificeUnlocked  => PrestigeCount >= 1;
@@ -2375,6 +2382,7 @@ public class GameManager : MonoBehaviour
             TalentFlags.Warlord,     TalentFlags.SoulDrain,
             TalentFlags.FrenziedHarvest, TalentFlags.RiftStrike,
             TalentFlags.CrimsonTide, TalentFlags.StormCaller,
+            TalentFlags.BloodPact,   TalentFlags.IronPhalanx,
         };
         int availCount = 0;
         for (int k = 0; k < all.Length; k++)
