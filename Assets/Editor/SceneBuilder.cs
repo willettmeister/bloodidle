@@ -949,9 +949,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var soulShardShopPanel = content.CreateChild("SoulShardShopPanel");
         soulShardShopPanel.AddImage(Color.clear);
-        PF(soulShardShopPanel, 758, 1426);
+        PF(soulShardShopPanel, 758, 1484);
 
-        Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 1426, HC("0A1A30"), 24);
+        Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 1484, HC("0A1A30"), 24);
 
         var ssShopTitleGO = Label(soulShardShopPanel, "SoulShardShopTitle",
             "Soul Shard Shop", 40, new Color(0.7f, 0.85f, 1f), TextAnchor.MiddleLeft);
@@ -1128,6 +1128,13 @@ public static class SceneBuilder
         PT(ssWarHornInfoGO, 1396, 48, -175, 500);
         var ssWarHornBtnGO = Btn(soulShardShopPanel, "SSWarHornButton", "Buy (1 ⬡)", 30, HC("E65100"));
         PT(ssWarHornBtnGO, 1394, 54, +245, 260);
+
+        // Row 25 — Shadow Surge (tier-2, costs 2 shards)
+        var ssShadowSurgeInfoGO = Label(soulShardShopPanel, "SSShadowSurgeInfoText",
+            "Shadow Surge Surge deals +10 dmg/s to enemy  (Lv.0/2)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(ssShadowSurgeInfoGO, 1454, 48, -175, 500);
+        var ssShadowSurgeBtnGO = Btn(soulShardShopPanel, "SSShadowSurgeButton", "Buy (2 ⬡)", 30, HC("4527A0"));
+        PT(ssShadowSurgeBtnGO, 1452, 54, +245, 260);
 
         soulShardShopPanel.SetActive(false);
 
@@ -1784,6 +1791,8 @@ public static class SceneBuilder
         uim.ssWarHornButton         = ssWarHornBtnGO.GetComponent<Button>();
         uim.ssCrimsonStormInfoText  = ssCrimsonStormInfoGO.GetComponent<Text>();
         uim.ssCrimsonStormButton    = ssCrimsonStormBtnGO.GetComponent<Button>();
+        uim.ssShadowSurgeInfoText   = ssShadowSurgeInfoGO.GetComponent<Text>();
+        uim.ssShadowSurgeButton     = ssShadowSurgeBtnGO.GetComponent<Button>();
         uim.ssVoidConduitInfoText   = ssVoidConduitInfoGO.GetComponent<Text>();
         uim.ssVoidConduitButton     = ssVoidConduitBtnGO.GetComponent<Button>();
         uim.ssBloodEchoInfoText     = ssBloodEchoInfoGO.GetComponent<Text>();
@@ -1957,7 +1966,8 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(ssWarCrestBtnGO.GetComponent<Button>().onClick,     clk.OnBuySSWarCrest);
         UnityEventTools.AddPersistentListener(ssVitalSurgeBtnGO.GetComponent<Button>().onClick,   clk.OnBuySSVitalSurge);
         UnityEventTools.AddPersistentListener(ssWarHornBtnGO.GetComponent<Button>().onClick,      clk.OnBuySSWarHorn);
-        UnityEventTools.AddPersistentListener(ssCrimsonStormBtnGO.GetComponent<Button>().onClick, clk.OnBuySSCrimsonStorm);
+        UnityEventTools.AddPersistentListener(ssCrimsonStormBtnGO.GetComponent<Button>().onClick,  clk.OnBuySSCrimsonStorm);
+        UnityEventTools.AddPersistentListener(ssShadowSurgeBtnGO.GetComponent<Button>().onClick,   clk.OnBuySSShadowSurge);
         UnityEventTools.AddPersistentListener(ssVoidConduitBtnGO.GetComponent<Button>().onClick,   clk.OnBuySSVoidConduit);
         UnityEventTools.AddPersistentListener(ssBloodEchoBtnGO.GetComponent<Button>().onClick,     clk.OnBuySSBloodEcho);
         UnityEventTools.AddPersistentListener(ssIronMarrowBtnGO.GetComponent<Button>().onClick,    clk.OnBuySSIronMarrow);

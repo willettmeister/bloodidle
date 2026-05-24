@@ -236,6 +236,8 @@ public class UIManager : MonoBehaviour
     public Button ssBoneWardButton;
     public Text ssCrimsonStormInfoText;
     public Button ssCrimsonStormButton;
+    public Text ssShadowSurgeInfoText;
+    public Button ssShadowSurgeButton;
 
     [Header("Settings")]
     public GameObject settingsPanel;
@@ -1191,6 +1193,10 @@ public class UIManager : MonoBehaviour
                 ssCrimsonStormInfoText.text = $"Crimson Storm Blood Storm fires {(gm.SSCrimsonStormLevel > 0 ? gm.SSCrimsonStormLevel + 1 : 2)}× per cast  (Lv.{gm.SSCrimsonStormLevel}/{GameManager.SSTier2MaxLevel})";
             if (ssCrimsonStormButton != null)
                 ssCrimsonStormButton.interactable = canBuyT2 && gm.SSCrimsonStormLevel < GameManager.SSTier2MaxLevel;
+            if (ssShadowSurgeInfoText != null)
+                ssShadowSurgeInfoText.text = $"Shadow Surge Surge deals +{GameManager.SSShadowSurgeDmgPerSec:F0} dmg/s to enemy  (Lv.{gm.SSShadowSurgeLevel}/{GameManager.SSTier2MaxLevel})";
+            if (ssShadowSurgeButton != null)
+                ssShadowSurgeButton.interactable = canBuyT2 && gm.SSShadowSurgeLevel < GameManager.SSTier2MaxLevel;
         }
 
         // Blood Bank
