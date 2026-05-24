@@ -182,6 +182,8 @@ public class UIManager : MonoBehaviour
     public Button pVoidPactButton;
     public Text pWarFervorInfoText;
     public Button pWarFervorButton;
+    public Text pWellspringInfoText;
+    public Button pWellspringButton;
 
     [Header("Soul Shard Shop")]
     public GameObject soulShardShopPanel;
@@ -1073,6 +1075,9 @@ public class UIManager : MonoBehaviour
             if (pWarFervorInfoText != null)
                 pWarFervorInfoText.text = $"War Fervor +{GameManager.PWarFervorBonus * 100:F0}% soldier damage  (Lv.{gm.PWarFervorLevel}/3)";
             if (pWarFervorButton != null) pWarFervorButton.interactable = canSpend && gm.PWarFervorLevel < 3;
+            if (pWellspringInfoText != null)
+                pWellspringInfoText.text = $"Wellspring +{GameManager.PWellspringBonus * 100:F0}% Blood Well output  (Lv.{gm.PWellspringLevel}/3)";
+            if (pWellspringButton != null) pWellspringButton.interactable = canSpend && gm.PWellspringLevel < 3;
         }
 
         // Soul Shard Shop
