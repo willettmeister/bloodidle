@@ -51,7 +51,7 @@ public struct AchievementDef
     public float   AttackBonus;  // additive bonus to attack per soldier
 }
 
-public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral, Leech, Volatile, Fortified, Giant, Blessed, Frenzied, Mirrored, Phantom, Colossus }
+public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral, Leech, Volatile, Fortified, Giant, Blessed, Frenzied, Mirrored, Phantom, Colossus, Stalwart }
 public enum BossAbility    { None, Shield, Berserk, Drain, Regen, Thorns, Haste, Wrath, Miasma, LeechStrike, Venom, Hex, Bulwark, CursedAura }
 public enum QuestTrackType { Kills, Farms, Wave, Spells }
 
@@ -160,6 +160,7 @@ public class GameManager : MonoBehaviour
             if (CurrentEnemyModifier == EnemyModifier.Mirrored)  r = Math.Floor(r * EnemyMirroredRewardMult);
             if (CurrentEnemyModifier == EnemyModifier.Phantom)   r = Math.Floor(r * EnemyPhantomRewardMult);
             if (CurrentEnemyModifier == EnemyModifier.Colossus)  r = Math.Floor(r * EnemyColossusRewardMult);
+            if (CurrentEnemyModifier == EnemyModifier.Stalwart)  r = Math.Floor(r * EnemyStalwartRewardMult);
             if (IsBloodyWave)  r = Math.Floor(r * BloodMoonMult);
             if (_isBountyEnemy) r = Math.Floor(r * EffectiveBountyMult);
             if (_isEliteEnemy)  r = Math.Floor(r * EliteRewardMult);
@@ -796,6 +797,7 @@ public class GameManager : MonoBehaviour
         EnemyModifier.Mirrored   => "🪞 Mirrored",
         EnemyModifier.Phantom    => "💨 Phantom",
         EnemyModifier.Colossus   => "🏔 Colossus",
+        EnemyModifier.Stalwart   => "🔰 Stalwart",
         _                     => "",
     };
     public const float EnemyArmoredDmgMult    = 0.5f;
@@ -828,6 +830,8 @@ public class GameManager : MonoBehaviour
     public const double EnemyPhantomRewardMult   = 1.35;  // +35% kill reward
     public const float  EnemyColossusHPMult      = 3.0f;  // 3x HP
     public const double EnemyColossusRewardMult  = 2.50;  // +150pct kill reward
+    public const float  EnemyStalwartDmgReduction = 0.50f; // 50% damage reduction
+    public const double EnemyStalwartRewardMult   = 1.80;  // +80% kill reward
 
     // --- Wave preview ---
     public bool WavePreviewActive { get; private set; }
@@ -1368,6 +1372,8 @@ public class GameManager : MonoBehaviour
             eff *= EnemyFortifiedDmgMult;
         if (CurrentEnemyModifier == EnemyModifier.Phantom)
             eff *= (1f - EnemyPhantomDmgNegate);
+        if (CurrentEnemyModifier == EnemyModifier.Stalwart)
+            eff *= (1f - EnemyStalwartDmgReduction);
         if (CurrentEnemyModifier == EnemyModifier.Cursed && PaladinCount > 0) eff *= PaladinHolyBonus;
         if ((IsBossWave || DailyChallengeActive) && CurrentBossAbility == BossAbility.Hex && EnemyHP > 0)
             eff *= (1f - BossHexDmgReduction);
@@ -1425,6 +1431,8 @@ public class GameManager : MonoBehaviour
                 reward = Math.Floor(reward * EnemyPhantomRewardMult);
             if (CurrentEnemyModifier == EnemyModifier.Colossus)
                 reward = Math.Floor(reward * EnemyColossusRewardMult);
+            if (CurrentEnemyModifier == EnemyModifier.Stalwart)
+                reward = Math.Floor(reward * EnemyStalwartRewardMult);
             if (IsBloodyWave) reward = Math.Floor(reward * BloodMoonMult);
             if (_isBountyEnemy) reward = Math.Floor(reward * EffectiveBountyMult);
             if (_isEliteEnemy)  reward = Math.Floor(reward * EliteRewardMult);
@@ -1757,7 +1765,7 @@ public class GameManager : MonoBehaviour
             SoulBindTriggered  = false;
             if (UnityEngine.Random.value < 0.25f)
             {
-                CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 15);
+                CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 16);
                 if (CurrentEnemyModifier == EnemyModifier.Enraged)
                     EnemyAttack *= EnemyEnragedAtkMult;
                 else if (CurrentEnemyModifier == EnemyModifier.Spectral)
