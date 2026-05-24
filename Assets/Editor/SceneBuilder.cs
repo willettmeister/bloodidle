@@ -963,9 +963,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var soulShardShopPanel = content.CreateChild("SoulShardShopPanel");
         soulShardShopPanel.AddImage(Color.clear);
-        PF(soulShardShopPanel, 758, 1542);
+        PF(soulShardShopPanel, 758, 1600);
 
-        Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 1542, HC("0A1A30"), 24);
+        Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 1600, HC("0A1A30"), 24);
 
         var ssShopTitleGO = Label(soulShardShopPanel, "SoulShardShopTitle",
             "Soul Shard Shop", 40, new Color(0.7f, 0.85f, 1f), TextAnchor.MiddleLeft);
@@ -1156,6 +1156,13 @@ public static class SceneBuilder
         PT(ssDeathWardInfoGO, 1512, 48, -175, 500);
         var ssDeathWardBtnGO = Btn(soulShardShopPanel, "SSDeathWardButton", "Buy (1 ⬡)", 30, HC("558B2F"));
         PT(ssDeathWardBtnGO, 1510, 54, +245, 260);
+
+        // Row 27 — Kill Surge (tier-1, costs 1 shard)
+        var ssKillSurgeInfoGO = Label(soulShardShopPanel, "SSKillSurgeInfoText",
+            "Kill Surge +1.5s Surge per kill while active  (Lv.0/3)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(ssKillSurgeInfoGO, 1570, 48, -175, 500);
+        var ssKillSurgeBtnGO = Btn(soulShardShopPanel, "SSKillSurgeButton", "Buy (1 ⬡)", 30, HC("E65100"));
+        PT(ssKillSurgeBtnGO, 1568, 54, +245, 260);
 
         soulShardShopPanel.SetActive(false);
 
@@ -1816,6 +1823,8 @@ public static class SceneBuilder
         uim.ssWarHornButton         = ssWarHornBtnGO.GetComponent<Button>();
         uim.ssDeathWardInfoText     = ssDeathWardInfoGO.GetComponent<Text>();
         uim.ssDeathWardButton       = ssDeathWardBtnGO.GetComponent<Button>();
+        uim.ssKillSurgeInfoText     = ssKillSurgeInfoGO.GetComponent<Text>();
+        uim.ssKillSurgeButton       = ssKillSurgeBtnGO.GetComponent<Button>();
         uim.ssCrimsonStormInfoText  = ssCrimsonStormInfoGO.GetComponent<Text>();
         uim.ssCrimsonStormButton    = ssCrimsonStormBtnGO.GetComponent<Button>();
         uim.ssShadowSurgeInfoText   = ssShadowSurgeInfoGO.GetComponent<Text>();
@@ -1996,6 +2005,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(ssVitalSurgeBtnGO.GetComponent<Button>().onClick,   clk.OnBuySSVitalSurge);
         UnityEventTools.AddPersistentListener(ssWarHornBtnGO.GetComponent<Button>().onClick,      clk.OnBuySSWarHorn);
         UnityEventTools.AddPersistentListener(ssDeathWardBtnGO.GetComponent<Button>().onClick,    clk.OnBuySSDeathWard);
+        UnityEventTools.AddPersistentListener(ssKillSurgeBtnGO.GetComponent<Button>().onClick,    clk.OnBuySSKillSurge);
         UnityEventTools.AddPersistentListener(ssCrimsonStormBtnGO.GetComponent<Button>().onClick,  clk.OnBuySSCrimsonStorm);
         UnityEventTools.AddPersistentListener(ssShadowSurgeBtnGO.GetComponent<Button>().onClick,   clk.OnBuySSShadowSurge);
         UnityEventTools.AddPersistentListener(ssVoidConduitBtnGO.GetComponent<Button>().onClick,   clk.OnBuySSVoidConduit);

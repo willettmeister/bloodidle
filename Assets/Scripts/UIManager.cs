@@ -224,6 +224,8 @@ public class UIManager : MonoBehaviour
     public Button ssWarHornButton;
     public Text ssDeathWardInfoText;
     public Button ssDeathWardButton;
+    public Text ssKillSurgeInfoText;
+    public Button ssKillSurgeButton;
     public Text ssVoidConduitInfoText;
     public Button ssVoidConduitButton;
     public Text ssBloodEchoInfoText;
@@ -1172,6 +1174,10 @@ public class UIManager : MonoBehaviour
                 ssDeathWardInfoText.text = $"Death Ward {GameManager.SSDeathWardReviveChance * 100:F0}pct revive chance per level  (Lv.{gm.SSDeathWardLevel}/{GameManager.SSMaxLevel})";
             if (ssDeathWardButton != null)
                 ssDeathWardButton.interactable = canBuySS && gm.SSDeathWardLevel < GameManager.SSMaxLevel;
+            if (ssKillSurgeInfoText != null)
+                ssKillSurgeInfoText.text = $"Kill Surge +{GameManager.SSKillSurgeSecs:F1}s Surge per kill while active  (Lv.{gm.SSKillSurgeLevel}/{GameManager.SSMaxLevel})";
+            if (ssKillSurgeButton != null)
+                ssKillSurgeButton.interactable = canBuySS && gm.SSKillSurgeLevel < GameManager.SSMaxLevel;
             bool canBuyT2 = gm.SoulShards >= GameManager.SSTier2Cost;
             if (ssVoidConduitInfoText != null)
                 ssVoidConduitInfoText.text = $"Void Conduit +{GameManager.SSVoidConduitBonus * 100:F0}% all income  (Lv.{gm.SSVoidConduitLevel}/{GameManager.SSTier2MaxLevel})";
