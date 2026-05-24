@@ -216,6 +216,8 @@ public class UIManager : MonoBehaviour
     public Button ssWarCrestButton;
     public Text ssVitalSurgeInfoText;
     public Button ssVitalSurgeButton;
+    public Text ssWarHornInfoText;
+    public Button ssWarHornButton;
     public Text ssVoidConduitInfoText;
     public Button ssVoidConduitButton;
     public Text ssBloodEchoInfoText;
@@ -1148,6 +1150,10 @@ public class UIManager : MonoBehaviour
                 ssVitalSurgeInfoText.text = $"Vital Surge Heal Self restores +{GameManager.SSVitalSurgeHPBonus:F0} extra HP  (Lv.{gm.SSVitalSurgeLevel}/{GameManager.SSMaxLevel})";
             if (ssVitalSurgeButton != null)
                 ssVitalSurgeButton.interactable = canBuySS && gm.SSVitalSurgeLevel < GameManager.SSMaxLevel;
+            if (ssWarHornInfoText != null)
+                ssWarHornInfoText.text = $"War Horn War Cry lasts +{GameManager.SSWarHornDuration:F0}s per level  (Lv.{gm.SSWarHornLevel}/{GameManager.SSMaxLevel})";
+            if (ssWarHornButton != null)
+                ssWarHornButton.interactable = canBuySS && gm.SSWarHornLevel < GameManager.SSMaxLevel;
             bool canBuyT2 = gm.SoulShards >= GameManager.SSTier2Cost;
             if (ssVoidConduitInfoText != null)
                 ssVoidConduitInfoText.text = $"Void Conduit +{GameManager.SSVoidConduitBonus * 100:F0}% all income  (Lv.{gm.SSVoidConduitLevel}/{GameManager.SSTier2MaxLevel})";

@@ -949,9 +949,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var soulShardShopPanel = content.CreateChild("SoulShardShopPanel");
         soulShardShopPanel.AddImage(Color.clear);
-        PF(soulShardShopPanel, 758, 1368);
+        PF(soulShardShopPanel, 758, 1426);
 
-        Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 1368, HC("0A1A30"), 24);
+        Panel(soulShardShopPanel, "SoulShardShopCardBg", 0, 1426, HC("0A1A30"), 24);
 
         var ssShopTitleGO = Label(soulShardShopPanel, "SoulShardShopTitle",
             "Soul Shard Shop", 40, new Color(0.7f, 0.85f, 1f), TextAnchor.MiddleLeft);
@@ -1121,6 +1121,13 @@ public static class SceneBuilder
         PT(ssCrimsonStormInfoGO, 1338, 48, -175, 500);
         var ssCrimsonStormBtnGO = Btn(soulShardShopPanel, "SSCrimsonStormButton", "Buy (2 ⬡)", 30, HC("B71C1C"));
         PT(ssCrimsonStormBtnGO, 1336, 54, +245, 260);
+
+        // Row 24 — War Horn (tier-1, costs 1 shard)
+        var ssWarHornInfoGO = Label(soulShardShopPanel, "SSWarHornInfoText",
+            "War Horn War Cry lasts +1s per level  (Lv.0/3)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(ssWarHornInfoGO, 1396, 48, -175, 500);
+        var ssWarHornBtnGO = Btn(soulShardShopPanel, "SSWarHornButton", "Buy (1 ⬡)", 30, HC("E65100"));
+        PT(ssWarHornBtnGO, 1394, 54, +245, 260);
 
         soulShardShopPanel.SetActive(false);
 
@@ -1773,6 +1780,8 @@ public static class SceneBuilder
         uim.ssWarCrestButton        = ssWarCrestBtnGO.GetComponent<Button>();
         uim.ssVitalSurgeInfoText    = ssVitalSurgeInfoGO.GetComponent<Text>();
         uim.ssVitalSurgeButton      = ssVitalSurgeBtnGO.GetComponent<Button>();
+        uim.ssWarHornInfoText       = ssWarHornInfoGO.GetComponent<Text>();
+        uim.ssWarHornButton         = ssWarHornBtnGO.GetComponent<Button>();
         uim.ssCrimsonStormInfoText  = ssCrimsonStormInfoGO.GetComponent<Text>();
         uim.ssCrimsonStormButton    = ssCrimsonStormBtnGO.GetComponent<Button>();
         uim.ssVoidConduitInfoText   = ssVoidConduitInfoGO.GetComponent<Text>();
@@ -1947,6 +1956,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(ssBoneWardBtnGO.GetComponent<Button>().onClick,     clk.OnBuySSBoneWard);
         UnityEventTools.AddPersistentListener(ssWarCrestBtnGO.GetComponent<Button>().onClick,     clk.OnBuySSWarCrest);
         UnityEventTools.AddPersistentListener(ssVitalSurgeBtnGO.GetComponent<Button>().onClick,   clk.OnBuySSVitalSurge);
+        UnityEventTools.AddPersistentListener(ssWarHornBtnGO.GetComponent<Button>().onClick,      clk.OnBuySSWarHorn);
         UnityEventTools.AddPersistentListener(ssCrimsonStormBtnGO.GetComponent<Button>().onClick, clk.OnBuySSCrimsonStorm);
         UnityEventTools.AddPersistentListener(ssVoidConduitBtnGO.GetComponent<Button>().onClick,   clk.OnBuySSVoidConduit);
         UnityEventTools.AddPersistentListener(ssBloodEchoBtnGO.GetComponent<Button>().onClick,     clk.OnBuySSBloodEcho);
