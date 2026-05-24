@@ -1339,7 +1339,7 @@ public class GameManager : MonoBehaviour
         if (CurrentEnemyModifier == EnemyModifier.Fortified)
             eff *= EnemyFortifiedDmgMult;
         if (CurrentEnemyModifier == EnemyModifier.Cursed && PaladinCount > 0) eff *= PaladinHolyBonus;
-        if (isSpecialFoe && CurrentBossAbility == BossAbility.Hex && EnemyHP > 0)
+        if ((IsBossWave || DailyChallengeActive) && CurrentBossAbility == BossAbility.Hex && EnemyHP > 0)
             eff *= (1f - BossHexDmgReduction);
         if (IsBossWave && SSCrimsonBrandLevel > 0) eff *= CrimsonBrandBossMult;
         if ((IsBossWave || DailyChallengeActive) && HasTalent(TalentFlags.SiegeBreaker)) eff *= (1f + TalentSiegeBreakrBonus);
