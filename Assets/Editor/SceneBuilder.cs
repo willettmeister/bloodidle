@@ -799,9 +799,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var prestigeShopPanel = content.CreateChild("PrestigeShopPanel");
         prestigeShopPanel.AddImage(Color.clear);
-        PF(prestigeShopPanel, 205, 1239);
+        PF(prestigeShopPanel, 205, 1297);
 
-        Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 1239, HC("150A30"), 24);
+        Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 1297, HC("150A30"), 24);
 
         var shopTitleGO = Label(prestigeShopPanel, "PrestigeShopTitle",
             "Prestige Shop", 40, Gold, TextAnchor.MiddleLeft);
@@ -948,6 +948,13 @@ public static class SceneBuilder
         PT(pBattleRhythmInfoGO, 1162, 48, -175, 500);
         var pBattleRhythmBtnGO = Btn(prestigeShopPanel, "PBattleRhythmButton", "Buy (1 PP)", 30, HC("F57F17"));
         PT(pBattleRhythmBtnGO, 1160, 54, +245, 260);
+
+        // Row 21 — Soul Tide (+2% enemy HP healed on kill per level)
+        var pSoulTideInfoGO = Label(prestigeShopPanel, "PSoulTideInfoText",
+            "Soul Tide +2% enemy HP healed on kill  (Lv.0/3)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(pSoulTideInfoGO, 1220, 48, -175, 500);
+        var pSoulTideBtnGO = Btn(prestigeShopPanel, "PSoulTideButton", "Buy (1 PP)", 30, HC("00838F"));
+        PT(pSoulTideBtnGO, 1218, 54, +245, 260);
 
         prestigeShopPanel.SetActive(false);
 
@@ -1756,6 +1763,8 @@ public static class SceneBuilder
         uim.pWellspringButton            = pWellspringBtnGO.GetComponent<Button>();
         uim.pBattleRhythmInfoText        = pBattleRhythmInfoGO.GetComponent<Text>();
         uim.pBattleRhythmButton          = pBattleRhythmBtnGO.GetComponent<Button>();
+        uim.pSoulTideInfoText            = pSoulTideInfoGO.GetComponent<Text>();
+        uim.pSoulTideButton              = pSoulTideBtnGO.GetComponent<Button>();
         uim.bloodBankPanel          = bloodBankPanel;
         uim.bloodBankInfoText       = bankInfoGO.GetComponent<Text>();
         uim.bloodBankAccruedText    = bankAccruedGO.GetComponent<Text>();
@@ -1969,6 +1978,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(pWarFervorBtnGO.GetComponent<Button>().onClick,         clk.OnBuyPWarFervor);
         UnityEventTools.AddPersistentListener(pWellspringBtnGO.GetComponent<Button>().onClick,        clk.OnBuyPWellspring);
         UnityEventTools.AddPersistentListener(pBattleRhythmBtnGO.GetComponent<Button>().onClick,     clk.OnBuyPBattleRhythm);
+        UnityEventTools.AddPersistentListener(pSoulTideBtnGO.GetComponent<Button>().onClick,         clk.OnBuyPSoulTide);
         UnityEventTools.AddPersistentListener(ssBossTimerBtnGO.GetComponent<Button>().onClick,        clk.OnBuySSBossTimer);
         UnityEventTools.AddPersistentListener(ssDoubleChestBtnGO.GetComponent<Button>().onClick,      clk.OnBuySSDoubleChest);
         UnityEventTools.AddPersistentListener(ssRollbackBtnGO.GetComponent<Button>().onClick,         clk.OnBuySSRollback);

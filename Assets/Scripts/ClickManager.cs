@@ -71,6 +71,7 @@ public class ClickManager : MonoBehaviour
     public void OnBuyPWarFervor()             => GameManager.Instance.BuyPWarFervor();
     public void OnBuyPWellspring()            => GameManager.Instance.BuyPWellspring();
     public void OnBuyPBattleRhythm()          => GameManager.Instance.BuyPBattleRhythm();
+    public void OnBuyPSoulTide()              => GameManager.Instance.BuyPSoulTide();
     public void OnBuySSBossTimer()         => GameManager.Instance.BuySSBossTimer();
     public void OnBuySSDoubleChest()       => GameManager.Instance.BuySSDoubleChest();
     public void OnBuySSRollback()          => GameManager.Instance.BuySSRollback();

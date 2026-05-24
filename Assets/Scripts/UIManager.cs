@@ -186,6 +186,8 @@ public class UIManager : MonoBehaviour
     public Button pWellspringButton;
     public Text pBattleRhythmInfoText;
     public Button pBattleRhythmButton;
+    public Text pSoulTideInfoText;
+    public Button pSoulTideButton;
 
     [Header("Soul Shard Shop")]
     public GameObject soulShardShopPanel;
@@ -1089,6 +1091,9 @@ public class UIManager : MonoBehaviour
             if (pBattleRhythmInfoText != null)
                 pBattleRhythmInfoText.text = $"Battle Rhythm +{GameManager.PBattleRhythmBonus:F2}s combo window  (Lv.{gm.PBattleRhythmLevel}/3)";
             if (pBattleRhythmButton != null) pBattleRhythmButton.interactable = canSpend && gm.PBattleRhythmLevel < 3;
+            if (pSoulTideInfoText != null)
+                pSoulTideInfoText.text = $"Soul Tide +{GameManager.PSoulTideHealPct * 100:F0}% enemy HP healed on kill  (Lv.{gm.PSoulTideLevel}/3)";
+            if (pSoulTideButton != null) pSoulTideButton.interactable = canSpend && gm.PSoulTideLevel < 3;
         }
 
         // Soul Shard Shop
