@@ -52,7 +52,7 @@ public struct AchievementDef
 }
 
 public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral, Leech, Volatile, Fortified, Giant, Blessed, Frenzied, Mirrored, Phantom, Colossus, Stalwart, Bloodthirsty }
-public enum BossAbility    { None, Shield, Berserk, Drain, Regen, Thorns, Haste, Wrath, Miasma, LeechStrike, Venom, Hex, Bulwark, CursedAura }
+public enum BossAbility    { None, Shield, Berserk, Drain, Regen, Thorns, Haste, Wrath, Miasma, LeechStrike, Venom, Hex, Bulwark, CursedAura, BloodTribute }
 public enum QuestTrackType { Kills, Farms, Wave, Spells }
 
 public struct DailyQuestDef
@@ -604,7 +604,11 @@ public class GameManager : MonoBehaviour
     public BossAbility CurrentBossAbility { get; private set; }
     public bool        BossShieldActive   { get; private set; }
     float _bossShieldHP;
-    public const float BossShieldFraction  = 0.20f;
+    float _bloodTributeTimer;
+    public const float BossShieldFraction     = 0.20f;
+    public const float BossTributeInterval    = 8f;    // seconds between tribute drains
+    public const float BossTributeDrainPct    = 0.05f; // drains 5pct of current blood per interval
+    public const double BossTributeRewardMult = 2.00;  // 2x kill reward
     public const float BossDrainPerSec     = 5f;
     public const float BossRegenPctPerSec  = 0.005f; // 0.5% of max HP per second
     public const float BossThornsReflectPct  = 0.25f;  // fraction of attacker damage reflected
@@ -641,6 +645,7 @@ public class GameManager : MonoBehaviour
         BossAbility.Hex          => "🔮 Hex",
         BossAbility.Bulwark      => "🪨 Bulwark",
         BossAbility.CursedAura   => "💜 Cursed Aura",
+        BossAbility.BloodTribute => "💸 Blood Tribute",
         _                   => "",
     };
 
@@ -1466,7 +1471,8 @@ public class GameManager : MonoBehaviour
                 if (CurrentBossAbility == BossAbility.Venom)        reward = Math.Floor(reward * BossVenomRewardMult);
                 if (CurrentBossAbility == BossAbility.Hex)          reward = Math.Floor(reward * BossHexRewardMult);
                 if (CurrentBossAbility == BossAbility.Bulwark)      reward = Math.Floor(reward * BossBulwarkRewardMult);
-                if (CurrentBossAbility == BossAbility.CursedAura)   reward = Math.Floor(reward * BossCursedAuraRewardMult);
+                if (CurrentBossAbility == BossAbility.CursedAura)    reward = Math.Floor(reward * BossCursedAuraRewardMult);
+                if (CurrentBossAbility == BossAbility.BloodTribute)  reward = Math.Floor(reward * BossTributeRewardMult);
                 if (SSShardHungerLevel > 0) reward = Math.Floor(reward * (1.0 + SSShardHungerLevel * SSShardHungerBonus));
                 if (VeteranAttackBonus < VeteranAttackCap) VeteranAttackBonus++;
                 SoulShards += (HasTalent(TalentFlags.ShardHunter) ? 2 : 1) + PVoidPactLevel;
@@ -1583,6 +1589,15 @@ public class GameManager : MonoBehaviour
             SoldierHP = Mathf.Max(0f, SoldierHP - BossMiasmaDotPerSec * dt);
         if (isSpecialFoe && CurrentBossAbility == BossAbility.Venom && SoldierCount > 0 && EnemyHP > 0)
             SoldierHP = Mathf.Max(0f, SoldierHP - BossVenomDmgPerSec * dt);
+        if (isSpecialFoe && CurrentBossAbility == BossAbility.BloodTribute && EnemyHP > 0)
+        {
+            _bloodTributeTimer -= dt;
+            if (_bloodTributeTimer <= 0f)
+            {
+                _bloodTributeTimer = BossTributeInterval;
+                Blood = Math.Max(0.0, Blood - Blood * BossTributeDrainPct);
+            }
+        }
         float dmg = totalIncoming * dt;
         if (BloodShieldHP > 0f)
         {
@@ -1745,9 +1760,10 @@ public class GameManager : MonoBehaviour
             EnemyAttack      = (float)(3   * Math.Pow(1.3, wave - 1) * 2.0);
             BossTimeRemaining = BossTimeLimit + SSBossTimerLevel * 15f;
             CurrentEnemyModifier = EnemyModifier.None;
-            CurrentBossAbility   = (BossAbility)UnityEngine.Random.Range(0, 14);
+            CurrentBossAbility   = (BossAbility)UnityEngine.Random.Range(0, 15);
             BossShieldActive     = CurrentBossAbility == BossAbility.Shield;
             _bossShieldHP        = BossShieldActive ? EnemyMaxHP * BossShieldFraction : 0f;
+            _bloodTributeTimer   = BossTributeInterval;
             if (CurrentBossAbility == BossAbility.Bulwark)
             {
                 EnemyMaxHP *= BossBulwarkHPMult;
