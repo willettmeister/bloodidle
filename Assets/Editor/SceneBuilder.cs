@@ -799,9 +799,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var prestigeShopPanel = content.CreateChild("PrestigeShopPanel");
         prestigeShopPanel.AddImage(Color.clear);
-        PF(prestigeShopPanel, 205, 1065);
+        PF(prestigeShopPanel, 205, 1123);
 
-        Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 1065, HC("150A30"), 24);
+        Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 1123, HC("150A30"), 24);
 
         var shopTitleGO = Label(prestigeShopPanel, "PrestigeShopTitle",
             "Prestige Shop", 40, Gold, TextAnchor.MiddleLeft);
@@ -927,6 +927,13 @@ public static class SceneBuilder
         PT(pVoidPactInfoGO, 988, 48, -175, 500);
         var pVoidPactBtnGO = Btn(prestigeShopPanel, "PVoidPactButton", "Buy (1 PP)", 30, HC("4A0072"));
         PT(pVoidPactBtnGO, 986, 54, +245, 260);
+
+        // Row 18 — War Fervor (+2% soldier damage per level)
+        var pWarFervorInfoGO = Label(prestigeShopPanel, "PWarFervorInfoText",
+            "War Fervor +2% soldier damage  (Lv.0/3)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(pWarFervorInfoGO, 1046, 48, -175, 500);
+        var pWarFervorBtnGO = Btn(prestigeShopPanel, "PWarFervorButton", "Buy (1 PP)", 30, HC("B71C1C"));
+        PT(pWarFervorBtnGO, 1044, 54, +245, 260);
 
         prestigeShopPanel.SetActive(false);
 
@@ -1708,6 +1715,8 @@ public static class SceneBuilder
         uim.pBloodPriceButton            = pBloodPriceBtnGO.GetComponent<Button>();
         uim.pVoidPactInfoText            = pVoidPactInfoGO.GetComponent<Text>();
         uim.pVoidPactButton              = pVoidPactBtnGO.GetComponent<Button>();
+        uim.pWarFervorInfoText           = pWarFervorInfoGO.GetComponent<Text>();
+        uim.pWarFervorButton             = pWarFervorBtnGO.GetComponent<Button>();
         uim.bloodBankPanel          = bloodBankPanel;
         uim.bloodBankInfoText       = bankInfoGO.GetComponent<Text>();
         uim.bloodBankAccruedText    = bankAccruedGO.GetComponent<Text>();
@@ -1912,6 +1921,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(pIronBastionBtnGO.GetComponent<Button>().onClick,       clk.OnBuyPIronBastion);
         UnityEventTools.AddPersistentListener(pBloodPriceBtnGO.GetComponent<Button>().onClick,        clk.OnBuyPBloodPrice);
         UnityEventTools.AddPersistentListener(pVoidPactBtnGO.GetComponent<Button>().onClick,          clk.OnBuyPVoidPact);
+        UnityEventTools.AddPersistentListener(pWarFervorBtnGO.GetComponent<Button>().onClick,         clk.OnBuyPWarFervor);
         UnityEventTools.AddPersistentListener(ssBossTimerBtnGO.GetComponent<Button>().onClick,        clk.OnBuySSBossTimer);
         UnityEventTools.AddPersistentListener(ssDoubleChestBtnGO.GetComponent<Button>().onClick,      clk.OnBuySSDoubleChest);
         UnityEventTools.AddPersistentListener(ssRollbackBtnGO.GetComponent<Button>().onClick,         clk.OnBuySSRollback);

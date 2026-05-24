@@ -180,6 +180,8 @@ public class UIManager : MonoBehaviour
     public Button pBloodPriceButton;
     public Text pVoidPactInfoText;
     public Button pVoidPactButton;
+    public Text pWarFervorInfoText;
+    public Button pWarFervorButton;
 
     [Header("Soul Shard Shop")]
     public GameObject soulShardShopPanel;
@@ -1068,6 +1070,9 @@ public class UIManager : MonoBehaviour
             if (pVoidPactInfoText != null)
                 pVoidPactInfoText.text = $"Void Pact +1 shard per boss kill  (Lv.{gm.PVoidPactLevel}/3)";
             if (pVoidPactButton != null) pVoidPactButton.interactable = canSpend && gm.PVoidPactLevel < 3;
+            if (pWarFervorInfoText != null)
+                pWarFervorInfoText.text = $"War Fervor +{GameManager.PWarFervorBonus * 100:F0}% soldier damage  (Lv.{gm.PWarFervorLevel}/3)";
+            if (pWarFervorButton != null) pWarFervorButton.interactable = canSpend && gm.PWarFervorLevel < 3;
         }
 
         // Soul Shard Shop
