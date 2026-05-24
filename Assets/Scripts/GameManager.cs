@@ -416,6 +416,8 @@ public class GameManager : MonoBehaviour
     public const float SSVitalSurgeHPBonus = 5f; // +5 HP per Heal Self cast per level
     public int    SSWarHornLevel        { get; private set; }
     public const float SSWarHornDuration = 1f;  // +1s War Cry duration per level
+    public int    SSDeathWardLevel      { get; private set; }
+    public const float SSDeathWardReviveChance = 0.05f; // 5% revive chance per level on soldier death
     public int    SSVoidConduitLevel    { get; private set; }
     public const double SSVoidConduitBonus = 0.15;
     public double VoidConduitIncomeMult => 1.0 + SSVoidConduitLevel * SSVoidConduitBonus;
@@ -1550,6 +1552,10 @@ public class GameManager : MonoBehaviour
                 SoldierHP            = 1f;
                 _undyingUsedThisWave = true;
             }
+            else if (SSDeathWardLevel > 0 && UnityEngine.Random.value < SSDeathWardLevel * SSDeathWardReviveChance)
+            {
+                SoldierHP = FrontlineMaxHP;
+            }
             else
             {
                 if (FrontlineIsTank)           TankCount--;
@@ -2674,6 +2680,15 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuySSDeathWard()
+    {
+        if (SoulShards < SSUpgradeCost || SSDeathWardLevel >= SSMaxLevel) return false;
+        SoulShards -= SSUpgradeCost;
+        SSDeathWardLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public bool BuySSVoidConduit()
     {
         if (SoulShards < SSTier2Cost || SSVoidConduitLevel >= SSTier2MaxLevel) return false;
@@ -2900,7 +2915,7 @@ public class GameManager : MonoBehaviour
         WeaponLevel = 0; ArmorLevel = 0; TalismanLevel = 0; BannerLevel = 0;
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
-        SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0; SSSoulHarvestLevel = 0; SSCrimsonPulseLevel = 0; SSCrimsonBrandLevel = 0; SSWarSpoilsLevel = 0; SSGhostStrikeLevel = 0; SSDeathsBountyLevel = 0; SSRuneSealLevel = 0; SSWarCrestLevel = 0; SSVitalSurgeLevel = 0; SSWarHornLevel = 0;
+        SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0; SSSoulHarvestLevel = 0; SSCrimsonPulseLevel = 0; SSCrimsonBrandLevel = 0; SSWarSpoilsLevel = 0; SSGhostStrikeLevel = 0; SSDeathsBountyLevel = 0; SSRuneSealLevel = 0; SSWarCrestLevel = 0; SSVitalSurgeLevel = 0; SSWarHornLevel = 0; SSDeathWardLevel = 0;
         SSVoidConduitLevel = 0; SSBloodEchoLevel = 0; SSIronMarrowLevel = 0; SSWrathBloomLevel = 0; SSBloodNovaLevel = 0; SSEchoSurgeLevel = 0; SSEntropyAmpLevel = 0; SSBoneWardLevel = 0; SSCrimsonStormLevel = 0; SSShadowSurgeLevel = 0;
         BloodBankDeposit = 0; BloodBankAccrued = 0; BankInterestLevel = 0; KillIncomeUpgradeLevel = 0; WaveStreak = 0;
         SurgeUpgradeLevel = 0; HealUpgradeLevel = 0; BloodStormUpgradeLevel = 0; WarCryUpgradeLevel = 0; HexCurseUpgradeLevel = 0; BloodOathUpgradeLevel = 0; DesecrateUpgradeLevel = 0; EntropyUpgradeLevel = 0;
@@ -3075,6 +3090,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("SSWarCrestLevel",       SSWarCrestLevel);
         PlayerPrefs.SetInt   ("SSVitalSurgeLevel",     SSVitalSurgeLevel);
         PlayerPrefs.SetInt   ("SSWarHornLevel",        SSWarHornLevel);
+        PlayerPrefs.SetInt   ("SSDeathWardLevel",      SSDeathWardLevel);
         PlayerPrefs.SetInt   ("SSVoidConduitLevel",   SSVoidConduitLevel);
         PlayerPrefs.SetInt   ("SSBloodEchoLevel",     SSBloodEchoLevel);
         PlayerPrefs.SetInt   ("SSIronMarrowLevel",    SSIronMarrowLevel);
@@ -3231,6 +3247,7 @@ public class GameManager : MonoBehaviour
         SSWarCrestLevel     = PlayerPrefs.GetInt("SSWarCrestLevel",     0);
         SSVitalSurgeLevel   = PlayerPrefs.GetInt("SSVitalSurgeLevel",   0);
         SSWarHornLevel      = PlayerPrefs.GetInt("SSWarHornLevel",      0);
+        SSDeathWardLevel    = PlayerPrefs.GetInt("SSDeathWardLevel",    0);
         SurgeUpgradeLevel        = PlayerPrefs.GetInt   ("SurgeUpgradeLevel",        0);
         HealUpgradeLevel         = PlayerPrefs.GetInt   ("HealUpgradeLevel",         0);
         BloodStormUpgradeLevel   = PlayerPrefs.GetInt   ("BloodStormUpgradeLevel",   0);
