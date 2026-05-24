@@ -52,7 +52,7 @@ public struct AchievementDef
 }
 
 public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral, Leech, Volatile, Fortified, Giant, Blessed, Frenzied, Mirrored, Phantom, Colossus }
-public enum BossAbility    { None, Shield, Berserk, Drain, Regen, Thorns, Haste, Wrath, Miasma, LeechStrike, Venom, Hex, Bulwark }
+public enum BossAbility    { None, Shield, Berserk, Drain, Regen, Thorns, Haste, Wrath, Miasma, LeechStrike, Venom, Hex, Bulwark, CursedAura }
 public enum QuestTrackType { Kills, Farms, Wave, Spells }
 
 public struct DailyQuestDef
@@ -110,7 +110,8 @@ public class GameManager : MonoBehaviour
                                              + (HasTalent(TalentFlags.Hemomancer) ? BloodRitualCount * TalentHemomancerClickBonus : 0)
                                              + WarlordClickBonus
                                              + (HasTalent(TalentFlags.CrimsonTide) ? TotalBossesKilled * TalentCrimsonTideClickBonus : 0))
-                                            * PrestigeMultiplier;
+                                            * PrestigeMultiplier
+                                            * (CursedAuraActive ? BossCursedAuraIncomePct : 1.0);
     public const double ClickPowerBaseCost  = 15.0;
     public const double ClickPowerCostMult  = 2.0;
     public const int    ClickPowerMaxLevel  = 5;
@@ -300,7 +301,8 @@ public class GameManager : MonoBehaviour
                                     + ShrineCount * ShrineBloodPerSec * SacredGroundMult
                                     + BloodEchoPerSec
                                     + (HasTalent(TalentFlags.BloodPact) ? WorkerCount * TalentBloodPactWorkerBonus : 0.0))
-                                    * AchievementBloodIncomeMult * AdBoostMult * VoidConduitIncomeMult * CrimsonLegacyMult;
+                                    * AchievementBloodIncomeMult * AdBoostMult * VoidConduitIncomeMult * CrimsonLegacyMult
+                                    * (CursedAuraActive ? BossCursedAuraIncomePct : 1.0);
     public const double ShrineWoodCost   = 20.0;
     public const double ShrineBloodPerSec = 0.5;
     public const int    ShrineMaxCount   = 3;
@@ -608,8 +610,11 @@ public class GameManager : MonoBehaviour
     public const double BossVenomRewardMult    = 1.20;  // +20% kill reward
     public const float  BossHexDmgReduction    = 0.15f; // 15% soldier damage reduction while boss lives
     public const double BossHexRewardMult      = 1.60;  // +60% kill reward
-    public const float  BossBulwarkHPMult     = 2.0f;  // 2x boss HP
-    public const double BossBulwarkRewardMult = 1.80;  // +80% kill reward
+    public const float  BossBulwarkHPMult        = 2.0f;  // 2x boss HP
+    public const double BossBulwarkRewardMult    = 1.80;  // +80% kill reward
+    public const double BossCursedAuraIncomePct  = 0.50;  // halves all blood income while alive
+    public const double BossCursedAuraRewardMult = 3.00;  // 3x kill reward on death
+    public bool CursedAuraActive => (IsBossWave || DailyChallengeActive) && CurrentBossAbility == BossAbility.CursedAura && EnemyHP > 0;
     public const double BossWrathRewardMult  = 2.0;    // 2× kill reward for Wrath boss
     public string BossAbilityDisplay => CurrentBossAbility switch
     {
@@ -625,6 +630,7 @@ public class GameManager : MonoBehaviour
         BossAbility.Venom        => "🐍 Venom",
         BossAbility.Hex          => "🔮 Hex",
         BossAbility.Bulwark      => "🪨 Bulwark",
+        BossAbility.CursedAura   => "💜 Cursed Aura",
         _                   => "",
     };
 
@@ -1432,6 +1438,7 @@ public class GameManager : MonoBehaviour
                 if (CurrentBossAbility == BossAbility.Venom)        reward = Math.Floor(reward * BossVenomRewardMult);
                 if (CurrentBossAbility == BossAbility.Hex)          reward = Math.Floor(reward * BossHexRewardMult);
                 if (CurrentBossAbility == BossAbility.Bulwark)      reward = Math.Floor(reward * BossBulwarkRewardMult);
+                if (CurrentBossAbility == BossAbility.CursedAura)   reward = Math.Floor(reward * BossCursedAuraRewardMult);
                 if (SSShardHungerLevel > 0) reward = Math.Floor(reward * (1.0 + SSShardHungerLevel * SSShardHungerBonus));
                 if (VeteranAttackBonus < VeteranAttackCap) VeteranAttackBonus++;
                 SoulShards += (HasTalent(TalentFlags.ShardHunter) ? 2 : 1) + PVoidPactLevel;
@@ -1708,7 +1715,7 @@ public class GameManager : MonoBehaviour
             EnemyAttack      = (float)(3   * Math.Pow(1.3, wave - 1) * 2.0);
             BossTimeRemaining = BossTimeLimit + SSBossTimerLevel * 15f;
             CurrentEnemyModifier = EnemyModifier.None;
-            CurrentBossAbility   = (BossAbility)UnityEngine.Random.Range(0, 13);
+            CurrentBossAbility   = (BossAbility)UnityEngine.Random.Range(0, 14);
             BossShieldActive     = CurrentBossAbility == BossAbility.Shield;
             _bossShieldHP        = BossShieldActive ? EnemyMaxHP * BossShieldFraction : 0f;
             if (CurrentBossAbility == BossAbility.Bulwark)
