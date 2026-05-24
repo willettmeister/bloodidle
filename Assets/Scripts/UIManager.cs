@@ -188,6 +188,8 @@ public class UIManager : MonoBehaviour
     public Button pBattleRhythmButton;
     public Text pSoulTideInfoText;
     public Button pSoulTideButton;
+    public Text pEnduranceInfoText;
+    public Button pEnduranceButton;
 
     [Header("Soul Shard Shop")]
     public GameObject soulShardShopPanel;
@@ -1098,6 +1100,9 @@ public class UIManager : MonoBehaviour
             if (pSoulTideInfoText != null)
                 pSoulTideInfoText.text = $"Soul Tide +{GameManager.PSoulTideHealPct * 100:F0}% enemy HP healed on kill  (Lv.{gm.PSoulTideLevel}/3)";
             if (pSoulTideButton != null) pSoulTideButton.interactable = canSpend && gm.PSoulTideLevel < 3;
+            if (pEnduranceInfoText != null)
+                pEnduranceInfoText.text = $"Endurance +{GameManager.PEnduranceRegenRate:F1} HP/s universal regen  (Lv.{gm.PEnduranceLevel}/3)";
+            if (pEnduranceButton != null) pEnduranceButton.interactable = canSpend && gm.PEnduranceLevel < 3;
         }
 
         // Soul Shard Shop
