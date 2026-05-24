@@ -124,7 +124,8 @@ public class GameManager : MonoBehaviour
     public const int    ComboMaxStacks     = 10;
     float _comboTimer;
     public int   ComboStacks { get; private set; }
-    public int   EffectiveComboMaxStacks => ComboMaxStacks + SSRuneSealLevel * SSRuneSealStackBonus;
+    public int   EffectiveComboMaxStacks  => ComboMaxStacks + SSRuneSealLevel * SSRuneSealStackBonus;
+    public float EffectiveComboWindowSecs => ComboWindowSecs + PBattleRhythmLevel * PBattleRhythmBonus;
     public float ComboMult   => 1f + ComboStacks * ComboBonusPerStack;
 
     public const int    EchoTapInterval  = 5;
@@ -368,6 +369,8 @@ public class GameManager : MonoBehaviour
     public const float PWarFervorBonus   = 0.02f; // +2% soldier damage per level
     public int PWellspringLevel          { get; private set; }
     public const double PWellspringBonus = 0.20;  // +20% Blood Well output per level
+    public int PBattleRhythmLevel        { get; private set; }
+    public const float PBattleRhythmBonus = 0.25f; // +0.25s combo window per level
 
     public double EffectiveBountyMult => BountyRewardMult + PBountyBonusLevel;
     public const int   PrestigeShopCost      = 1;
@@ -1769,7 +1772,7 @@ public class GameManager : MonoBehaviour
         if (SoldierCount > 0 && EnemyHP > 0) _crimsonPactCharged = true;
         double amount = EffectiveBloodPerClick * ComboMult * (_tapCount % EchoTapInterval == 0 ? 2.0 : 1.0);
         if (ComboStacks < EffectiveComboMaxStacks) ComboStacks++;
-        _comboTimer = ComboWindowSecs;
+        _comboTimer = EffectiveComboWindowSecs;
         if (DailyBonusAvailable)
         {
             amount *= DailyBonusMultiplier;
@@ -2435,6 +2438,15 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuyPBattleRhythm()
+    {
+        if (PrestigePoints < PrestigeShopCost || PBattleRhythmLevel >= 3) return false;
+        PrestigePoints -= PrestigeShopCost;
+        PBattleRhythmLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public bool BuySSBossTimer()
     {
         if (SoulShards < SSUpgradeCost || SSBossTimerLevel >= SSMaxLevel) return false;
@@ -2884,7 +2896,7 @@ public class GameManager : MonoBehaviour
         BloodShieldUnlocked = false; BloodShieldHP = 0f;
         PrestigeCount = 0; PrestigePoints = 0;
         PSoldierCapLevel = 0; PClickBonusLevel = 0; PRitualEffLevel = 0;
-        PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0; PBountyBonusLevel = 0; PBloodRitualStartLevel = 0; PBloodMasteryLevel = 0; PSacredGroundLevel = 0; PEternalFlameLevel = 0; PWarMachineLevel = 0; PCrimsonLegacyLevel = 0; PBloodlineLevel = 0; PIronBastionLevel = 0; PBloodPriceLevel = 0; PVoidPactLevel = 0; PWarFervorLevel = 0; PWellspringLevel = 0;
+        PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0; PBountyBonusLevel = 0; PBloodRitualStartLevel = 0; PBloodMasteryLevel = 0; PSacredGroundLevel = 0; PEternalFlameLevel = 0; PWarMachineLevel = 0; PCrimsonLegacyLevel = 0; PBloodlineLevel = 0; PIronBastionLevel = 0; PBloodPriceLevel = 0; PVoidPactLevel = 0; PWarFervorLevel = 0; PWellspringLevel = 0; PBattleRhythmLevel = 0;
         WeaponLevel = 0; ArmorLevel = 0; TalismanLevel = 0; BannerLevel = 0;
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
@@ -3033,6 +3045,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("PVoidPactLevel",           PVoidPactLevel);
         PlayerPrefs.SetInt   ("PWarFervorLevel",          PWarFervorLevel);
         PlayerPrefs.SetInt   ("PWellspringLevel",         PWellspringLevel);
+        PlayerPrefs.SetInt   ("PBattleRhythmLevel",      PBattleRhythmLevel);
         PlayerPrefs.SetInt   ("WeaponLevel",         WeaponLevel);
         PlayerPrefs.SetInt   ("ArmorLevel",          ArmorLevel);
         PlayerPrefs.SetInt   ("TalismanLevel",       TalismanLevel);
@@ -3178,6 +3191,7 @@ public class GameManager : MonoBehaviour
         PVoidPactLevel             = PlayerPrefs.GetInt("PVoidPactLevel",          0);
         PWarFervorLevel            = PlayerPrefs.GetInt("PWarFervorLevel",         0);
         PWellspringLevel           = PlayerPrefs.GetInt("PWellspringLevel",        0);
+        PBattleRhythmLevel         = PlayerPrefs.GetInt("PBattleRhythmLevel",     0);
         WeaponLevel         = PlayerPrefs.GetInt   ("WeaponLevel",         0);
         ArmorLevel          = PlayerPrefs.GetInt   ("ArmorLevel",          0);
         TalismanLevel       = PlayerPrefs.GetInt   ("TalismanLevel",       0);

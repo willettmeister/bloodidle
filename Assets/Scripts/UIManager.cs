@@ -184,6 +184,8 @@ public class UIManager : MonoBehaviour
     public Button pWarFervorButton;
     public Text pWellspringInfoText;
     public Button pWellspringButton;
+    public Text pBattleRhythmInfoText;
+    public Button pBattleRhythmButton;
 
     [Header("Soul Shard Shop")]
     public GameObject soulShardShopPanel;
@@ -1082,6 +1084,9 @@ public class UIManager : MonoBehaviour
             if (pWellspringInfoText != null)
                 pWellspringInfoText.text = $"Wellspring +{GameManager.PWellspringBonus * 100:F0}% Blood Well output  (Lv.{gm.PWellspringLevel}/3)";
             if (pWellspringButton != null) pWellspringButton.interactable = canSpend && gm.PWellspringLevel < 3;
+            if (pBattleRhythmInfoText != null)
+                pBattleRhythmInfoText.text = $"Battle Rhythm +{GameManager.PBattleRhythmBonus:F2}s combo window  (Lv.{gm.PBattleRhythmLevel}/3)";
+            if (pBattleRhythmButton != null) pBattleRhythmButton.interactable = canSpend && gm.PBattleRhythmLevel < 3;
         }
 
         // Soul Shard Shop
