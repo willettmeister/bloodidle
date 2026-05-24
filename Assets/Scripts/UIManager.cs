@@ -254,6 +254,8 @@ public class UIManager : MonoBehaviour
     public Button ssVoidStormButton;
     public Text ssBloodSigilInfoText;
     public Button ssBloodSigilButton;
+    public Text ssEchoBlastInfoText;
+    public Button ssEchoBlastButton;
 
     [Header("Settings")]
     public GameObject settingsPanel;
@@ -1241,6 +1243,10 @@ public class UIManager : MonoBehaviour
                 ssBloodSigilInfoText.text = $"Blood Sigil HealSelf deals equal damage to enemy  (Lv.{gm.SSBloodSigilLevel}/{GameManager.SSMaxLevel})";
             if (ssBloodSigilButton != null)
                 ssBloodSigilButton.interactable = canBuySS && gm.SSBloodSigilLevel < GameManager.SSMaxLevel;
+            if (ssEchoBlastInfoText != null)
+                ssEchoBlastInfoText.text = $"Echo Blast Surge expiry fires free Blood Storm  (Lv.{gm.SSEchoBlastLevel}/{GameManager.SSTier2MaxLevel})";
+            if (ssEchoBlastButton != null)
+                ssEchoBlastButton.interactable = canBuyT2 && gm.SSEchoBlastLevel < GameManager.SSTier2MaxLevel;
         }
 
         // Blood Bank
