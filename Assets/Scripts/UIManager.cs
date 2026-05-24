@@ -246,6 +246,8 @@ public class UIManager : MonoBehaviour
     public Button ssCrimsonStormButton;
     public Text ssShadowSurgeInfoText;
     public Button ssShadowSurgeButton;
+    public Text ssVoidStormInfoText;
+    public Button ssVoidStormButton;
 
     [Header("Settings")]
     public GameObject settingsPanel;
@@ -1219,6 +1221,10 @@ public class UIManager : MonoBehaviour
                 ssShadowSurgeInfoText.text = $"Shadow Surge Surge deals +{GameManager.SSShadowSurgeDmgPerSec:F0} dmg/s to enemy  (Lv.{gm.SSShadowSurgeLevel}/{GameManager.SSTier2MaxLevel})";
             if (ssShadowSurgeButton != null)
                 ssShadowSurgeButton.interactable = canBuyT2 && gm.SSShadowSurgeLevel < GameManager.SSTier2MaxLevel;
+            if (ssVoidStormInfoText != null)
+                ssVoidStormInfoText.text = $"Void Storm Blood Storm drains +{GameManager.SSVoidStormHPPct * 100:F0}% current HP per level  (Lv.{gm.SSVoidStormLevel}/{GameManager.SSTier2MaxLevel})";
+            if (ssVoidStormButton != null)
+                ssVoidStormButton.interactable = canBuyT2 && gm.SSVoidStormLevel < GameManager.SSTier2MaxLevel;
         }
 
         // Blood Bank

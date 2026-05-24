@@ -89,6 +89,7 @@ public class ClickManager : MonoBehaviour
     public void OnBuySSWarHorn()           => GameManager.Instance.BuySSWarHorn();
     public void OnBuySSDeathWard()         => GameManager.Instance.BuySSDeathWard();
     public void OnBuySSKillSurge()         => GameManager.Instance.BuySSKillSurge();
+    public void OnBuySSVoidStorm()         => GameManager.Instance.BuySSVoidStorm();
     public void OnBuySSVoidConduit()       => GameManager.Instance.BuySSVoidConduit();
     public void OnBuySSBloodEcho()         => GameManager.Instance.BuySSBloodEcho();
     public void OnBuySSIronMarrow()        => GameManager.Instance.BuySSIronMarrow();
