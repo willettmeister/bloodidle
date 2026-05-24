@@ -250,6 +250,8 @@ public class UIManager : MonoBehaviour
     public Button ssShadowSurgeButton;
     public Text ssVoidStormInfoText;
     public Button ssVoidStormButton;
+    public Text ssBloodSigilInfoText;
+    public Button ssBloodSigilButton;
 
     [Header("Settings")]
     public GameObject settingsPanel;
@@ -1230,6 +1232,10 @@ public class UIManager : MonoBehaviour
                 ssVoidStormInfoText.text = $"Void Storm Blood Storm drains +{GameManager.SSVoidStormHPPct * 100:F0}% current HP per level  (Lv.{gm.SSVoidStormLevel}/{GameManager.SSTier2MaxLevel})";
             if (ssVoidStormButton != null)
                 ssVoidStormButton.interactable = canBuyT2 && gm.SSVoidStormLevel < GameManager.SSTier2MaxLevel;
+            if (ssBloodSigilInfoText != null)
+                ssBloodSigilInfoText.text = $"Blood Sigil HealSelf deals equal damage to enemy  (Lv.{gm.SSBloodSigilLevel}/{GameManager.SSMaxLevel})";
+            if (ssBloodSigilButton != null)
+                ssBloodSigilButton.interactable = canBuySS && gm.SSBloodSigilLevel < GameManager.SSMaxLevel;
         }
 
         // Blood Bank
