@@ -190,6 +190,8 @@ public class UIManager : MonoBehaviour
     public Button pSoulTideButton;
     public Text pEnduranceInfoText;
     public Button pEnduranceButton;
+    public Text pForgeMasterInfoText;
+    public Button pForgeMasterButton;
 
     [Header("Soul Shard Shop")]
     public GameObject soulShardShopPanel;
@@ -1105,6 +1107,9 @@ public class UIManager : MonoBehaviour
             if (pEnduranceInfoText != null)
                 pEnduranceInfoText.text = $"Endurance +{GameManager.PEnduranceRegenRate:F1} HP/s universal regen  (Lv.{gm.PEnduranceLevel}/3)";
             if (pEnduranceButton != null) pEnduranceButton.interactable = canSpend && gm.PEnduranceLevel < 3;
+            if (pForgeMasterInfoText != null)
+                pForgeMasterInfoText.text = $"Forge Master +{GameManager.PForgeMasterBonus:F0} atk per weapon level  (Lv.{gm.PForgeMasterLevel}/3)";
+            if (pForgeMasterButton != null) pForgeMasterButton.interactable = canSpend && gm.PForgeMasterLevel < 3;
         }
 
         // Soul Shard Shop

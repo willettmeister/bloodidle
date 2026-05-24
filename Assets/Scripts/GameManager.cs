@@ -266,7 +266,7 @@ public class GameManager : MonoBehaviour
     public int WeaponLevel   { get; private set; }
     public int ArmorLevel    { get; private set; }
     public int TalismanLevel { get; private set; }
-    public float  EquipAttackBonus    => WeaponLevel   * 3f;
+    public float  EquipAttackBonus    => WeaponLevel   * (3f + PForgeMasterLevel * PForgeMasterBonus);
     public float  EquipArmorBonus     => ArmorLevel    * 10f;
     public double EquipTalismanBonus  => TalismanLevel * 0.15;
     public int    BannerLevel         { get; private set; }
@@ -380,6 +380,8 @@ public class GameManager : MonoBehaviour
     public const float PSoulTideHealPct  = 0.02f; // heals 2pct of enemy max HP per level on kill
     public int PEnduranceLevel           { get; private set; }
     public const float PEnduranceRegenRate = 0.5f; // +0.5 HP/s universal regen per level
+    public int PForgeMasterLevel         { get; private set; }
+    public const float PForgeMasterBonus = 1f; // +1 attack per weapon level per perk level
 
     public double EffectiveBountyMult => BountyRewardMult + PBountyBonusLevel;
     public const int   PrestigeShopCost      = 1;
@@ -2539,6 +2541,15 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuyPForgeMaster()
+    {
+        if (PrestigePoints < PrestigeShopCost || PForgeMasterLevel >= 3) return false;
+        PrestigePoints -= PrestigeShopCost;
+        PForgeMasterLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public bool BuySSBossTimer()
     {
         if (SoulShards < SSUpgradeCost || SSBossTimerLevel >= SSMaxLevel) return false;
@@ -3024,7 +3035,7 @@ public class GameManager : MonoBehaviour
         BloodShieldUnlocked = false; BloodShieldHP = 0f;
         PrestigeCount = 0; PrestigePoints = 0;
         PSoldierCapLevel = 0; PClickBonusLevel = 0; PRitualEffLevel = 0;
-        PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0; PBountyBonusLevel = 0; PBloodRitualStartLevel = 0; PBloodMasteryLevel = 0; PSacredGroundLevel = 0; PEternalFlameLevel = 0; PWarMachineLevel = 0; PCrimsonLegacyLevel = 0; PBloodlineLevel = 0; PIronBastionLevel = 0; PBloodPriceLevel = 0; PVoidPactLevel = 0; PWarFervorLevel = 0; PWellspringLevel = 0; PBattleRhythmLevel = 0; PSoulTideLevel = 0; PEnduranceLevel = 0;
+        PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0; PBountyBonusLevel = 0; PBloodRitualStartLevel = 0; PBloodMasteryLevel = 0; PSacredGroundLevel = 0; PEternalFlameLevel = 0; PWarMachineLevel = 0; PCrimsonLegacyLevel = 0; PBloodlineLevel = 0; PIronBastionLevel = 0; PBloodPriceLevel = 0; PVoidPactLevel = 0; PWarFervorLevel = 0; PWellspringLevel = 0; PBattleRhythmLevel = 0; PSoulTideLevel = 0; PEnduranceLevel = 0; PForgeMasterLevel = 0;
         WeaponLevel = 0; ArmorLevel = 0; TalismanLevel = 0; BannerLevel = 0;
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
@@ -3176,6 +3187,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("PBattleRhythmLevel",      PBattleRhythmLevel);
         PlayerPrefs.SetInt   ("PSoulTideLevel",           PSoulTideLevel);
         PlayerPrefs.SetInt   ("PEnduranceLevel",          PEnduranceLevel);
+        PlayerPrefs.SetInt   ("PForgeMasterLevel",        PForgeMasterLevel);
         PlayerPrefs.SetInt   ("WeaponLevel",         WeaponLevel);
         PlayerPrefs.SetInt   ("ArmorLevel",          ArmorLevel);
         PlayerPrefs.SetInt   ("TalismanLevel",       TalismanLevel);
@@ -3328,6 +3340,7 @@ public class GameManager : MonoBehaviour
         PBattleRhythmLevel         = PlayerPrefs.GetInt("PBattleRhythmLevel",     0);
         PSoulTideLevel             = PlayerPrefs.GetInt("PSoulTideLevel",          0);
         PEnduranceLevel            = PlayerPrefs.GetInt("PEnduranceLevel",         0);
+        PForgeMasterLevel          = PlayerPrefs.GetInt("PForgeMasterLevel",       0);
         WeaponLevel         = PlayerPrefs.GetInt   ("WeaponLevel",         0);
         ArmorLevel          = PlayerPrefs.GetInt   ("ArmorLevel",          0);
         TalismanLevel       = PlayerPrefs.GetInt   ("TalismanLevel",       0);
