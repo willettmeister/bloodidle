@@ -51,7 +51,7 @@ public struct AchievementDef
     public float   AttackBonus;  // additive bonus to attack per soldier
 }
 
-public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral, Leech, Volatile, Fortified, Giant, Blessed, Frenzied }
+public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral, Leech, Volatile, Fortified, Giant, Blessed, Frenzied, Mirrored }
 public enum BossAbility    { None, Shield, Berserk, Drain, Regen, Thorns, Haste, Wrath, Miasma, LeechStrike, Venom }
 public enum QuestTrackType { Kills, Farms, Wave, Spells }
 
@@ -155,6 +155,7 @@ public class GameManager : MonoBehaviour
             if (CurrentEnemyModifier == EnemyModifier.Giant)    r = Math.Floor(r * EnemyGiantRewardMult);
             if (CurrentEnemyModifier == EnemyModifier.Blessed)   r = Math.Floor(r * EnemyBlessedRewardMult);
             if (CurrentEnemyModifier == EnemyModifier.Frenzied)  r = Math.Floor(r * EnemyFrenziedRewardMult);
+            if (CurrentEnemyModifier == EnemyModifier.Mirrored)  r = Math.Floor(r * EnemyMirroredRewardMult);
             if (IsBloodyWave)  r = Math.Floor(r * BloodMoonMult);
             if (_isBountyEnemy) r = Math.Floor(r * EffectiveBountyMult);
             if (_isEliteEnemy)  r = Math.Floor(r * EliteRewardMult);
@@ -763,6 +764,7 @@ public class GameManager : MonoBehaviour
         EnemyModifier.Giant      => "🗿 Giant",
         EnemyModifier.Blessed    => "✨ Blessed",
         EnemyModifier.Frenzied   => "⚡ Frenzied",
+        EnemyModifier.Mirrored   => "🪞 Mirrored",
         _                     => "",
     };
     public const float EnemyArmoredDmgMult    = 0.5f;
@@ -789,6 +791,8 @@ public class GameManager : MonoBehaviour
     public const float  EnemyBlessedRegenPct     = 0.01f; // 1% max HP/s while above 50% HP
     public const float  EnemyBlessedRegenThresh  = 0.50f; // only heals above this HP fraction
     public const double EnemyBlessedRewardMult   = 1.40;  // +40% kill reward
+    public const float  EnemyMirroredReflectPct  = 0.10f; // reflects 10% of damage dealt back to soldier
+    public const double EnemyMirroredRewardMult  = 1.25;  // +25% kill reward
 
     // --- Wave preview ---
     public bool WavePreviewActive { get; private set; }
@@ -1344,6 +1348,8 @@ public class GameManager : MonoBehaviour
             EnemyHP = Mathf.Max(0f, EnemyHP - dmgThisTick);
             if (CurrentBossAbility == BossAbility.Thorns && SoldierCount > 0 && EnemyHP > 0)
                 SoldierHP -= dmgThisTick * BossThornsReflectPct;
+            if (CurrentEnemyModifier == EnemyModifier.Mirrored && SoldierCount > 0 && EnemyHP > 0)
+                SoldierHP -= dmgThisTick * EnemyMirroredReflectPct;
         }
 
         if (EnemyHP <= 0f)
@@ -1372,6 +1378,8 @@ public class GameManager : MonoBehaviour
                 reward = Math.Floor(reward * EnemyBlessedRewardMult);
             if (CurrentEnemyModifier == EnemyModifier.Frenzied)
                 reward = Math.Floor(reward * EnemyFrenziedRewardMult);
+            if (CurrentEnemyModifier == EnemyModifier.Mirrored)
+                reward = Math.Floor(reward * EnemyMirroredRewardMult);
             if (IsBloodyWave) reward = Math.Floor(reward * BloodMoonMult);
             if (_isBountyEnemy) reward = Math.Floor(reward * EffectiveBountyMult);
             if (_isEliteEnemy)  reward = Math.Floor(reward * EliteRewardMult);
@@ -1688,7 +1696,7 @@ public class GameManager : MonoBehaviour
             SoulBindTriggered  = false;
             if (UnityEngine.Random.value < 0.25f)
             {
-                CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 12);
+                CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 13);
                 if (CurrentEnemyModifier == EnemyModifier.Enraged)
                     EnemyAttack *= EnemyEnragedAtkMult;
                 else if (CurrentEnemyModifier == EnemyModifier.Spectral)
