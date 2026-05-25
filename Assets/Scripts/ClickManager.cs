@@ -95,6 +95,7 @@ public class ClickManager : MonoBehaviour
     public void OnBuySSVoidStorm()         => GameManager.Instance.BuySSVoidStorm();
     public void OnBuySSBloodSigil()        => GameManager.Instance.BuySSBloodSigil();
     public void OnBuySSEchoBlast()         => GameManager.Instance.BuySSEchoBlast();
+    public void OnBuySSSoulRend()          => GameManager.Instance.BuySSSoulRend();
     public void OnBuySSSoulTax()           => GameManager.Instance.BuySSSoulTax();
     public void OnBuySSVoidConduit()       => GameManager.Instance.BuySSVoidConduit();
     public void OnBuySSBloodEcho()         => GameManager.Instance.BuySSBloodEcho();

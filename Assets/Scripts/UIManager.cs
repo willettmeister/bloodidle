@@ -258,6 +258,8 @@ public class UIManager : MonoBehaviour
     public Button ssBloodSigilButton;
     public Text ssEchoBlastInfoText;
     public Button ssEchoBlastButton;
+    public Text ssSoulRendInfoText;
+    public Button ssSoulRendButton;
     public Text ssSoulTaxInfoText;
     public Button ssSoulTaxButton;
 
@@ -1254,6 +1256,10 @@ public class UIManager : MonoBehaviour
                 ssEchoBlastInfoText.text = $"Echo Blast Surge expiry fires free Blood Storm  (Lv.{gm.SSEchoBlastLevel}/{GameManager.SSTier2MaxLevel})";
             if (ssEchoBlastButton != null)
                 ssEchoBlastButton.interactable = canBuyT2 && gm.SSEchoBlastLevel < GameManager.SSTier2MaxLevel;
+            if (ssSoulRendInfoText != null)
+                ssSoulRendInfoText.text = $"Soul Rend Blood Storm reduces enemy atk {GameManager.SSSoulRendAtkReduction * 100:F0}pct/lv for {GameManager.SSSoulRendDuration:F0}s  (Lv.{gm.SSSoulRendLevel}/{GameManager.SSTier2MaxLevel})";
+            if (ssSoulRendButton != null)
+                ssSoulRendButton.interactable = canBuyT2 && gm.SSSoulRendLevel < GameManager.SSTier2MaxLevel;
             if (ssSoulTaxInfoText != null)
                 ssSoulTaxInfoText.text = $"Soul Tax +{GameManager.SSSoulTaxBonusShards} Soul Shard per boss kill per level  (Lv.{gm.SSSoulTaxLevel}/{GameManager.SSMaxLevel})";
             if (ssSoulTaxButton != null)
