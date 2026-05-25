@@ -52,7 +52,7 @@ public struct AchievementDef
 }
 
 public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral, Leech, Volatile, Fortified, Giant, Blessed, Frenzied, Mirrored, Phantom, Colossus, Stalwart, Bloodthirsty, Warded, Explosive, Tenacious }
-public enum BossAbility    { None, Shield, Berserk, Drain, Regen, Thorns, Haste, Wrath, Miasma, LeechStrike, Venom, Hex, Bulwark, CursedAura, BloodTribute, Vampiric, Encase }
+public enum BossAbility    { None, Shield, Berserk, Drain, Regen, Thorns, Haste, Wrath, Miasma, LeechStrike, Venom, Hex, Bulwark, CursedAura, BloodTribute, Vampiric, Encase, Overpower }
 public enum QuestTrackType { Kills, Farms, Wave, Spells }
 
 public struct DailyQuestDef
@@ -624,6 +624,7 @@ public class GameManager : MonoBehaviour
     float _bossEncaseTimer;
     float _bossEncaseActiveTimer;
     public bool BossEncaseActive { get; private set; }
+    float _bossOverpowerTimer;
     float _soulRendTimer;
     public const float BossShieldFraction     = 0.20f;
     public const float BossTributeInterval    = 8f;    // seconds between tribute drains
@@ -634,6 +635,9 @@ public class GameManager : MonoBehaviour
     public const float  BossEncaseInterval       = 20f;   // seconds between encase cycles
     public const float  BossEncaseDuration       = 3f;    // seconds immune per cycle
     public const double BossEncaseRewardMult     = 2.50;  // 2.5x kill reward
+    public const float  BossOverpowerInterval    = 10f;   // seconds between overpower strikes
+    public const float  BossOverpowerStrikeMult  = 3.0f;  // multiplier on EnemyAttack for burst hit
+    public const double BossOverpowerRewardMult  = 2.00;  // 2x kill reward
     public const float BossDrainPerSec     = 5f;
     public const float BossRegenPctPerSec  = 0.005f; // 0.5% of max HP per second
     public const float BossThornsReflectPct  = 0.25f;  // fraction of attacker damage reflected
@@ -673,6 +677,7 @@ public class GameManager : MonoBehaviour
         BossAbility.BloodTribute => "💸 Blood Tribute",
         BossAbility.Vampiric     => "🧛 Vampiric",
         BossAbility.Encase       => "🪨 Encase",
+        BossAbility.Overpower    => "💢 Overpower",
         _                   => "",
     };
 
@@ -1532,6 +1537,7 @@ public class GameManager : MonoBehaviour
                 if (CurrentBossAbility == BossAbility.BloodTribute)  reward = Math.Floor(reward * BossTributeRewardMult);
                 if (CurrentBossAbility == BossAbility.Vampiric)      reward = Math.Floor(reward * BossVampiricRewardMult);
                 if (CurrentBossAbility == BossAbility.Encase)        reward = Math.Floor(reward * BossEncaseRewardMult);
+                if (CurrentBossAbility == BossAbility.Overpower)     reward = Math.Floor(reward * BossOverpowerRewardMult);
                 if (SSShardHungerLevel > 0) reward = Math.Floor(reward * (1.0 + SSShardHungerLevel * SSShardHungerBonus));
                 if (VeteranAttackBonus < VeteranAttackCap) VeteranAttackBonus++;
                 SoulShards += (HasTalent(TalentFlags.ShardHunter) ? 2 : 1) + PVoidPactLevel + SSSoulTaxLevel * SSSoulTaxBonusShards;
@@ -1674,6 +1680,17 @@ public class GameManager : MonoBehaviour
                     _bossEncaseActiveTimer = BossEncaseDuration;
                     _bossEncaseTimer       = BossEncaseInterval;
                 }
+            }
+        }
+        if (isSpecialFoe && CurrentBossAbility == BossAbility.Overpower && EnemyHP > 0 && SoldierCount > 0)
+        {
+            _bossOverpowerTimer -= dt;
+            if (_bossOverpowerTimer <= 0f)
+            {
+                _bossOverpowerTimer = BossOverpowerInterval;
+                float overpowerDmg = EnemyAttack * BossOverpowerStrikeMult;
+                if (BloodShieldHP > 0f) { float abs = Mathf.Min(BloodShieldHP, overpowerDmg); BloodShieldHP -= abs; overpowerDmg -= abs; }
+                SoldierHP = Mathf.Max(0f, SoldierHP - overpowerDmg);
             }
         }
         float dmg = totalIncoming * dt;
@@ -1841,12 +1858,13 @@ public class GameManager : MonoBehaviour
             EnemyAttack      = (float)(3   * Math.Pow(1.3, wave - 1) * 2.0);
             BossTimeRemaining = BossTimeLimit + SSBossTimerLevel * 15f;
             CurrentEnemyModifier = EnemyModifier.None;
-            CurrentBossAbility   = (BossAbility)UnityEngine.Random.Range(0, 17);
+            CurrentBossAbility   = (BossAbility)UnityEngine.Random.Range(0, 18);
             BossShieldActive     = CurrentBossAbility == BossAbility.Shield;
             _bossShieldHP        = BossShieldActive ? EnemyMaxHP * BossShieldFraction : 0f;
             _bloodTributeTimer   = BossTributeInterval;
             _bossEncaseTimer     = BossEncaseInterval;
             BossEncaseActive     = false;
+            _bossOverpowerTimer  = BossOverpowerInterval;
             if (CurrentBossAbility == BossAbility.Bulwark)
             {
                 EnemyMaxHP *= BossBulwarkHPMult;
