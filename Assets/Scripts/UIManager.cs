@@ -258,6 +258,8 @@ public class UIManager : MonoBehaviour
     public Button ssBloodSigilButton;
     public Text ssEchoBlastInfoText;
     public Button ssEchoBlastButton;
+    public Text ssSoulTaxInfoText;
+    public Button ssSoulTaxButton;
 
     [Header("Settings")]
     public GameObject settingsPanel;
@@ -1252,6 +1254,10 @@ public class UIManager : MonoBehaviour
                 ssEchoBlastInfoText.text = $"Echo Blast Surge expiry fires free Blood Storm  (Lv.{gm.SSEchoBlastLevel}/{GameManager.SSTier2MaxLevel})";
             if (ssEchoBlastButton != null)
                 ssEchoBlastButton.interactable = canBuyT2 && gm.SSEchoBlastLevel < GameManager.SSTier2MaxLevel;
+            if (ssSoulTaxInfoText != null)
+                ssSoulTaxInfoText.text = $"Soul Tax +{GameManager.SSSoulTaxBonusShards} Soul Shard per boss kill per level  (Lv.{gm.SSSoulTaxLevel}/{GameManager.SSMaxLevel})";
+            if (ssSoulTaxButton != null)
+                ssSoulTaxButton.interactable = canBuyT1 && gm.SSSoulTaxLevel < GameManager.SSMaxLevel;
         }
 
         // Blood Bank
