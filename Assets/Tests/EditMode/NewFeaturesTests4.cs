@@ -242,7 +242,7 @@ public class NewFeaturesTests4
         // (probability of all 10 being None = 0.25^10 ≈ negligible, but we just check
         //  the enum is in valid range)
         _gm.SpawnEnemyForTest(7);
-        Assert.IsTrue((int)_gm.CurrentBossAbility >= 0 && (int)_gm.CurrentBossAbility <= 14);
+        Assert.IsTrue((int)_gm.CurrentBossAbility >= 0 && (int)_gm.CurrentBossAbility <= 15);
     }
 
     [Test]
