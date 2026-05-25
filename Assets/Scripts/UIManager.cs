@@ -1257,7 +1257,7 @@ public class UIManager : MonoBehaviour
             if (ssSoulTaxInfoText != null)
                 ssSoulTaxInfoText.text = $"Soul Tax +{GameManager.SSSoulTaxBonusShards} Soul Shard per boss kill per level  (Lv.{gm.SSSoulTaxLevel}/{GameManager.SSMaxLevel})";
             if (ssSoulTaxButton != null)
-                ssSoulTaxButton.interactable = canBuyT1 && gm.SSSoulTaxLevel < GameManager.SSMaxLevel;
+                ssSoulTaxButton.interactable = canBuySS && gm.SSSoulTaxLevel < GameManager.SSMaxLevel;
         }
 
         // Blood Bank
