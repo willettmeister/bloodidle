@@ -262,6 +262,8 @@ public class UIManager : MonoBehaviour
     public Button ssEchoBlastButton;
     public Text ssSoulRendInfoText;
     public Button ssSoulRendButton;
+    public Text ssLifeTapInfoText;
+    public Button ssLifeTapButton;
     public Text ssSoulTaxInfoText;
     public Button ssSoulTaxButton;
 
@@ -1265,6 +1267,10 @@ public class UIManager : MonoBehaviour
                 ssSoulRendInfoText.text = $"Soul Rend Blood Storm reduces enemy atk {GameManager.SSSoulRendAtkReduction * 100:F0}pct/lv for {GameManager.SSSoulRendDuration:F0}s  (Lv.{gm.SSSoulRendLevel}/{GameManager.SSTier2MaxLevel})";
             if (ssSoulRendButton != null)
                 ssSoulRendButton.interactable = canBuyT2 && gm.SSSoulRendLevel < GameManager.SSTier2MaxLevel;
+            if (ssLifeTapInfoText != null)
+                ssLifeTapInfoText.text = $"Life Tap soldiers heal {GameManager.SSLifeTapHealPct * 100:F0}pct of dmg dealt per level  (Lv.{gm.SSLifeTapLevel}/{GameManager.SSMaxLevel})";
+            if (ssLifeTapButton != null)
+                ssLifeTapButton.interactable = canBuySS && gm.SSLifeTapLevel < GameManager.SSMaxLevel;
             if (ssSoulTaxInfoText != null)
                 ssSoulTaxInfoText.text = $"Soul Tax +{GameManager.SSSoulTaxBonusShards} Soul Shard per boss kill per level  (Lv.{gm.SSSoulTaxLevel}/{GameManager.SSMaxLevel})";
             if (ssSoulTaxButton != null)

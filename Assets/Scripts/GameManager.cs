@@ -471,6 +471,8 @@ public class GameManager : MonoBehaviour
     public const float SSSoulRendAtkReduction = 0.20f; // 20pct enemy atk reduction per level
     public const float SSSoulRendDuration     = 5f;    // seconds debuff lasts after Blood Storm
     public bool SoulRendActive => _soulRendTimer > 0f;
+    public int    SSLifeTapLevel        { get; private set; }
+    public const float SSLifeTapHealPct = 0.05f; // frontline heals 5pct of damage dealt per level
     public int    SSSoulTaxLevel        { get; private set; }
     public const int SSSoulTaxBonusShards = 1; // extra Soul Shards per boss kill per level
 
@@ -1460,6 +1462,8 @@ public class GameManager : MonoBehaviour
                 SoldierHP -= dmgThisTick * BossThornsReflectPct;
             if (CurrentEnemyModifier == EnemyModifier.Mirrored && SoldierCount > 0 && EnemyHP > 0)
                 SoldierHP -= dmgThisTick * EnemyMirroredReflectPct;
+            if (SSLifeTapLevel > 0 && SoldierCount > 0 && dmgThisTick > 0)
+                SoldierHP = Mathf.Min(SoldierHP + dmgThisTick * SSLifeTapLevel * SSLifeTapHealPct, FrontlineMaxHP);
         }
         if (SurgeActive && SSShadowSurgeLevel > 0 && EnemyHP > 0)
             EnemyHP = Mathf.Max(0f, EnemyHP - SSShadowSurgeLevel * SSShadowSurgeDmgPerSec * dt);
@@ -3049,6 +3053,15 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuySSLifeTap()
+    {
+        if (SoulShards < SSUpgradeCost || SSLifeTapLevel >= SSMaxLevel) return false;
+        SoulShards -= SSUpgradeCost;
+        SSLifeTapLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public bool BuySSSoulTax()
     {
         if (SoulShards < SSUpgradeCost || SSSoulTaxLevel >= SSMaxLevel) return false;
@@ -3197,7 +3210,7 @@ public class GameManager : MonoBehaviour
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
         SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0; SSSoulHarvestLevel = 0; SSCrimsonPulseLevel = 0; SSCrimsonBrandLevel = 0; SSWarSpoilsLevel = 0; SSGhostStrikeLevel = 0; SSDeathsBountyLevel = 0; SSRuneSealLevel = 0; SSWarCrestLevel = 0; SSVitalSurgeLevel = 0; SSWarHornLevel = 0; SSDeathWardLevel = 0;
-        SSVoidConduitLevel = 0; SSBloodEchoLevel = 0; SSIronMarrowLevel = 0; SSWrathBloomLevel = 0; SSBloodNovaLevel = 0; SSEchoSurgeLevel = 0; SSEntropyAmpLevel = 0; SSBoneWardLevel = 0; SSCrimsonStormLevel = 0; SSShadowSurgeLevel = 0; SSKillSurgeLevel = 0; SSVoidStormLevel = 0; SSBloodSigilLevel = 0; SSEchoBlastLevel = 0; SSSoulRendLevel = 0; SSSoulTaxLevel = 0;
+        SSVoidConduitLevel = 0; SSBloodEchoLevel = 0; SSIronMarrowLevel = 0; SSWrathBloomLevel = 0; SSBloodNovaLevel = 0; SSEchoSurgeLevel = 0; SSEntropyAmpLevel = 0; SSBoneWardLevel = 0; SSCrimsonStormLevel = 0; SSShadowSurgeLevel = 0; SSKillSurgeLevel = 0; SSVoidStormLevel = 0; SSBloodSigilLevel = 0; SSEchoBlastLevel = 0; SSSoulRendLevel = 0; SSLifeTapLevel = 0; SSSoulTaxLevel = 0;
         BloodBankDeposit = 0; BloodBankAccrued = 0; BankInterestLevel = 0; KillIncomeUpgradeLevel = 0; WaveStreak = 0;
         SurgeUpgradeLevel = 0; HealUpgradeLevel = 0; BloodStormUpgradeLevel = 0; WarCryUpgradeLevel = 0; HexCurseUpgradeLevel = 0; BloodOathUpgradeLevel = 0; DesecrateUpgradeLevel = 0; EntropyUpgradeLevel = 0;
         TotalEnemiesKilled = 0; TotalSpellsCast = 0; TotalBossesKilled = 0; VeteranAttackBonus = 0f; TimePlayed = 0; Achievements = AchievementFlags.None;
@@ -3392,6 +3405,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("SSBloodSigilLevel",     SSBloodSigilLevel);
         PlayerPrefs.SetInt   ("SSEchoBlastLevel",      SSEchoBlastLevel);
         PlayerPrefs.SetInt   ("SSSoulRendLevel",       SSSoulRendLevel);
+        PlayerPrefs.SetInt   ("SSLifeTapLevel",        SSLifeTapLevel);
         PlayerPrefs.SetInt   ("SSSoulTaxLevel",        SSSoulTaxLevel);
         PlayerPrefs.SetInt   ("SurgeUpgradeLevel",        SurgeUpgradeLevel);
         PlayerPrefs.SetInt   ("HealUpgradeLevel",         HealUpgradeLevel);
@@ -3543,6 +3557,7 @@ public class GameManager : MonoBehaviour
         SSBloodSigilLevel   = PlayerPrefs.GetInt("SSBloodSigilLevel",   0);
         SSEchoBlastLevel    = PlayerPrefs.GetInt("SSEchoBlastLevel",    0);
         SSSoulRendLevel     = PlayerPrefs.GetInt("SSSoulRendLevel",     0);
+        SSLifeTapLevel      = PlayerPrefs.GetInt("SSLifeTapLevel",      0);
         SSSoulTaxLevel      = PlayerPrefs.GetInt("SSSoulTaxLevel",      0);
         SSGhostStrikeLevel  = PlayerPrefs.GetInt("SSGhostStrikeLevel",  0);
         SSDeathsBountyLevel = PlayerPrefs.GetInt("SSDeathsBountyLevel", 0);
