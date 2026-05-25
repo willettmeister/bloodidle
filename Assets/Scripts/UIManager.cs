@@ -196,6 +196,8 @@ public class UIManager : MonoBehaviour
     public Button pVaultExpansionButton;
     public Text pTidalSurgeInfoText;
     public Button pTidalSurgeButton;
+    public Text pHexMasterInfoText;
+    public Button pHexMasterButton;
 
     [Header("Soul Shard Shop")]
     public GameObject soulShardShopPanel;
@@ -1128,6 +1130,9 @@ public class UIManager : MonoBehaviour
             if (pTidalSurgeInfoText != null)
                 pTidalSurgeInfoText.text = $"Tidal Surge +{GameManager.PTidalSurgeBonusSecs:F0}s Surge duration per level  (Lv.{gm.PTidalSurgeLevel}/3)";
             if (pTidalSurgeButton != null) pTidalSurgeButton.interactable = canSpend && gm.PTidalSurgeLevel < 3;
+            if (pHexMasterInfoText != null)
+                pHexMasterInfoText.text = $"Hex Master +{GameManager.PHexMasterBonus * 100:F0}pct HexCurse atk reduction per level  (Lv.{gm.PHexMasterLevel}/3)";
+            if (pHexMasterButton != null) pHexMasterButton.interactable = canSpend && gm.PHexMasterLevel < 3;
         }
 
         // Soul Shard Shop

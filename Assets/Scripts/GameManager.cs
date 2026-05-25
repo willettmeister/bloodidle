@@ -389,6 +389,8 @@ public class GameManager : MonoBehaviour
     public const double PVaultExpansionBonus = 0.25; // +25pct bank max deposit per level
     public int PTidalSurgeLevel              { get; private set; }
     public const float PTidalSurgeBonusSecs  = 2f;   // +2s Surge duration per level
+    public int PHexMasterLevel               { get; private set; }
+    public const float PHexMasterBonus       = 0.05f; // +5pct HexCurse atk reduction per level
 
     public double EffectiveBountyMult => BountyRewardMult + PBountyBonusLevel;
     public const int   PrestigeShopCost      = 1;
@@ -1624,7 +1626,7 @@ public class GameManager : MonoBehaviour
             return true;
         }
 
-        float incomingAtk   = EnemyAttack * (HexCurseActive ? (1f - HexCurseAtkReduction) : 1f);
+        float incomingAtk   = EnemyAttack * (HexCurseActive ? (1f - HexCurseAtkReduction - PHexMasterLevel * PHexMasterBonus) : 1f);
         bool  isSpecialFoe  = IsBossWave || DailyChallengeActive;
         if (isSpecialFoe && CurrentBossAbility == BossAbility.Berserk && EnemyHP < EnemyMaxHP * 0.25f)
             incomingAtk *= 2f;
@@ -2701,6 +2703,15 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuyPHexMaster()
+    {
+        if (PrestigePoints < PrestigeShopCost || PHexMasterLevel >= 3) return false;
+        PrestigePoints -= PrestigeShopCost;
+        PHexMasterLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public bool BuySSBossTimer()
     {
         if (SoulShards < SSUpgradeCost || SSBossTimerLevel >= SSMaxLevel) return false;
@@ -3223,7 +3234,7 @@ public class GameManager : MonoBehaviour
         BloodShieldUnlocked = false; BloodShieldHP = 0f;
         PrestigeCount = 0; PrestigePoints = 0;
         PSoldierCapLevel = 0; PClickBonusLevel = 0; PRitualEffLevel = 0;
-        PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0; PBountyBonusLevel = 0; PBloodRitualStartLevel = 0; PBloodMasteryLevel = 0; PSacredGroundLevel = 0; PEternalFlameLevel = 0; PWarMachineLevel = 0; PCrimsonLegacyLevel = 0; PBloodlineLevel = 0; PIronBastionLevel = 0; PBloodPriceLevel = 0; PVoidPactLevel = 0; PWarFervorLevel = 0; PWellspringLevel = 0; PBattleRhythmLevel = 0; PSoulTideLevel = 0; PEnduranceLevel = 0; PForgeMasterLevel = 0; PVaultExpansionLevel = 0; PTidalSurgeLevel = 0;
+        PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0; PBountyBonusLevel = 0; PBloodRitualStartLevel = 0; PBloodMasteryLevel = 0; PSacredGroundLevel = 0; PEternalFlameLevel = 0; PWarMachineLevel = 0; PCrimsonLegacyLevel = 0; PBloodlineLevel = 0; PIronBastionLevel = 0; PBloodPriceLevel = 0; PVoidPactLevel = 0; PWarFervorLevel = 0; PWellspringLevel = 0; PBattleRhythmLevel = 0; PSoulTideLevel = 0; PEnduranceLevel = 0; PForgeMasterLevel = 0; PVaultExpansionLevel = 0; PTidalSurgeLevel = 0; PHexMasterLevel = 0;
         WeaponLevel = 0; ArmorLevel = 0; TalismanLevel = 0; BannerLevel = 0;
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
@@ -3378,6 +3389,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("PForgeMasterLevel",        PForgeMasterLevel);
         PlayerPrefs.SetInt   ("PVaultExpansionLevel",     PVaultExpansionLevel);
         PlayerPrefs.SetInt   ("PTidalSurgeLevel",         PTidalSurgeLevel);
+        PlayerPrefs.SetInt   ("PHexMasterLevel",          PHexMasterLevel);
         PlayerPrefs.SetInt   ("WeaponLevel",         WeaponLevel);
         PlayerPrefs.SetInt   ("ArmorLevel",          ArmorLevel);
         PlayerPrefs.SetInt   ("TalismanLevel",       TalismanLevel);
@@ -3537,6 +3549,7 @@ public class GameManager : MonoBehaviour
         PForgeMasterLevel          = PlayerPrefs.GetInt("PForgeMasterLevel",       0);
         PVaultExpansionLevel       = PlayerPrefs.GetInt("PVaultExpansionLevel",    0);
         PTidalSurgeLevel           = PlayerPrefs.GetInt("PTidalSurgeLevel",        0);
+        PHexMasterLevel            = PlayerPrefs.GetInt("PHexMasterLevel",         0);
         WeaponLevel         = PlayerPrefs.GetInt   ("WeaponLevel",         0);
         ArmorLevel          = PlayerPrefs.GetInt   ("ArmorLevel",          0);
         TalismanLevel       = PlayerPrefs.GetInt   ("TalismanLevel",       0);
