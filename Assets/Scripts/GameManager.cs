@@ -1429,7 +1429,7 @@ public class GameManager : MonoBehaviour
         if (BerserkerRageActive) eff *= BerserkerRageMult;
         if (LastStandActive)     eff *= LastStandMult;
         if (DeathsDoorActive)    eff *= DeathsDoorMult;
-        if (isSpecialFoe && CurrentBossAbility == BossAbility.Encase && BossEncaseActive) eff = 0f;
+        if ((IsBossWave || DailyChallengeActive) && CurrentBossAbility == BossAbility.Encase && BossEncaseActive) eff = 0f;
         if (BossShieldActive)
         {
             _bossShieldHP -= eff * dt;
