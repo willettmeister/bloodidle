@@ -51,7 +51,7 @@ public struct AchievementDef
     public float   AttackBonus;  // additive bonus to attack per soldier
 }
 
-public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral, Leech, Volatile, Fortified, Giant, Blessed, Frenzied, Mirrored, Phantom, Colossus, Stalwart, Bloodthirsty, Warded }
+public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral, Leech, Volatile, Fortified, Giant, Blessed, Frenzied, Mirrored, Phantom, Colossus, Stalwart, Bloodthirsty, Warded, Explosive }
 public enum BossAbility    { None, Shield, Berserk, Drain, Regen, Thorns, Haste, Wrath, Miasma, LeechStrike, Venom, Hex, Bulwark, CursedAura, BloodTribute, Vampiric, Encase }
 public enum QuestTrackType { Kills, Farms, Wave, Spells }
 
@@ -163,6 +163,7 @@ public class GameManager : MonoBehaviour
             if (CurrentEnemyModifier == EnemyModifier.Stalwart)      r = Math.Floor(r * EnemyStalwartRewardMult);
             if (CurrentEnemyModifier == EnemyModifier.Bloodthirsty)  r = Math.Floor(r * EnemyBloodthirstyRewardMult);
             if (CurrentEnemyModifier == EnemyModifier.Warded)         r = Math.Floor(r * EnemyWardedRewardMult);
+            if (CurrentEnemyModifier == EnemyModifier.Explosive)      r = Math.Floor(r * EnemyExplosiveRewardMult);
             if (IsBloodyWave)  r = Math.Floor(r * BloodMoonMult);
             if (_isBountyEnemy) r = Math.Floor(r * EffectiveBountyMult);
             if (_isEliteEnemy)  r = Math.Floor(r * EliteRewardMult);
@@ -830,6 +831,7 @@ public class GameManager : MonoBehaviour
         EnemyModifier.Stalwart      => "🔰 Stalwart",
         EnemyModifier.Bloodthirsty  => "🩸 Bloodthirsty",
         EnemyModifier.Warded        => "🛡 Warded",
+        EnemyModifier.Explosive     => "💥 Explosive",
         _                     => "",
     };
     public const float EnemyArmoredDmgMult    = 0.5f;
@@ -868,6 +870,8 @@ public class GameManager : MonoBehaviour
     public const double EnemyBloodthirstyRewardMult  = 1.50;  // +50pct kill reward
     public const float  EnemyWardedSpellDmgMult      = 0.50f; // spells deal 50pct damage against Warded enemies
     public const double EnemyWardedRewardMult         = 1.80;  // +80pct kill reward
+    public const float  EnemyExplosiveDmgPct          = 0.15f; // explodes on death for 15pct of max HP against frontline
+    public const double EnemyExplosiveRewardMult      = 1.70;  // +70pct kill reward
 
     // --- Wave preview ---
     public bool WavePreviewActive { get; private set; }
@@ -1453,6 +1457,8 @@ public class GameManager : MonoBehaviour
                 SoldierHP = Mathf.Max(0f, SoldierHP - EnemyAttack * EnragedDeathBlowMult);
             if (CurrentEnemyModifier == EnemyModifier.Volatile && SoldierCount > 0)
                 SoldierHP = Mathf.Max(0f, SoldierHP - EnemyMaxHP * EnemyVolatileSplashPct);
+            if (CurrentEnemyModifier == EnemyModifier.Explosive && SoldierCount > 0)
+                SoldierHP = Mathf.Max(0f, SoldierHP - EnemyMaxHP * EnemyExplosiveDmgPct);
 
             bool wasBoss      = IsBossWave;
             bool wasChallenge = DailyChallengeActive;
@@ -1854,7 +1860,7 @@ public class GameManager : MonoBehaviour
             SoulBindTriggered  = false;
             if (UnityEngine.Random.value < 0.25f)
             {
-                CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 18);
+                CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 19);
                 if (CurrentEnemyModifier == EnemyModifier.Enraged)
                     EnemyAttack *= EnemyEnragedAtkMult;
                 else if (CurrentEnemyModifier == EnemyModifier.Spectral)
