@@ -1471,7 +1471,7 @@ public class GameManager : MonoBehaviour
                 _tenaciousRevived = true;
                 EnemyHP = EnemyMaxHP * EnemyTenaciousRevivePct;
                 OnStateChanged?.Invoke();
-                return;
+                return false;
             }
             if (CurrentEnemyModifier == EnemyModifier.Enraged && SoldierCount > 0)
                 SoldierHP = Mathf.Max(0f, SoldierHP - EnemyAttack * EnragedDeathBlowMult);
