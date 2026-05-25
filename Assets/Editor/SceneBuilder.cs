@@ -799,9 +799,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var prestigeShopPanel = content.CreateChild("PrestigeShopPanel");
         prestigeShopPanel.AddImage(Color.clear);
-        PF(prestigeShopPanel, 205, 1413);
+        PF(prestigeShopPanel, 205, 1471);
 
-        Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 1413, HC("150A30"), 24);
+        Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 1471, HC("150A30"), 24);
 
         var shopTitleGO = Label(prestigeShopPanel, "PrestigeShopTitle",
             "Prestige Shop", 40, Gold, TextAnchor.MiddleLeft);
@@ -969,6 +969,12 @@ public static class SceneBuilder
         PT(pForgeMasterInfoGO, 1336, 48, -175, 500);
         var pForgeMasterBtnGO = Btn(prestigeShopPanel, "PForgeMasterButton", "Buy (1 PP)", 30, HC("E65100"));
         PT(pForgeMasterBtnGO, 1334, 54, +245, 260);
+
+        var pVaultExpansionInfoGO = Label(prestigeShopPanel, "PVaultExpansionInfoText",
+            "Vault Expansion +25pct bank capacity per level  (Lv.0/3)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(pVaultExpansionInfoGO, 1394, 48, -175, 500);
+        var pVaultExpansionBtnGO = Btn(prestigeShopPanel, "PVaultExpansionButton", "Buy (1 PP)", 30, HC("00695C"));
+        PT(pVaultExpansionBtnGO, 1392, 54, +245, 260);
 
         prestigeShopPanel.SetActive(false);
 
@@ -1810,6 +1816,8 @@ public static class SceneBuilder
         uim.pEnduranceButton             = pEnduranceBtnGO.GetComponent<Button>();
         uim.pForgeMasterInfoText         = pForgeMasterInfoGO.GetComponent<Text>();
         uim.pForgeMasterButton           = pForgeMasterBtnGO.GetComponent<Button>();
+        uim.pVaultExpansionInfoText      = pVaultExpansionInfoGO.GetComponent<Text>();
+        uim.pVaultExpansionButton        = pVaultExpansionBtnGO.GetComponent<Button>();
         uim.bloodBankPanel          = bloodBankPanel;
         uim.bloodBankInfoText       = bankInfoGO.GetComponent<Text>();
         uim.bloodBankAccruedText    = bankAccruedGO.GetComponent<Text>();
@@ -2034,6 +2042,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(pSoulTideBtnGO.GetComponent<Button>().onClick,         clk.OnBuyPSoulTide);
         UnityEventTools.AddPersistentListener(pEnduranceBtnGO.GetComponent<Button>().onClick,        clk.OnBuyPEndurance);
         UnityEventTools.AddPersistentListener(pForgeMasterBtnGO.GetComponent<Button>().onClick,      clk.OnBuyPForgeMaster);
+        UnityEventTools.AddPersistentListener(pVaultExpansionBtnGO.GetComponent<Button>().onClick,   clk.OnBuyPVaultExpansion);
         UnityEventTools.AddPersistentListener(ssBossTimerBtnGO.GetComponent<Button>().onClick,        clk.OnBuySSBossTimer);
         UnityEventTools.AddPersistentListener(ssDoubleChestBtnGO.GetComponent<Button>().onClick,      clk.OnBuySSDoubleChest);
         UnityEventTools.AddPersistentListener(ssRollbackBtnGO.GetComponent<Button>().onClick,         clk.OnBuySSRollback);

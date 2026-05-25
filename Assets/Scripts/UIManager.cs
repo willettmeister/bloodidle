@@ -192,6 +192,8 @@ public class UIManager : MonoBehaviour
     public Button pEnduranceButton;
     public Text pForgeMasterInfoText;
     public Button pForgeMasterButton;
+    public Text pVaultExpansionInfoText;
+    public Button pVaultExpansionButton;
 
     [Header("Soul Shard Shop")]
     public GameObject soulShardShopPanel;
@@ -1112,6 +1114,9 @@ public class UIManager : MonoBehaviour
             if (pForgeMasterInfoText != null)
                 pForgeMasterInfoText.text = $"Forge Master +{GameManager.PForgeMasterBonus:F0} atk per weapon level  (Lv.{gm.PForgeMasterLevel}/3)";
             if (pForgeMasterButton != null) pForgeMasterButton.interactable = canSpend && gm.PForgeMasterLevel < 3;
+            if (pVaultExpansionInfoText != null)
+                pVaultExpansionInfoText.text = $"Vault Expansion +{GameManager.PVaultExpansionBonus * 100:F0}pct bank capacity per level  (Lv.{gm.PVaultExpansionLevel}/3)";
+            if (pVaultExpansionButton != null) pVaultExpansionButton.interactable = canSpend && gm.PVaultExpansionLevel < 3;
         }
 
         // Soul Shard Shop
