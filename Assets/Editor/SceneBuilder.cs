@@ -799,9 +799,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var prestigeShopPanel = content.CreateChild("PrestigeShopPanel");
         prestigeShopPanel.AddImage(Color.clear);
-        PF(prestigeShopPanel, 205, 1471);
+        PF(prestigeShopPanel, 205, 1529);
 
-        Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 1471, HC("150A30"), 24);
+        Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 1529, HC("150A30"), 24);
 
         var shopTitleGO = Label(prestigeShopPanel, "PrestigeShopTitle",
             "Prestige Shop", 40, Gold, TextAnchor.MiddleLeft);
@@ -975,6 +975,12 @@ public static class SceneBuilder
         PT(pVaultExpansionInfoGO, 1394, 48, -175, 500);
         var pVaultExpansionBtnGO = Btn(prestigeShopPanel, "PVaultExpansionButton", "Buy (1 PP)", 30, HC("00695C"));
         PT(pVaultExpansionBtnGO, 1392, 54, +245, 260);
+
+        var pTidalSurgeInfoGO = Label(prestigeShopPanel, "PTidalSurgeInfoText",
+            "Tidal Surge +2s Surge duration per level  (Lv.0/3)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(pTidalSurgeInfoGO, 1452, 48, -175, 500);
+        var pTidalSurgeBtnGO = Btn(prestigeShopPanel, "PTidalSurgeButton", "Buy (1 PP)", 30, HC("0277BD"));
+        PT(pTidalSurgeBtnGO, 1450, 54, +245, 260);
 
         prestigeShopPanel.SetActive(false);
 
@@ -1830,6 +1836,8 @@ public static class SceneBuilder
         uim.pForgeMasterButton           = pForgeMasterBtnGO.GetComponent<Button>();
         uim.pVaultExpansionInfoText      = pVaultExpansionInfoGO.GetComponent<Text>();
         uim.pVaultExpansionButton        = pVaultExpansionBtnGO.GetComponent<Button>();
+        uim.pTidalSurgeInfoText          = pTidalSurgeInfoGO.GetComponent<Text>();
+        uim.pTidalSurgeButton            = pTidalSurgeBtnGO.GetComponent<Button>();
         uim.bloodBankPanel          = bloodBankPanel;
         uim.bloodBankInfoText       = bankInfoGO.GetComponent<Text>();
         uim.bloodBankAccruedText    = bankAccruedGO.GetComponent<Text>();
@@ -2059,6 +2067,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(pEnduranceBtnGO.GetComponent<Button>().onClick,        clk.OnBuyPEndurance);
         UnityEventTools.AddPersistentListener(pForgeMasterBtnGO.GetComponent<Button>().onClick,      clk.OnBuyPForgeMaster);
         UnityEventTools.AddPersistentListener(pVaultExpansionBtnGO.GetComponent<Button>().onClick,   clk.OnBuyPVaultExpansion);
+        UnityEventTools.AddPersistentListener(pTidalSurgeBtnGO.GetComponent<Button>().onClick,       clk.OnBuyPTidalSurge);
         UnityEventTools.AddPersistentListener(ssBossTimerBtnGO.GetComponent<Button>().onClick,        clk.OnBuySSBossTimer);
         UnityEventTools.AddPersistentListener(ssDoubleChestBtnGO.GetComponent<Button>().onClick,      clk.OnBuySSDoubleChest);
         UnityEventTools.AddPersistentListener(ssRollbackBtnGO.GetComponent<Button>().onClick,         clk.OnBuySSRollback);

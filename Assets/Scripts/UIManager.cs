@@ -194,6 +194,8 @@ public class UIManager : MonoBehaviour
     public Button pForgeMasterButton;
     public Text pVaultExpansionInfoText;
     public Button pVaultExpansionButton;
+    public Text pTidalSurgeInfoText;
+    public Button pTidalSurgeButton;
 
     [Header("Soul Shard Shop")]
     public GameObject soulShardShopPanel;
@@ -1121,6 +1123,9 @@ public class UIManager : MonoBehaviour
             if (pVaultExpansionInfoText != null)
                 pVaultExpansionInfoText.text = $"Vault Expansion +{GameManager.PVaultExpansionBonus * 100:F0}pct bank capacity per level  (Lv.{gm.PVaultExpansionLevel}/3)";
             if (pVaultExpansionButton != null) pVaultExpansionButton.interactable = canSpend && gm.PVaultExpansionLevel < 3;
+            if (pTidalSurgeInfoText != null)
+                pTidalSurgeInfoText.text = $"Tidal Surge +{GameManager.PTidalSurgeBonusSecs:F0}s Surge duration per level  (Lv.{gm.PTidalSurgeLevel}/3)";
+            if (pTidalSurgeButton != null) pTidalSurgeButton.interactable = canSpend && gm.PTidalSurgeLevel < 3;
         }
 
         // Soul Shard Shop

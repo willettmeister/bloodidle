@@ -75,6 +75,7 @@ public class ClickManager : MonoBehaviour
     public void OnBuyPEndurance()             => GameManager.Instance.BuyPEndurance();
     public void OnBuyPForgeMaster()           => GameManager.Instance.BuyPForgeMaster();
     public void OnBuyPVaultExpansion()        => GameManager.Instance.BuyPVaultExpansion();
+    public void OnBuyPTidalSurge()            => GameManager.Instance.BuyPTidalSurge();
     public void OnBuySSBossTimer()         => GameManager.Instance.BuySSBossTimer();
     public void OnBuySSDoubleChest()       => GameManager.Instance.BuySSDoubleChest();
     public void OnBuySSRollback()          => GameManager.Instance.BuySSRollback();
