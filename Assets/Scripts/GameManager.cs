@@ -482,6 +482,8 @@ public class GameManager : MonoBehaviour
     public const int SSSoulTaxBonusShards = 1; // extra Soul Shards per boss kill per level
     public int    SSSurgeShieldLevel    { get; private set; }
     public const float SSSurgeShieldPct = 0.15f; // BloodShield granted on Surge activation, pct of frontline MaxHP per level
+    public int    SSBloodPyreLevel      { get; private set; }
+    public const float SSBloodPyrePct   = 0.30f; // burst dmg on soldier death, pct of dying soldier's max HP per level
 
     // --- Blood Bank ---
     public double BloodBankDeposit { get; private set; }
@@ -1760,12 +1762,15 @@ public class GameManager : MonoBehaviour
             }
             else
             {
+                float dyingMaxHP = FrontlineMaxHP;
                 if (FrontlineIsTank)           TankCount--;
                 else if (FrontlineIsBerserker) BerserkerCount--;
                 else                           PaladinCount--;
                 TotalSoldiersLost++;
                 if (HasTalent(TalentFlags.SoulDrain) && EnemyHP > 0)
                     EnemyHP = Mathf.Max(float.Epsilon, EnemyHP - EnemyHP * TalentSoulDrainPct);
+                if (SSBloodPyreLevel > 0 && EnemyHP > 0)
+                    EnemyHP = Mathf.Max(0f, EnemyHP - dyingMaxHP * SSBloodPyreLevel * SSBloodPyrePct);
                 if (HasTalent(TalentFlags.SoulBind)) SoulBindTriggered = true;
                 if (HasTalent(TalentFlags.PhoenixRise)) _phoenixRiseReady = true;
                 if (SoldierCount > 0 && _adrenalineStacks < AdrenalineMaxStack) { _adrenalineStacks++; _adrenalineTimer = AdrenalineDuration; }
@@ -3156,6 +3161,15 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuySSBloodPyre()
+    {
+        if (SoulShards < SSTier2Cost || SSBloodPyreLevel >= SSTier2MaxLevel) return false;
+        SoulShards -= SSTier2Cost;
+        SSBloodPyreLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public void RequestPrestige()
     {
         if (Wave < PrestigeWaveRequirement || PendingPrestige) return;
@@ -3295,7 +3309,7 @@ public class GameManager : MonoBehaviour
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
         SSBossTimerLevel = 0; SSDoubleChestLevel = 0; SSRollbackLevel = 0; SSBloodTapLevel = 0; SSShardHungerLevel = 0; SSSoulHarvestLevel = 0; SSCrimsonPulseLevel = 0; SSCrimsonBrandLevel = 0; SSWarSpoilsLevel = 0; SSGhostStrikeLevel = 0; SSDeathsBountyLevel = 0; SSRuneSealLevel = 0; SSWarCrestLevel = 0; SSVitalSurgeLevel = 0; SSWarHornLevel = 0; SSDeathWardLevel = 0;
-        SSVoidConduitLevel = 0; SSBloodEchoLevel = 0; SSIronMarrowLevel = 0; SSWrathBloomLevel = 0; SSBloodNovaLevel = 0; SSEchoSurgeLevel = 0; SSEntropyAmpLevel = 0; SSBoneWardLevel = 0; SSCrimsonStormLevel = 0; SSShadowSurgeLevel = 0; SSKillSurgeLevel = 0; SSVoidStormLevel = 0; SSBloodSigilLevel = 0; SSEchoBlastLevel = 0; SSSoulRendLevel = 0; SSLifeTapLevel = 0; SSSoulTaxLevel = 0; SSSurgeShieldLevel = 0;
+        SSVoidConduitLevel = 0; SSBloodEchoLevel = 0; SSIronMarrowLevel = 0; SSWrathBloomLevel = 0; SSBloodNovaLevel = 0; SSEchoSurgeLevel = 0; SSEntropyAmpLevel = 0; SSBoneWardLevel = 0; SSCrimsonStormLevel = 0; SSShadowSurgeLevel = 0; SSKillSurgeLevel = 0; SSVoidStormLevel = 0; SSBloodSigilLevel = 0; SSEchoBlastLevel = 0; SSSoulRendLevel = 0; SSLifeTapLevel = 0; SSSoulTaxLevel = 0; SSSurgeShieldLevel = 0; SSBloodPyreLevel = 0;
         BloodBankDeposit = 0; BloodBankAccrued = 0; BankInterestLevel = 0; KillIncomeUpgradeLevel = 0; WaveStreak = 0;
         SurgeUpgradeLevel = 0; HealUpgradeLevel = 0; BloodStormUpgradeLevel = 0; WarCryUpgradeLevel = 0; HexCurseUpgradeLevel = 0; BloodOathUpgradeLevel = 0; DesecrateUpgradeLevel = 0; EntropyUpgradeLevel = 0;
         TotalEnemiesKilled = 0; TotalSpellsCast = 0; TotalBossesKilled = 0; VeteranAttackBonus = 0f; TimePlayed = 0; Achievements = AchievementFlags.None;
@@ -3495,6 +3509,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("SSLifeTapLevel",        SSLifeTapLevel);
         PlayerPrefs.SetInt   ("SSSoulTaxLevel",        SSSoulTaxLevel);
         PlayerPrefs.SetInt   ("SSSurgeShieldLevel",    SSSurgeShieldLevel);
+        PlayerPrefs.SetInt   ("SSBloodPyreLevel",      SSBloodPyreLevel);
         PlayerPrefs.SetInt   ("SurgeUpgradeLevel",        SurgeUpgradeLevel);
         PlayerPrefs.SetInt   ("HealUpgradeLevel",         HealUpgradeLevel);
         PlayerPrefs.SetInt   ("BloodStormUpgradeLevel",   BloodStormUpgradeLevel);
@@ -3650,6 +3665,7 @@ public class GameManager : MonoBehaviour
         SSLifeTapLevel      = PlayerPrefs.GetInt("SSLifeTapLevel",      0);
         SSSoulTaxLevel      = PlayerPrefs.GetInt("SSSoulTaxLevel",      0);
         SSSurgeShieldLevel  = PlayerPrefs.GetInt("SSSurgeShieldLevel",  0);
+        SSBloodPyreLevel    = PlayerPrefs.GetInt("SSBloodPyreLevel",    0);
         SSGhostStrikeLevel  = PlayerPrefs.GetInt("SSGhostStrikeLevel",  0);
         SSDeathsBountyLevel = PlayerPrefs.GetInt("SSDeathsBountyLevel", 0);
         SSRuneSealLevel     = PlayerPrefs.GetInt("SSRuneSealLevel",     0);

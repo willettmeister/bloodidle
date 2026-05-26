@@ -272,6 +272,8 @@ public class UIManager : MonoBehaviour
     public Button ssSoulTaxButton;
     public Text ssSurgeShieldInfoText;
     public Button ssSurgeShieldButton;
+    public Text ssBloodPyreInfoText;
+    public Button ssBloodPyreButton;
 
     [Header("Settings")]
     public GameObject settingsPanel;
@@ -1291,6 +1293,10 @@ public class UIManager : MonoBehaviour
                 ssSurgeShieldInfoText.text = $"Surge Shield Surge activation grants BloodShield {GameManager.SSSurgeShieldPct * 100:F0}pct frontline HP/lv  (Lv.{gm.SSSurgeShieldLevel}/{GameManager.SSTier2MaxLevel})";
             if (ssSurgeShieldButton != null)
                 ssSurgeShieldButton.interactable = canBuyT2 && gm.SSSurgeShieldLevel < GameManager.SSTier2MaxLevel;
+            if (ssBloodPyreInfoText != null)
+                ssBloodPyreInfoText.text = $"Blood Pyre soldier death deals {GameManager.SSBloodPyrePct * 100:F0}pct of dying HP as burst dmg/lv  (Lv.{gm.SSBloodPyreLevel}/{GameManager.SSTier2MaxLevel})";
+            if (ssBloodPyreButton != null)
+                ssBloodPyreButton.interactable = canBuyT2 && gm.SSBloodPyreLevel < GameManager.SSTier2MaxLevel;
         }
 
         // Blood Bank
