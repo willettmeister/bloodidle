@@ -198,6 +198,8 @@ public class UIManager : MonoBehaviour
     public Button pTidalSurgeButton;
     public Text pHexMasterInfoText;
     public Button pHexMasterButton;
+    public Text pBloodFrenzyInfoText;
+    public Button pBloodFrenzyButton;
 
     [Header("Soul Shard Shop")]
     public GameObject soulShardShopPanel;
@@ -1135,6 +1137,9 @@ public class UIManager : MonoBehaviour
             if (pHexMasterInfoText != null)
                 pHexMasterInfoText.text = $"Hex Master +{GameManager.PHexMasterBonus * 100:F0}pct HexCurse atk reduction per level  (Lv.{gm.PHexMasterLevel}/3)";
             if (pHexMasterButton != null) pHexMasterButton.interactable = canSpend && gm.PHexMasterLevel < 3;
+            if (pBloodFrenzyInfoText != null)
+                pBloodFrenzyInfoText.text = $"Blood Frenzy +{GameManager.PBloodFrenzyBonusSecs:F0}s WarCry duration per level  (Lv.{gm.PBloodFrenzyLevel}/3)";
+            if (pBloodFrenzyButton != null) pBloodFrenzyButton.interactable = canSpend && gm.PBloodFrenzyLevel < 3;
         }
 
         // Soul Shard Shop
