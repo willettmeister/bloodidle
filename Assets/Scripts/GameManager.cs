@@ -51,7 +51,7 @@ public struct AchievementDef
     public float   AttackBonus;  // additive bonus to attack per soldier
 }
 
-public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral, Leech, Volatile, Fortified, Giant, Blessed, Frenzied, Mirrored, Phantom, Colossus, Stalwart, Bloodthirsty, Warded, Explosive, Tenacious }
+public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral, Leech, Volatile, Fortified, Giant, Blessed, Frenzied, Mirrored, Phantom, Colossus, Stalwart, Bloodthirsty, Warded, Explosive, Tenacious, Phasic }
 public enum BossAbility    { None, Shield, Berserk, Drain, Regen, Thorns, Haste, Wrath, Miasma, LeechStrike, Venom, Hex, Bulwark, CursedAura, BloodTribute, Vampiric, Encase, Overpower, Sunder }
 public enum QuestTrackType { Kills, Farms, Wave, Spells }
 
@@ -165,6 +165,7 @@ public class GameManager : MonoBehaviour
             if (CurrentEnemyModifier == EnemyModifier.Warded)         r = Math.Floor(r * EnemyWardedRewardMult);
             if (CurrentEnemyModifier == EnemyModifier.Explosive)      r = Math.Floor(r * EnemyExplosiveRewardMult);
             if (CurrentEnemyModifier == EnemyModifier.Tenacious)      r = Math.Floor(r * EnemyTenaciousRewardMult);
+            if (CurrentEnemyModifier == EnemyModifier.Phasic)         r = Math.Floor(r * EnemyPhasicRewardMult);
             if (IsBloodyWave)  r = Math.Floor(r * BloodMoonMult);
             if (_isBountyEnemy) r = Math.Floor(r * EffectiveBountyMult);
             if (_isEliteEnemy)  r = Math.Floor(r * EliteRewardMult);
@@ -859,6 +860,7 @@ public class GameManager : MonoBehaviour
         EnemyModifier.Warded        => "🛡 Warded",
         EnemyModifier.Explosive     => "💥 Explosive",
         EnemyModifier.Tenacious     => "💪 Tenacious",
+        EnemyModifier.Phasic        => "🌀 Phasic",
         _                     => "",
     };
     public const float EnemyArmoredDmgMult    = 0.5f;
@@ -901,6 +903,9 @@ public class GameManager : MonoBehaviour
     public const double EnemyExplosiveRewardMult      = 1.70;  // +70pct kill reward
     public const float  EnemyTenaciousRevivePct       = 0.30f; // revives once at 30pct of max HP
     public const double EnemyTenaciousRewardMult      = 2.50;  // +150pct kill reward for the extra phase
+    public const float  EnemyPhasicInterval           = 15f;   // seconds between phase windows
+    public const float  EnemyPhasicDuration           = 2f;    // seconds of immunity per window
+    public const double EnemyPhasicRewardMult         = 2.00;  // 2x kill reward
 
     // --- Wave preview ---
     public bool WavePreviewActive { get; private set; }
@@ -913,6 +918,9 @@ public class GameManager : MonoBehaviour
     float _flawlessTimer;
     bool  _undyingUsedThisWave;
     bool  _tenaciousRevived;
+    float _phasicTimer;
+    float _phasicActiveTimer;
+    public bool PhasicActive { get; private set; }
     public bool UndyingAvailable => HasTalent(TalentFlags.Undying) && !_undyingUsedThisWave;
     bool  _isBountyEnemy;
     bool  _isEliteEnemy;
@@ -1421,6 +1429,11 @@ public class GameManager : MonoBehaviour
         if (_bloodStormTimer  > 0f) { _bloodStormTimer  -= dt; if (_bloodStormTimer  < 0f) _bloodStormTimer  = 0f; }
         if (_desecrateTimer   > 0f) { _desecrateTimer   -= dt; if (_desecrateTimer   < 0f) _desecrateTimer   = 0f; }
         if (_soulRendTimer    > 0f) { _soulRendTimer    -= dt; if (_soulRendTimer    < 0f) _soulRendTimer    = 0f; }
+        if (CurrentEnemyModifier == EnemyModifier.Phasic && EnemyHP > 0)
+        {
+            if (PhasicActive) { _phasicActiveTimer -= dt; if (_phasicActiveTimer <= 0f) { PhasicActive = false; _phasicTimer = EnemyPhasicInterval; } }
+            else { _phasicTimer -= dt; if (_phasicTimer <= 0f) { PhasicActive = true; _phasicActiveTimer = EnemyPhasicDuration; } }
+        }
         if (_bloodOathTimer   > 0f) { _bloodOathTimer   -= dt; if (_bloodOathTimer   < 0f) _bloodOathTimer   = 0f; }
         if (_entropyTimer    > 0f) { _entropyTimer    -= dt; if (_entropyTimer    < 0f) _entropyTimer    = 0f; }
         if (_crimsonVeilCooldown > 0f) { _crimsonVeilCooldown -= dt; if (_crimsonVeilCooldown < 0f) _crimsonVeilCooldown = 0f; }
@@ -1465,6 +1478,7 @@ public class GameManager : MonoBehaviour
         if (LastStandActive)     eff *= LastStandMult;
         if (DeathsDoorActive)    eff *= DeathsDoorMult;
         if ((IsBossWave || DailyChallengeActive) && CurrentBossAbility == BossAbility.Encase && BossEncaseActive) eff = 0f;
+        if (CurrentEnemyModifier == EnemyModifier.Phasic && PhasicActive) eff = 0f;
         if (BossShieldActive)
         {
             _bossShieldHP -= eff * dt;
@@ -1866,6 +1880,8 @@ public class GameManager : MonoBehaviour
         _flawlessTimer       = 0f;
         _undyingUsedThisWave = false;
         _tenaciousRevived    = false;
+        PhasicActive         = false;
+        _phasicTimer         = EnemyPhasicInterval;
         bool isBoss = wave == NextBossWave;
         float fortReduction = 1f - FortificationDmgReduction;
         if (isBoss)
@@ -1926,7 +1942,7 @@ public class GameManager : MonoBehaviour
             SoulBindTriggered  = false;
             if (UnityEngine.Random.value < 0.25f)
             {
-                CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 20);
+                CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 21);
                 if (CurrentEnemyModifier == EnemyModifier.Enraged)
                     EnemyAttack *= EnemyEnragedAtkMult;
                 else if (CurrentEnemyModifier == EnemyModifier.Spectral)
