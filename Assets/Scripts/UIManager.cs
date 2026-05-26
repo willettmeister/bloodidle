@@ -268,6 +268,8 @@ public class UIManager : MonoBehaviour
     public Button ssLifeTapButton;
     public Text ssSoulTaxInfoText;
     public Button ssSoulTaxButton;
+    public Text ssSurgeShieldInfoText;
+    public Button ssSurgeShieldButton;
 
     [Header("Settings")]
     public GameObject settingsPanel;
@@ -1280,6 +1282,10 @@ public class UIManager : MonoBehaviour
                 ssSoulTaxInfoText.text = $"Soul Tax +{GameManager.SSSoulTaxBonusShards} Soul Shard per boss kill per level  (Lv.{gm.SSSoulTaxLevel}/{GameManager.SSMaxLevel})";
             if (ssSoulTaxButton != null)
                 ssSoulTaxButton.interactable = canBuySS && gm.SSSoulTaxLevel < GameManager.SSMaxLevel;
+            if (ssSurgeShieldInfoText != null)
+                ssSurgeShieldInfoText.text = $"Surge Shield Surge activation grants BloodShield {GameManager.SSSurgeShieldPct * 100:F0}pct frontline HP/lv  (Lv.{gm.SSSurgeShieldLevel}/{GameManager.SSTier2MaxLevel})";
+            if (ssSurgeShieldButton != null)
+                ssSurgeShieldButton.interactable = canBuyT2 && gm.SSSurgeShieldLevel < GameManager.SSTier2MaxLevel;
         }
 
         // Blood Bank
