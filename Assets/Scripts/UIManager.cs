@@ -276,6 +276,8 @@ public class UIManager : MonoBehaviour
     public Button ssSurgeShieldButton;
     public Text ssBloodPyreInfoText;
     public Button ssBloodPyreButton;
+    public Text ssGraveRobberInfoText;
+    public Button ssGraveRobberButton;
 
     [Header("Settings")]
     public GameObject settingsPanel;
@@ -1302,6 +1304,10 @@ public class UIManager : MonoBehaviour
                 ssBloodPyreInfoText.text = $"Blood Pyre soldier death deals {GameManager.SSBloodPyrePct * 100:F0}pct of dying HP as burst dmg/lv  (Lv.{gm.SSBloodPyreLevel}/{GameManager.SSTier2MaxLevel})";
             if (ssBloodPyreButton != null)
                 ssBloodPyreButton.interactable = canBuyT2 && gm.SSBloodPyreLevel < GameManager.SSTier2MaxLevel;
+            if (ssGraveRobberInfoText != null)
+                ssGraveRobberInfoText.text = $"Grave Robber {GameManager.SSGraveRobberChance * 100:F0}pct chance per level for bonus shard on boss kill  (Lv.{gm.SSGraveRobberLevel}/{GameManager.SSMaxLevel})";
+            if (ssGraveRobberButton != null)
+                ssGraveRobberButton.interactable = canBuySS && gm.SSGraveRobberLevel < GameManager.SSMaxLevel;
         }
 
         // Blood Bank
