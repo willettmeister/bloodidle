@@ -52,7 +52,7 @@ public struct AchievementDef
 }
 
 public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral, Leech, Volatile, Fortified, Giant, Blessed, Frenzied, Mirrored, Phantom, Colossus, Stalwart, Bloodthirsty, Warded, Explosive, Tenacious, Phasic, Swift }
-public enum BossAbility    { None, Shield, Berserk, Drain, Regen, Thorns, Haste, Wrath, Miasma, LeechStrike, Venom, Hex, Bulwark, CursedAura, BloodTribute, Vampiric, Encase, Overpower, Sunder }
+public enum BossAbility    { None, Shield, Berserk, Drain, Regen, Thorns, Haste, Wrath, Miasma, LeechStrike, Venom, Hex, Bulwark, CursedAura, BloodTribute, Vampiric, Encase, Overpower, Sunder, Petrify }
 public enum QuestTrackType { Kills, Farms, Wave, Spells }
 
 public struct DailyQuestDef
@@ -640,6 +640,9 @@ public class GameManager : MonoBehaviour
     public bool BossEncaseActive { get; private set; }
     float _bossOverpowerTimer;
     float _bossSunderTimer;
+    float _bossPetrifyTimer;
+    float _bossPetrifyActiveTimer;
+    public bool BossPetrifyActive { get; private set; }
     float _soulRendTimer;
     public const float BossShieldFraction     = 0.20f;
     public const float BossTributeInterval    = 8f;    // seconds between tribute drains
@@ -656,6 +659,10 @@ public class GameManager : MonoBehaviour
     public const float  BossSunderInterval       = 12f;   // seconds between sunder strikes
     public const float  BossSunderHPReductionPct = 0.25f; // pct of current soldier HP removed each strike
     public const double BossSunderRewardMult     = 2.00;  // 2x kill reward
+    public const float  BossPetrifyInterval      = 20f;   // seconds between petrify windows
+    public const float  BossPetrifyDuration      = 3f;    // seconds soldiers are petrified
+    public const float  BossPetrifyDmgMult       = 0.25f; // soldiers deal only 25pct damage while petrified
+    public const double BossPetrifyRewardMult    = 2.50;  // 2.5x kill reward
     public const float BossDrainPerSec     = 5f;
     public const float BossRegenPctPerSec  = 0.005f; // 0.5% of max HP per second
     public const float BossThornsReflectPct  = 0.25f;  // fraction of attacker damage reflected
@@ -697,6 +704,7 @@ public class GameManager : MonoBehaviour
         BossAbility.Encase       => "🪨 Encase",
         BossAbility.Overpower    => "💢 Overpower",
         BossAbility.Sunder       => "⚔ Sunder",
+        BossAbility.Petrify      => "🗿 Petrify",
         _                   => "",
     };
 
@@ -1490,6 +1498,7 @@ public class GameManager : MonoBehaviour
         if (DeathsDoorActive)    eff *= DeathsDoorMult;
         if ((IsBossWave || DailyChallengeActive) && CurrentBossAbility == BossAbility.Encase && BossEncaseActive) eff = 0f;
         if (CurrentEnemyModifier == EnemyModifier.Phasic && PhasicActive) eff = 0f;
+        if ((IsBossWave || DailyChallengeActive) && CurrentBossAbility == BossAbility.Petrify && BossPetrifyActive) eff *= BossPetrifyDmgMult;
         if (BossShieldActive)
         {
             _bossShieldHP -= eff * dt;
@@ -1575,6 +1584,7 @@ public class GameManager : MonoBehaviour
                 if (CurrentBossAbility == BossAbility.Encase)        reward = Math.Floor(reward * BossEncaseRewardMult);
                 if (CurrentBossAbility == BossAbility.Overpower)     reward = Math.Floor(reward * BossOverpowerRewardMult);
                 if (CurrentBossAbility == BossAbility.Sunder)        reward = Math.Floor(reward * BossSunderRewardMult);
+                if (CurrentBossAbility == BossAbility.Petrify)       reward = Math.Floor(reward * BossPetrifyRewardMult);
                 if (SSShardHungerLevel > 0) reward = Math.Floor(reward * (1.0 + SSShardHungerLevel * SSShardHungerBonus));
                 if (VeteranAttackBonus < VeteranAttackCap) VeteranAttackBonus++;
                 SoulShards += (HasTalent(TalentFlags.ShardHunter) ? 2 : 1) + PVoidPactLevel + SSSoulTaxLevel * SSSoulTaxBonusShards;
@@ -1739,6 +1749,11 @@ public class GameManager : MonoBehaviour
                 _bossSunderTimer = BossSunderInterval;
                 SoldierHP = Mathf.Max(1f, SoldierHP * (1f - BossSunderHPReductionPct));
             }
+        }
+        if (isSpecialFoe && CurrentBossAbility == BossAbility.Petrify && EnemyHP > 0)
+        {
+            if (BossPetrifyActive) { _bossPetrifyActiveTimer -= dt; if (_bossPetrifyActiveTimer <= 0f) { BossPetrifyActive = false; _bossPetrifyTimer = BossPetrifyInterval; } }
+            else { _bossPetrifyTimer -= dt; if (_bossPetrifyTimer <= 0f) { BossPetrifyActive = true; _bossPetrifyActiveTimer = BossPetrifyDuration; } }
         }
         float dmg = totalIncoming * dt;
         if (BloodShieldHP > 0f)
@@ -1910,7 +1925,7 @@ public class GameManager : MonoBehaviour
             EnemyAttack      = (float)(3   * Math.Pow(1.3, wave - 1) * 2.0);
             BossTimeRemaining = BossTimeLimit + SSBossTimerLevel * 15f;
             CurrentEnemyModifier = EnemyModifier.None;
-            CurrentBossAbility   = (BossAbility)UnityEngine.Random.Range(0, 19);
+            CurrentBossAbility   = (BossAbility)UnityEngine.Random.Range(0, 20);
             BossShieldActive     = CurrentBossAbility == BossAbility.Shield;
             _bossShieldHP        = BossShieldActive ? EnemyMaxHP * BossShieldFraction : 0f;
             _bloodTributeTimer   = BossTributeInterval;
@@ -1918,6 +1933,8 @@ public class GameManager : MonoBehaviour
             BossEncaseActive     = false;
             _bossOverpowerTimer  = BossOverpowerInterval;
             _bossSunderTimer     = BossSunderInterval;
+            _bossPetrifyTimer    = BossPetrifyInterval;
+            BossPetrifyActive    = false;
             if (CurrentBossAbility == BossAbility.Bulwark)
             {
                 EnemyMaxHP *= BossBulwarkHPMult;
