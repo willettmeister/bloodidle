@@ -51,7 +51,7 @@ public struct AchievementDef
     public float   AttackBonus;  // additive bonus to attack per soldier
 }
 
-public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral, Leech, Volatile, Fortified, Giant, Blessed, Frenzied, Mirrored, Phantom, Colossus, Stalwart, Bloodthirsty, Warded, Explosive, Tenacious, Phasic, Swift }
+public enum EnemyModifier { None, Armored, Enraged, Regen, Cursed, Spectral, Leech, Volatile, Fortified, Giant, Blessed, Frenzied, Mirrored, Phantom, Colossus, Stalwart, Bloodthirsty, Warded, Explosive, Tenacious, Phasic, Swift, Desperate }
 public enum BossAbility    { None, Shield, Berserk, Drain, Regen, Thorns, Haste, Wrath, Miasma, LeechStrike, Venom, Hex, Bulwark, CursedAura, BloodTribute, Vampiric, Encase, Overpower, Sunder, Petrify }
 public enum QuestTrackType { Kills, Farms, Wave, Spells }
 
@@ -167,6 +167,7 @@ public class GameManager : MonoBehaviour
             if (CurrentEnemyModifier == EnemyModifier.Tenacious)      r = Math.Floor(r * EnemyTenaciousRewardMult);
             if (CurrentEnemyModifier == EnemyModifier.Phasic)         r = Math.Floor(r * EnemyPhasicRewardMult);
             if (CurrentEnemyModifier == EnemyModifier.Swift)          r = Math.Floor(r * EnemySwiftRewardMult);
+            if (CurrentEnemyModifier == EnemyModifier.Desperate)      r = Math.Floor(r * EnemyDesperateRewardMult);
             if (IsBloodyWave)  r = Math.Floor(r * BloodMoonMult);
             if (_isBountyEnemy) r = Math.Floor(r * EffectiveBountyMult);
             if (_isEliteEnemy)  r = Math.Floor(r * EliteRewardMult);
@@ -877,6 +878,7 @@ public class GameManager : MonoBehaviour
         EnemyModifier.Tenacious     => "💪 Tenacious",
         EnemyModifier.Phasic        => "🌀 Phasic",
         EnemyModifier.Swift         => "💨 Swift",
+        EnemyModifier.Desperate     => "😤 Desperate",
         _                     => "",
     };
     public const float EnemyArmoredDmgMult    = 0.5f;
@@ -925,6 +927,8 @@ public class GameManager : MonoBehaviour
     public const float  EnemySwiftHPMult              = 0.50f; // 50pct HP
     public const float  EnemySwiftAtkMult             = 2.00f; // 2x attack rate
     public const double EnemySwiftRewardMult          = 1.60;  // 1.6x kill reward
+    public const float  EnemyDesperatePeakMult        = 2.00f; // attack multiplier at 0 HP (scales from 1x at full HP)
+    public const double EnemyDesperateRewardMult      = 1.80;  // 1.8x kill reward
 
     // --- Wave preview ---
     public bool WavePreviewActive { get; private set; }
@@ -1682,6 +1686,8 @@ public class GameManager : MonoBehaviour
             incomingAtk *= BossWrathAtkMult;
         if (CurrentEnemyModifier == EnemyModifier.Bloodthirsty && EnemyMaxHP > 0)
             incomingAtk *= Mathf.Lerp(1f, EnemyBloodthirstyAtkMult, EnemyHP / EnemyMaxHP);
+        if (CurrentEnemyModifier == EnemyModifier.Desperate && EnemyMaxHP > 0)
+            incomingAtk *= Mathf.Lerp(EnemyDesperatePeakMult, 1f, EnemyHP / EnemyMaxHP);
         if (IsMixedArmy)        incomingAtk *= (1f - MixedArmyDmgReduction);
         if (IsAllTank)          incomingAtk *= (1f - TankShieldWallReduction);
         if (IsAllTank && HasTalent(TalentFlags.Vanguard)) incomingAtk *= (1f - TalentVanguardDmgReduction);
@@ -1974,7 +1980,7 @@ public class GameManager : MonoBehaviour
             SoulBindTriggered  = false;
             if (UnityEngine.Random.value < 0.25f)
             {
-                CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 22);
+                CurrentEnemyModifier = (EnemyModifier)UnityEngine.Random.Range(1, 23);
                 if (CurrentEnemyModifier == EnemyModifier.Enraged)
                     EnemyAttack *= EnemyEnragedAtkMult;
                 else if (CurrentEnemyModifier == EnemyModifier.Spectral)
