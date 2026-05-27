@@ -398,6 +398,8 @@ public class GameManager : MonoBehaviour
     public const float PBloodFrenzyBonusSecs = 2f;   // +2s WarCry duration per level
     public int PCompoundInterestLevel        { get; private set; }
     public const double PCompoundInterestBonus = 0.005; // +0.5pct bank interest rate per level
+    public int PWarBannerLevel               { get; private set; }
+    public const float PWarBannerBonus       = 0.25f;  // +0.25 added to WarCry multiplier per level
 
     public double EffectiveBountyMult => BountyRewardMult + PBountyBonusLevel;
     public const int   PrestigeShopCost      = 1;
@@ -1031,6 +1033,7 @@ public class GameManager : MonoBehaviour
     public const double WarCryCost         = 30.0;
     public const float  WarCryDuration     = 10f;
     public const float  WarCryMult         = 2f;
+    public float EffectiveWarCryMult       => WarCryMult + PWarBannerLevel * PWarBannerBonus;
     public const int    WarCryUnlockWave   = 5;
     float _warCryTimer;
     public bool  WarCryActive    => _warCryTimer > 0f;
@@ -1486,7 +1489,7 @@ public class GameManager : MonoBehaviour
             _comboTimer -= dt;
             if (_comboTimer <= 0f) { _comboTimer = 0f; ComboStacks = 0; }
         }
-        float eff = TotalAttack * (SurgeActive ? EffectiveSurgeMultiplier : 1f) * (WarCryActive ? WarCryMult : 1f) * AdrenalineMult * IdleFuryMult * (IsBloodyWave ? BloodMoonAtkMult : 1f) * (BloodEchoCount > 0 ? (1f + BloodEchoAtkBonus) : 1f) * (DesperationActive ? DesperationMult : 1f);
+        float eff = TotalAttack * (SurgeActive ? EffectiveSurgeMultiplier : 1f) * (WarCryActive ? EffectiveWarCryMult : 1f) * AdrenalineMult * IdleFuryMult * (IsBloodyWave ? BloodMoonAtkMult : 1f) * (BloodEchoCount > 0 ? (1f + BloodEchoAtkBonus) : 1f) * (DesperationActive ? DesperationMult : 1f);
         if (PackTacticsActive)   eff *= PackTacticsMult;
         if (BloodOathActive)     eff *= BloodOathAtkMult;
         if (CurrentEnemyModifier == EnemyModifier.Armored && !IsAllBerserker)
@@ -2820,6 +2823,15 @@ public class GameManager : MonoBehaviour
         return true;
     }
 
+    public bool BuyPWarBanner()
+    {
+        if (PrestigePoints < PrestigeShopCost || PWarBannerLevel >= 3) return false;
+        PrestigePoints -= PrestigeShopCost;
+        PWarBannerLevel++;
+        OnStateChanged?.Invoke();
+        return true;
+    }
+
     public bool BuySSBossTimer()
     {
         if (SoulShards < SSUpgradeCost || SSBossTimerLevel >= SSMaxLevel) return false;
@@ -3378,7 +3390,7 @@ public class GameManager : MonoBehaviour
         BloodShieldUnlocked = false; BloodShieldHP = 0f;
         PrestigeCount = 0; PrestigePoints = 0;
         PSoldierCapLevel = 0; PClickBonusLevel = 0; PRitualEffLevel = 0;
-        PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0; PBountyBonusLevel = 0; PBloodRitualStartLevel = 0; PBloodMasteryLevel = 0; PSacredGroundLevel = 0; PEternalFlameLevel = 0; PWarMachineLevel = 0; PCrimsonLegacyLevel = 0; PBloodlineLevel = 0; PIronBastionLevel = 0; PBloodPriceLevel = 0; PVoidPactLevel = 0; PWarFervorLevel = 0; PWellspringLevel = 0; PBattleRhythmLevel = 0; PSoulTideLevel = 0; PEnduranceLevel = 0; PForgeMasterLevel = 0; PVaultExpansionLevel = 0; PTidalSurgeLevel = 0; PHexMasterLevel = 0; PBloodFrenzyLevel = 0; PCompoundInterestLevel = 0;
+        PWeaponHeadStartLevel = 0; PBloodTitheLevel = 0; PIronWallLevel = 0; PBountyBonusLevel = 0; PBloodRitualStartLevel = 0; PBloodMasteryLevel = 0; PSacredGroundLevel = 0; PEternalFlameLevel = 0; PWarMachineLevel = 0; PCrimsonLegacyLevel = 0; PBloodlineLevel = 0; PIronBastionLevel = 0; PBloodPriceLevel = 0; PVoidPactLevel = 0; PWarFervorLevel = 0; PWellspringLevel = 0; PBattleRhythmLevel = 0; PSoulTideLevel = 0; PEnduranceLevel = 0; PForgeMasterLevel = 0; PVaultExpansionLevel = 0; PTidalSurgeLevel = 0; PHexMasterLevel = 0; PBloodFrenzyLevel = 0; PCompoundInterestLevel = 0; PWarBannerLevel = 0;
         WeaponLevel = 0; ArmorLevel = 0; TalismanLevel = 0; BannerLevel = 0;
         BerserkerFront = false; FortificationLevel = 0; FortificationCost = FortBaseCost;
         SoulShards = 0; SoulShardShopUnlocked = false;
@@ -3536,6 +3548,7 @@ public class GameManager : MonoBehaviour
         PlayerPrefs.SetInt   ("PHexMasterLevel",          PHexMasterLevel);
         PlayerPrefs.SetInt   ("PBloodFrenzyLevel",        PBloodFrenzyLevel);
         PlayerPrefs.SetInt   ("PCompoundInterestLevel",   PCompoundInterestLevel);
+        PlayerPrefs.SetInt   ("PWarBannerLevel",          PWarBannerLevel);
         PlayerPrefs.SetInt   ("WeaponLevel",         WeaponLevel);
         PlayerPrefs.SetInt   ("ArmorLevel",          ArmorLevel);
         PlayerPrefs.SetInt   ("TalismanLevel",       TalismanLevel);
@@ -3702,6 +3715,7 @@ public class GameManager : MonoBehaviour
         PHexMasterLevel            = PlayerPrefs.GetInt("PHexMasterLevel",         0);
         PBloodFrenzyLevel          = PlayerPrefs.GetInt("PBloodFrenzyLevel",       0);
         PCompoundInterestLevel     = PlayerPrefs.GetInt("PCompoundInterestLevel",  0);
+        PWarBannerLevel            = PlayerPrefs.GetInt("PWarBannerLevel",         0);
         WeaponLevel         = PlayerPrefs.GetInt   ("WeaponLevel",         0);
         ArmorLevel          = PlayerPrefs.GetInt   ("ArmorLevel",          0);
         TalismanLevel       = PlayerPrefs.GetInt   ("TalismanLevel",       0);

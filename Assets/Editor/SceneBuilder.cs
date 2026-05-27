@@ -799,9 +799,9 @@ public static class SceneBuilder
         // ════════════════════════════════════════════════════════════════════
         var prestigeShopPanel = content.CreateChild("PrestigeShopPanel");
         prestigeShopPanel.AddImage(Color.clear);
-        PF(prestigeShopPanel, 205, 1703);
+        PF(prestigeShopPanel, 205, 1761);
 
-        Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 1703, HC("150A30"), 24);
+        Panel(prestigeShopPanel, "PrestigeShopCardBg", 0, 1761, HC("150A30"), 24);
 
         var shopTitleGO = Label(prestigeShopPanel, "PrestigeShopTitle",
             "Prestige Shop", 40, Gold, TextAnchor.MiddleLeft);
@@ -999,6 +999,12 @@ public static class SceneBuilder
         PT(pCompoundInterestInfoGO, 1626, 48, -175, 500);
         var pCompoundInterestBtnGO = Btn(prestigeShopPanel, "PCompoundInterestButton", "Buy (1 PP)", 30, HC("00695C"));
         PT(pCompoundInterestBtnGO, 1624, 54, +245, 260);
+
+        var pWarBannerInfoGO = Label(prestigeShopPanel, "PWarBannerInfoText",
+            "War Banner +0.25 WarCry multiplier per level  (Lv.0/3)", 30, TextSec, TextAnchor.MiddleLeft);
+        PT(pWarBannerInfoGO, 1684, 48, -175, 500);
+        var pWarBannerBtnGO = Btn(prestigeShopPanel, "PWarBannerButton", "Buy (1 PP)", 30, HC("AD1457"));
+        PT(pWarBannerBtnGO, 1682, 54, +245, 260);
 
         prestigeShopPanel.SetActive(false);
 
@@ -1892,6 +1898,8 @@ public static class SceneBuilder
         uim.pBloodFrenzyButton           = pBloodFrenzyBtnGO.GetComponent<Button>();
         uim.pCompoundInterestInfoText    = pCompoundInterestInfoGO.GetComponent<Text>();
         uim.pCompoundInterestButton      = pCompoundInterestBtnGO.GetComponent<Button>();
+        uim.pWarBannerInfoText           = pWarBannerInfoGO.GetComponent<Text>();
+        uim.pWarBannerButton             = pWarBannerBtnGO.GetComponent<Button>();
         uim.bloodBankPanel          = bloodBankPanel;
         uim.bloodBankInfoText       = bankInfoGO.GetComponent<Text>();
         uim.bloodBankAccruedText    = bankAccruedGO.GetComponent<Text>();
@@ -2135,6 +2143,7 @@ public static class SceneBuilder
         UnityEventTools.AddPersistentListener(pHexMasterBtnGO.GetComponent<Button>().onClick,        clk.OnBuyPHexMaster);
         UnityEventTools.AddPersistentListener(pBloodFrenzyBtnGO.GetComponent<Button>().onClick,      clk.OnBuyPBloodFrenzy);
         UnityEventTools.AddPersistentListener(pCompoundInterestBtnGO.GetComponent<Button>().onClick, clk.OnBuyPCompoundInterest);
+        UnityEventTools.AddPersistentListener(pWarBannerBtnGO.GetComponent<Button>().onClick,        clk.OnBuyPWarBanner);
         UnityEventTools.AddPersistentListener(ssBossTimerBtnGO.GetComponent<Button>().onClick,        clk.OnBuySSBossTimer);
         UnityEventTools.AddPersistentListener(ssDoubleChestBtnGO.GetComponent<Button>().onClick,      clk.OnBuySSDoubleChest);
         UnityEventTools.AddPersistentListener(ssRollbackBtnGO.GetComponent<Button>().onClick,         clk.OnBuySSRollback);

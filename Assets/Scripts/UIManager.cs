@@ -202,6 +202,8 @@ public class UIManager : MonoBehaviour
     public Button pBloodFrenzyButton;
     public Text pCompoundInterestInfoText;
     public Button pCompoundInterestButton;
+    public Text pWarBannerInfoText;
+    public Button pWarBannerButton;
 
     [Header("Soul Shard Shop")]
     public GameObject soulShardShopPanel;
@@ -1151,6 +1153,9 @@ public class UIManager : MonoBehaviour
             if (pCompoundInterestInfoText != null)
                 pCompoundInterestInfoText.text = $"Compound Interest +{GameManager.PCompoundInterestBonus * 100:F1}pct bank interest rate per level  (Lv.{gm.PCompoundInterestLevel}/3)";
             if (pCompoundInterestButton != null) pCompoundInterestButton.interactable = canSpend && gm.PCompoundInterestLevel < 3;
+            if (pWarBannerInfoText != null)
+                pWarBannerInfoText.text = $"War Banner +{GameManager.PWarBannerBonus:F2} WarCry multiplier per level  (Lv.{gm.PWarBannerLevel}/3)";
+            if (pWarBannerButton != null) pWarBannerButton.interactable = canSpend && gm.PWarBannerLevel < 3;
         }
 
         // Soul Shard Shop
