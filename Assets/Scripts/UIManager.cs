@@ -278,6 +278,8 @@ public class UIManager : MonoBehaviour
     public Button ssBloodPyreButton;
     public Text ssGraveRobberInfoText;
     public Button ssGraveRobberButton;
+    public Text ssStormFrontInfoText;
+    public Button ssStormFrontButton;
 
     [Header("Settings")]
     public GameObject settingsPanel;
@@ -1308,6 +1310,10 @@ public class UIManager : MonoBehaviour
                 ssGraveRobberInfoText.text = $"Grave Robber {GameManager.SSGraveRobberChance * 100:F0}pct chance per level for bonus shard on boss kill  (Lv.{gm.SSGraveRobberLevel}/{GameManager.SSMaxLevel})";
             if (ssGraveRobberButton != null)
                 ssGraveRobberButton.interactable = canBuySS && gm.SSGraveRobberLevel < GameManager.SSMaxLevel;
+            if (ssStormFrontInfoText != null)
+                ssStormFrontInfoText.text = $"Storm Front Blood Storm silences enemy {GameManager.SSStormFrontDuration:F0}s per level  (Lv.{gm.SSStormFrontLevel}/{GameManager.SSTier2MaxLevel})";
+            if (ssStormFrontButton != null)
+                ssStormFrontButton.interactable = canBuyT2 && gm.SSStormFrontLevel < GameManager.SSTier2MaxLevel;
         }
 
         // Blood Bank
